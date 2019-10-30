@@ -1,0 +1,52 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="windowActionBar">false</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+
+    <style name="Widget.ActionButton.Overflow" parent="@android:style/Widget.Holo.ActionButton.Overflow">
+        <item name="android:contentDescription">""</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:actionBarSize">48dp</item>
+    </style>
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+    </style>
+
+
+    <style name="NanumSquareRoundTextViewStyle" parent="@android:style/Widget.DeviceDefault.TextView">
+        <item name="fontFamily">@font/nanumsquareround_regular</item>
+    </style>
+
+    <style name="NanumSquareRoundButtonStyle" parent="@android:style/Widget.DeviceDefault.Button.Borderless">
+        <item name="fontFamily">@font/nanumsquareround_regular</item>
+    </style>
+
+    <style name="NanumSquareRoundEditTextStyle" parent="@android:style/Widget.DeviceDefault.EditText">
+        <item name="fontFamily">@font/nanumsquareround_regular</item>
+    </style>
+
+    <style name="NanumSquareRoundRadioButtonStyle" parent="@android:style/Widget.DeviceDefault.CompoundButton.RadioButton">
+        <item name="fontFamily">@font/nanumsquareround_regular</item>
+    </style>
+
+    <style name="NanumSquareRoundCheckboxStyle" parent="@android:style/Widget.DeviceDefault.CompoundButton.CheckBox">
+        <item name="fontFamily">@font/nanumsquareround_regular</item>
+    </style>
+
+    <!-- Splash Theme -->
+    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    </style>
+
+</resources>

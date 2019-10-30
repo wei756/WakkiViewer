@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#6bc4b6</color>
+    <color name="colorPrimaryDark">#009a86</color>
+    <color name="colorAccent">#D81B60</color>
+
+    <color name="colorTextPrimaryWhite">#5a5a5a</color>
+    <color name="colorTextSecondaryWhite">#929292</color>
+
+    <!-- Article list-->
+    <color name="colorArticleListHeaderTitle">#5f6a60</color>
+    <color name="colorArticleListHeaderMore">#9faaa0</color>
+
+    <color name="colorArticleListFooterBackground">#252525</color>
+    <color name="colorArticleListFooterLicenseText">#888</color>
+
+    <!-- Article viewer -->
+    <color name="colorArticleTitleText">#444</color>
+    <color name="colorArticleHeaderText">#666</color>
+
+    <color name="colorArticleBottomBorder">#ddd</color>
+
+    <color name="colorArticleBodyText">#333</color>
+
+    <color name="colorArticleVoteText">#000</color>
+    <color name="colorArticleVoteBorder">#d3d3d3</color>
+
+    <color name="colorArticleCommentHeaderText">#4b4b4b</color>
+
+    <color name="colorArticleCommentAuthorText">@color/colorArticleHeaderText</color>
+    <color name="colorArticleCommentTimeText">#8e8e8e</color>
+    <color name="colorArticleCommentParentAuthor">#000</color>
+    <color name="colorArticleCommentContentText">@color/colorArticleCommentAuthorText</color>
+    <color name="colorArticleCommentBottomBorder">#e9e9e9</color>
+
+    <!-- Action bar -->
+    <color name="colorTitleLight">@android:color/black</color>
+    <color name="colorTitleDark">@android:color/white</color>
+
+    <!-- Category colors -->
+    <color name="colorMainPage">#ffffff</color>
+    <color name="colorMainPageDark">#ffffff</color>
+    <color name="colorMainPageStatus">#fafafa</color>
+
+    <color name="colorAnnouncement">#64181f</color>
+    <color name="colorAnnouncementDark">#64181f</color>
+    <color name="colorAnnouncementStatus">#520717</color>
+
+    <!-- Streamers personal colors -->
+    <color name="colorJinu">#6a4c3f</color>
+    <color name="colorJinuDark">#553d36</color>
+    <color name="colorJinuStatus">#422f27</color>
+
+    <color name="colorTemtem">#FFCA28</color><!--e4ce2a-->
+    <color name="colorTemtemDark">#e7bf53</color>
+    <color name="colorTemtemStatus">#FFB300</color><!--e1a011-->
+
+    <color name="colorDduddi">#f7cb08</color>
+    <color name="colorDduddiDark">#d3ad07</color>
+    <color name="colorDduddiStatus">#f8b400</color>
+
+    <color name="colorGambler">#f9d78b</color>
+    <color name="colorGamblerDark">#e1ac68</color>
+    <color name="colorGamblerStatus">#f6bb3c</color>
+
+    <color name="colorNanayang">#ffa32a</color>
+    <color name="colorNanayangDark">#ff8624</color>
+    <color name="colorNanayangStatus">#fa870d</color>
+
+    <color name="colorCollet">#c473c7</color>
+    <color name="colorColletDark">#995a99</color>
+    <color name="colorColletStatus">#aa3aaf</color>
+
+    <color name="colorSilph">#e2d2d3</color>
+    <color name="colorSilphDark">#bca7a9</color>
+    <color name="colorSilphStatus">#b69699</color>
+
+    <color name="colorShiftpsh">#ff793b</color>
+    <color name="colorShiftpshDark">#ff175d</color>
+
+    <color name="colorCryental">#a4adff</color>
+    <color name="colorCryentalDark">#c9a4ff</color>
+
+    <color name="colorGreen">#91ff00</color>
+    <color name="colorGreenDark">#3cb92b</color>
+
+</resources>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFFFFFFF"
+    android:paddingTop="0dp">
+
+    <include
+        android:id="@+id/item_article_list_first"
+        layout="@layout/article_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view_article_list_header_bottomline" />
+
+    <View
+        android:id="@+id/view_article_list_header_bottomline"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="170dp"
+        android:background="@android:color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/img_article_list_header_img"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="58dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/content_description_article_list_header_img"
+        android:src="@drawable/article_header_img_commawang"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_weight="3" />
+
+    <View
+        android:id="@+id/view_article_list_header_line"
+        android:layout_width="2dp"
+        android:layout_height="46dp"
+        android:layout_margin="16dp"
+        android:background="@android:color/black"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/img_article_list_header_icon"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/img_article_list_header_icon"
+        android:layout_width="42dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="38dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/content_description_article_list_header_icon"
+        android:src="@drawable/article_header_icon_streamer"
+        android:tint="@android:color/black"
+        app:layout_constraintStart_toEndOf="@+id/view_article_list_header_line"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_article_list_header_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="40dp"
+        android:fontFamily="@font/nanumsquareround_bold"
+        android:letterSpacing="0"
+        android:text="지누"
+        android:textColor="@color/colorTextPrimaryWhite"
+        android:textSize="30sp"
+        android:tint="@android:color/black"
+        app:layout_constraintStart_toEndOf="@id/img_article_list_header_icon"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/layout_article_list_header_icons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="26dp"
+        android:background="@drawable/article_list_header_bg_icons"
+        android:gravity="center_vertical"
+        android:paddingStart="18dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/view_article_list_header_bottomline"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/btn_article_list_header_twitch"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:contentDescription="@string/content_description_article_list_header_twitch"
+            android:focusable="true"
+            android:src="@drawable/article_list_header_icon_twitch"
+            android:tint="@android:color/holo_purple" />
+
+        <ImageView
+            android:id="@+id/btn_article_list_header_youtube"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginStart="16dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:contentDescription="@string/content_description_article_list_header_youtube"
+            android:focusable="true"
+            android:src="@drawable/article_list_header_icon_youtube"
+            android:tint="@android:color/holo_red_dark" />
+
+        <ImageView
+            android:id="@+id/btn_article_list_header_favorite"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginStart="16dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:contentDescription="@string/content_description_article_list_header_favorite"
+            android:focusable="true"
+            android:src="@drawable/article_list_header_icon_favorite_black_24dp" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

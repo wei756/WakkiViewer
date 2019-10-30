@@ -1,0 +1,134 @@
+package com.wei756.ukkiukki;
+
+import android.app.Activity;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
+import android.util.Log;
+import android.view.View;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
+
+/**
+ * 지정된 색 테마로 액션바와 상태바의 색상을 변경하는 클래스
+ */
+public class ActionBarManager {
+
+    private static ActionBarManager instance;
+
+    /**
+     * 액션바의 색 테마를 앱 기본 색으로 설정합니다
+     *
+     * @param act     적용할 Activity
+     * @param toolbar 적용할 Toolbar
+     */
+    private void initActionBarBasic(Activity act, Toolbar toolbar) {
+        act.getWindow().setStatusBarColor(act.getResources().getColor(R.color.colorPrimaryDark));
+        toolbar.setBackgroundResource(R.color.colorPrimary); // color
+    }
+
+    /**
+     * 액션바의 색 테마를 기본 테마로 설정합니다
+     *
+     * @param act     적용할 Activity
+     * @param toolbar 적용할 Toolbar
+     */
+    public void initActionBar(Activity act, Toolbar toolbar) {
+        initActionBarBasic(act, toolbar);
+        ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(R.color.colorTitleDark), act);
+    }
+
+
+    /**
+     * Navigation drawer가 있는 Activity의 액션바의 색 테마를 기본 테마로 설정합니다
+     *
+     * @param act     적용할 Activity
+     * @param toolbar 적용할 Toolbar
+     * @param toggle  적용할 Toggle
+     */
+    public void initActionBar(Activity act, Toolbar toolbar, ActionBarDrawerToggle toggle) {
+        initActionBar(act, toolbar);
+        ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(R.color.colorTitleDark), act, toggle);
+    }
+
+    /**
+     * 액션바의 색 테마를 해당 게시판 테마로 설정합니다
+     *
+     * @param act     적용할 Activity
+     * @param toolbar 적용할 Toolbar
+     * @param mid     게시판
+     */
+    public void setActionBar(Activity act, Toolbar toolbar, String mid) {
+        try {
+            CategoryManager category = CategoryManager.getInstance();
+            String name = (String) category.getParam(mid, CategoryManager.NAME);
+            int color = (Integer) category.getParam(mid, CategoryManager.COLOR);
+            int colorStatus = (Integer) category.getParam(mid, CategoryManager.COLOR_STATUS);
+            int colorStatusText = (Integer) category.getParam(mid, CategoryManager.COLOR_STATUS_TEXT);
+
+            if (mid != "mainpage")
+                toolbar.setTitle(name); // toolbar title
+            toolbar.setBackgroundResource(color); // color
+            act.getWindow().setStatusBarColor(act.getResources().getColor(colorStatus)); // colorStatus
+            ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(colorStatusText), act); // colorStatusText
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                setSystemBarTheme(act, (colorStatusText == R.color.colorTitleDark)); // colorStatusText
+            }
+
+            Log.i("ActionBarManager", "Open with board of " + mid + " on setActionBar");
+        } catch (InvalidCategoryException e) {
+            Log.e("ActionBarManager", "Wrong board error(" + mid + ") on setActionBar");
+            e.printStackTrace();
+            initActionBar(act, toolbar);
+        }
+    }
+
+
+    /**
+     * Navigation drawer가 있는 Activity의 액션바의 색 테마를 해당 게시판 테마로 설정합니다
+     *
+     * @param act     적용할 Activity
+     * @param toolbar 적용할 Toolbar
+     * @param mid     게시판
+     * @param toggle  적용할 Toggle
+     */
+    public void setActionBar(Activity act, Toolbar toolbar, String mid, ActionBarDrawerToggle toggle) {
+        try {
+            CategoryManager category = CategoryManager.getInstance();
+            int colorStatusText = (Integer) category.getParam(mid, CategoryManager.COLOR_STATUS_TEXT);
+
+            setActionBar(act, toolbar, mid);
+            ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(colorStatusText), act, toggle); // colorStatusText
+
+            Log.i("ActionBarManager", "Open with board of " + mid + " on setActionBar");
+        } catch (InvalidCategoryException e) {
+            Log.e("에러", "존재하지 않는 게시판 코드입니다(" + e.getMessage() + ")");
+            e.printStackTrace();
+            initActionBar(act, toolbar);
+        }
+    }
+
+    /**
+     * StatusBar의 item color를 설정합니다.
+     *
+     * @param pActivity 적용할 Activity
+     * @param pIsDark   color
+     */
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public static final void setSystemBarTheme(final Activity pActivity, final boolean pIsDark) {
+        // Fetch the current flags.
+        final int lFlags = pActivity.getWindow().getDecorView().getSystemUiVisibility();
+        // Update the SystemUiVisibility dependening on whether we want a Light or Dark theme.
+        pActivity.getWindow().getDecorView().setSystemUiVisibility(pIsDark ? (lFlags & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) : (lFlags | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR));
+    }
+
+    /**
+     * singleton
+     */
+    public static ActionBarManager getInstance() {
+        if (instance == null)
+            instance = new ActionBarManager();
+        return instance;
+    }
+}

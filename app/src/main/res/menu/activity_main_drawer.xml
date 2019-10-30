@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:id="@+id/menu_general">
+        <item
+            android:id="@+id/nav_home"
+            android:title="@string/menu_category_home" />
+        <item
+            android:id="@+id/nav_notice"
+            android:title="@string/menu_category_notice" />
+    </group>
+
+    <group android:id="@+id/menu_pixel">
+       <item
+            android:id="@+id/nav_pixel_main"
+            android:title="@string/menu_category_pixel_main" />
+        <item
+            android:id="@+id/nav_pixel"
+            android:title="@string/menu_category_pixel" />
+    </group>
+
+    <group android:id="@+id/menu_streamer">
+        <item
+            android:id="@+id/nav_streamer"
+            android:title="@string/menu_category_streamer" />
+        <item
+            android:id="@+id/nav_jinu"
+            android:title="@string/menu_category_jinu" />
+        <item
+            android:id="@+id/nav_temtem"
+            android:title="@string/menu_category_temtem" />
+        <item
+            android:id="@+id/nav_dduddi"
+            android:title="@string/menu_category_dduddi" />
+        <item
+            android:id="@+id/nav_nanayang"
+            android:title="@string/menu_category_nanayang" />
+        <item
+            android:id="@+id/nav_collet"
+            android:title="@string/menu_category_collet" />
+        <item
+            android:id="@+id/nav_gambler"
+            android:title="@string/menu_category_gambler" />
+        <item
+            android:id="@+id/nav_silph"
+            android:title="@string/menu_category_silph" />
+    </group>
+
+    <group android:id="@+id/menu_community">
+        <item
+            android:id="@+id/nav_community"
+            android:title="@string/menu_category_community" />
+        <item
+            android:id="@+id/nav_free"
+            android:title="@string/menu_category_free" />
+        <item
+            android:id="@+id/nav_humor"
+            android:title="@string/menu_category_humor" />
+        <item
+            android:id="@+id/nav_humor_best"
+            android:title="@string/menu_category_humor_best" />
+        <item
+            android:id="@+id/nav_clip"
+            android:title="@string/menu_category_clip" />
+    </group>
+
+    <item
+        android:id="@+id/nav_creative"
+        android:title="@string/menu_category_creative" />
+    <item
+        android:id="@+id/nav_point"
+        android:title="@string/menu_category_point" />
+    <item
+        android:id="@+id/nav_commawang"
+        android:title="@string/menu_category_commawang" />
+</menu>

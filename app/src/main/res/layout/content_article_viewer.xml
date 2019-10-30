@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:nestedScrollingEnabled="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".ArticleViewerActivity"
+    tools:showIn="@layout/activity_article_viewer">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/id_article_viewer_viewer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:descendantFocusability="blocksDescendants"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/id_article_viewer_header"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="16dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@id/view_article_viewer_header_line"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <!-- 게시글 제목 -->
+            <TextView
+                android:id="@+id/tv_article_viewer_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nanumsquareround_regular"
+                android:lineSpacingExtra="10dp"
+                android:paddingBottom="16dp"
+                android:text="게시글 제목"
+                android:textColor="@color/colorArticleTitleText"
+                android:textSize="21sp"
+                app:layout_constraintBottom_toTopOf="@+id/icon_article_viewer_author"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- 작성자 -->
+            <TextView
+                android:id="@+id/icon_article_viewer_author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/xe_icon"
+                android:lineSpacingExtra="6dp"
+                android:text="@string/xi_user"
+                android:textColor="@color/colorArticleVoteText"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_author"
+                app:layout_constraintEnd_toStartOf="@id/icon_article_viewer_author_color"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_title" />
+
+            <TextView
+                android:id="@+id/icon_article_viewer_author_color"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/icon_shiftpsh"
+                android:fontFamily="@font/montserrat_bold"
+                android:text=""
+                android:textAlignment="center"
+                android:textColor="@color/colorTitleDark"
+                android:textSize="11sp"
+                android:visibility="visible"
+                app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_author"
+                app:layout_constraintEnd_toStartOf="@id/tv_article_viewer_author"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/icon_article_viewer_author"
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_title" />
+
+            <TextView
+                android:id="@+id/tv_article_viewer_author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/nanumsquareround_bold"
+                android:paddingBottom="8dp"
+                android:text="작성자 닉네임"
+                android:textColor="@color/colorArticleHeaderText"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/icon_article_viewer_author_color"
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_title" />
+
+            <!-- 날짜, 조회, 추천 -->
+            <TextView
+                android:id="@+id/icon_article_viewer_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:fontFamily="@font/xe_icon"
+                android:lineSpacingExtra="6dp"
+                android:text="@string/xi_time"
+                android:textColor="@color/colorArticleVoteText"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_time"
+                app:layout_constraintEnd_toStartOf="@id/tv_article_viewer_time"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_author" />
+
+            <TextView
+                android:id="@+id/tv_article_viewer_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="@font/nanumsquareround_bold"
+                android:text="0000.00.00 00:00"
+                android:textColor="@color/colorArticleHeaderText"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toStartOf="@+id/icon_article_viewer_view"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@+id/icon_article_viewer_time"
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_author" />
+
+            <TextView
+                android:id="@+id/icon_article_viewer_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:fontFamily="@font/xe_icon"
+                android:lineSpacingExtra="6dp"
+                android:text="@string/xi_eye"
+                android:textColor="@color/colorArticleVoteText"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_time"
+                app:layout_constraintEnd_toStartOf="@id/tv_article_viewer_view"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/tv_article_viewer_time"
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_author" />
+
+            <TextView
+                android:id="@+id/tv_article_viewer_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="@font/nanumsquareround_bold"
+                android:text="조회 수 0"
+                android:textColor="@color/colorArticleHeaderText"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_time"
+                app:layout_constraintEnd_toStartOf="@id/icon_article_viewer_vote"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/icon_article_viewer_view"
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_author" />
+
+
+            <TextView
+                android:id="@+id/icon_article_viewer_vote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:fontFamily="@font/xe_icon"
+                android:lineSpacingExtra="6dp"
+                android:text="@string/xi_thumbs_up"
+                android:textColor="@color/colorArticleVoteText"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_time"
+                app:layout_constraintEnd_toStartOf="@id/tv_article_viewer_vote"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/tv_article_viewer_view"
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_author" />
+
+            <TextView
+                android:id="@+id/tv_article_viewer_vote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nanumsquareround_bold"
+                android:text="추천 0"
+                android:textColor="@color/colorArticleHeaderText"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_time"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/icon_article_viewer_vote"
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_author" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <View
+            android:id="@+id/view_article_viewer_header_line"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorArticleBottomBorder"
+            app:layout_constraintBottom_toTopOf="@id/layout_article_viewer_body"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/id_article_viewer_header" />
+
+        <!-- 본문 -->
+        <RelativeLayout
+            android:id="@+id/layout_article_viewer_body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="50dp"
+            app:layout_constraintBottom_toTopOf="@id/btn_article_viewer_vote_up"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_article_viewer_header_line">
+
+            <WebView
+                android:id="@+id/web_article_viewer_body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:scrollbarAlwaysDrawHorizontalTrack="false"
+                android:scrollbarAlwaysDrawVerticalTrack="false"
+                android:scrollbarSize="0dp"
+                tools:ignore="WebViewLayout" />
+        </RelativeLayout>
+
+        <!-- 공감/비공감 -->
+        <LinearLayout
+            android:id="@+id/btn_article_viewer_vote_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/btn_bg_vote"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/layout_article_viewer_footer_profile"
+            app:layout_constraintEnd_toStartOf="@id/btn_article_viewer_vote_down"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout_article_viewer_body">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/xe_icon"
+                android:lineSpacingExtra="6dp"
+                android:text="@string/xi_heart"
+                android:textColor="@color/colorArticleVoteText"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_article_viewer_vote_up"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nanumsquareround_bold"
+                android:lineSpacingExtra="6dp"
+                android:text="   + 0"
+                android:textColor="@color/colorArticleVoteText"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_article_viewer_vote_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_bg_vote"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toEndOf="@id/btn_article_viewer_vote_up"
+            app:layout_constraintTop_toBottomOf="@id/layout_article_viewer_body">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/xe_icon"
+                android:lineSpacingExtra="6dp"
+                android:text="@string/xi_close"
+                android:textColor="@color/colorArticleVoteText"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_article_viewer_vote_down"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nanumsquareround_bold"
+                android:lineSpacingExtra="6dp"
+                android:text="   - 0"
+                android:textColor="@color/colorArticleVoteText"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_article_viewer_footer_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:background="@drawable/btn_bg_vote"
+            app:layout_constraintBottom_toTopOf="@id/view_article_viewer_footer_line"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_article_viewer_vote_up">
+
+            <ImageView
+                android:id="@+id/iv_article_viewer_profile"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginStart="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/tv_article_viewer_profile"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0"
+                app:srcCompat="@drawable/profile" />
+
+            <TextView
+                android:id="@+id/tv_article_viewer_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:fontFamily="@font/nanumsquareround_bold"
+                android:text="소개글"
+                android:textColor="@color/colorArticleBodyText"
+                android:textSize="13sp"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/iv_article_viewer_profile"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <View
+            android:id="@+id/view_article_viewer_footer_line"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginBottom="40dp"
+            android:background="@color/colorArticleBottomBorder"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout_article_viewer_footer_profile" />
+
+
+        <!-- 댓글 -->
+        <TextView
+            android:id="@+id/icon_article_viewer_comment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/xe_icon"
+            android:lineSpacingExtra="6dp"
+            android:text="@string/xi_comment"
+            android:textColor="@color/colorArticleCommentHeaderText"
+            android:textSize="14sp"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_article_viewer_footer_line" />
+
+        <TextView
+            android:id="@+id/tv_article_viewer_comment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="16dp"
+            android:layout_weight="1"
+            android:fontFamily="@font/nanumsquareround_extrabold"
+            android:text="댓글"
+            android:textColor="@color/colorArticleCommentHeaderText"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_article_viewer_comment_count"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toEndOf="@id/icon_article_viewer_comment"
+            app:layout_constraintTop_toBottomOf="@id/view_article_viewer_footer_line" />
+
+        <TextView
+            android:id="@+id/tv_article_viewer_comment_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="16dp"
+            android:layout_weight="1"
+            android:fontFamily="@font/nanumsquareround_bold"
+            android:text="0"
+            android:textColor="@color/colorPrimary"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toTopOf="@id/layout_article_viewer_comment"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toEndOf="@id/tv_article_viewer_comment"
+            app:layout_constraintTop_toBottomOf="@id/view_article_viewer_footer_line" />
+
+        <RelativeLayout
+            android:id="@+id/layout_article_viewer_comment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_comment_count">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/view_article_viewer_comment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+        </RelativeLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
