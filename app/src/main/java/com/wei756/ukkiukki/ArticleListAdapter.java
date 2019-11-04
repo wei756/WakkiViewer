@@ -33,7 +33,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
     /**
      * 표시할 게시판 코드
      */
-    private String mid;
+    private int mid;
 
     private RecyclerView mRecyclerView;
 
@@ -163,14 +163,13 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
      *
      * @param mid 게시판 코드
      */
-    public void setTheme(String mid) {
+    public void setTheme(String mi) {
+        //TODO
         CategoryManager category = CategoryManager.getInstance();
         try {
             int type = (int) category.getParam(mid, CategoryManager.TYPE);
 
-            if (type == CategoryManager.TYPE_CLIP
-                    || type == CategoryManager.TYPE_CREATIVE
-                    || type == CategoryManager.TYPE_PIXEL) {
+            if (type == CategoryManager.TYPE_ALBUM) {
                 setSubTheme(SUBTHEME_CLIP);
             } else {
                 setSubTheme(SUBTHEME_ARTICLE);
@@ -192,14 +191,6 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             } else {
                 icons = false;
                 this.category = (String) category.getParam(mid, CategoryManager.NAME);
-                this.icon = (Integer) category.getParam(mid, CategoryManager.HEADER_ICON);
-                this.img = (Integer) category.getParam(mid, CategoryManager.HEADER_IMG);
-                this.imgMargin = (Integer) category.getParam(mid, CategoryManager.HEADER_IMG_MARGIN);
-                if ((Integer) category.getParam(mid, CategoryManager.GROUP) == CategoryManager.GROUP_STREAMER) { // 스트리머 게인 게시판
-                    icons = true;
-                    this.channelTwitch = (String) category.getParam(mid, CategoryManager.CHANNEL_TWITCH);
-                    this.channelYoutube = (String) category.getParam(mid, CategoryManager.CHANNEL_YOUTUBE);
-                }
 
                 this.mid = mid;
                 Log.v("ArticleListAdapter", "게시판 헤더 \"" + this.category + "(" + mid + ")\" (으)로 설정됨. on ArticleListAdapter.setHeader");
@@ -328,7 +319,8 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             headerViewHolder.more.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ((MainActivity) act).setCategory(mid, true);
+                    //TODO:
+                    //((MainActivity) act).setCategory(mid, true);
                 }
             });
         }

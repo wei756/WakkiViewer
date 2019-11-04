@@ -23,7 +23,7 @@ public class ArticleList implements LoadedListner {
     private boolean scollable;
 
     private int page = 1;
-    private String mid = "free";
+    private int mid = 0;
     private int theme;
 
     public ArticleList(Activity act, RecyclerView mRecyclerView, RelativeLayout mProgressBar, int theme) {
@@ -48,7 +48,7 @@ public class ArticleList implements LoadedListner {
             scrollListener = new EndlessRecyclerViewScrollListener(mLinearLayoutManager) {
                 @Override
                 public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                    loadMoreArticleList(mid, page);
+                    loadArticleList(mid, true, false);
                 }
             };
             mRecyclerView.addOnScrollListener(scrollListener);
@@ -63,25 +63,11 @@ public class ArticleList implements LoadedListner {
         setVisibility(View.GONE);
     }
 
-
-    public void loadArticleListFirst(String mid, boolean refresh) {
-        if (refresh)
-            setVisibility(View.GONE);
-        loadArticleList(mid, 1);
-    }
-
-    public void loadArticleList(String mid, int page) {
+    public void loadArticleList(int mid, boolean moreLoad, boolean refresh) {
         setRefreshing(true);
         this.mid = mid;
         this.page = page;
-        Web.loadArticleList(this, mid, page, true); // update article list
-    }
-
-    private void loadMoreArticleList(String mid, int page) {
-        this.mid = mid;
-        this.page = page;
-        setRefreshing(true);
-        Web.loadArticleList(this, mid, page, false); // update article list
+        Web.loadArticleList(this, mid, page, refresh); // update article list
     }
 
     private void setRefreshing(boolean refreshing) {
@@ -90,9 +76,9 @@ public class ArticleList implements LoadedListner {
     }
 
     @Override
-    public void onLoadedArticleList(String mid, ArrayList arrayList, boolean reset) {
+    public void onLoadedArticleList(int mid, ArrayList arrayList, boolean reset) {
         setVisibility(View.VISIBLE); // 로딩 완료 후 표시
-        mAdapter.setTheme(mid);
+        //mAdapter.setTheme(mid);
 
         if (reset == true)
             mAdapter.setListWith(arrayList, act);
@@ -104,8 +90,8 @@ public class ArticleList implements LoadedListner {
     }
 
     @Override
-    public void onLoadedArticleList(String mid, Exception e, boolean reset) {
-        mAdapter.setTheme(mid);
+    public void onLoadedArticleList(int mid, Exception e, boolean reset) {
+        //mAdapter.setTheme(mid);
 
         if (reset)
             mAdapter.clearList(act);
@@ -144,7 +130,7 @@ public class ArticleList implements LoadedListner {
 }
 
 interface LoadedListner {
-    void onLoadedArticleList(String mid, ArrayList arrayList, boolean reset);
+    void onLoadedArticleList(int mid, ArrayList arrayList, boolean reset);
 
-    void onLoadedArticleList(String mid, Exception e, boolean reset);
+    void onLoadedArticleList(int mid, Exception e, boolean reset);
 }

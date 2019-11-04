@@ -160,7 +160,8 @@ public class MainActivity extends AppCompatActivity
         setCategory(mid, true);
 
         // test naver cafe parsing
-        Web.loadArticleList(null, "https://m.cafe.naver.com/steamindiegame", 1);
+        CategoryManager categoryManager = CategoryManager.getInstance();
+        Web.loadArticleList(null, 0, 1, true);
     }
 
     @Override
@@ -286,9 +287,9 @@ public class MainActivity extends AppCompatActivity
             streamerpageLayout.setVisibility(View.GONE);
             articlepageLayout.setVisibility(View.GONE);
 
-            announcementList.loadArticleListFirst("announcement", refresh);
-            freeList.loadArticleListFirst("free", refresh);
-            //creativeList.loadArticleListFirst("creative", refresh);
+            //announcementList.loadArticleListFirst("announcement", refresh);
+            //freeList.loadArticleListFirst("free", refresh);
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -311,7 +312,7 @@ public class MainActivity extends AppCompatActivity
             streamerpageLayout.setVisibility(View.GONE);
             articlepageLayout.setVisibility(View.VISIBLE);
 
-            articleList.loadArticleListFirst(mid, refresh);
+            //articleList.loadArticleListFirst(mid, refresh);
 
             runOnUiThread(new Runnable() {
                 @Override

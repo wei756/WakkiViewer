@@ -220,12 +220,13 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     // commnet box
                     Element feedback = article.getFeedback();
                     tvCommentCount.setText(feedback.selectFirst("em[class=theme_color_dark]").text());
+                    /*
                     try {
                         tvCommentCount.setTextColor(getResources().getColor((Integer) CategoryManager.getInstance().getParam(articleBoard, CategoryManager.COLOR_DARK)));
                     } catch (InvalidCategoryException e) {
                         Log.e("에러", "존재하지 않는 게시판 코드입니다(" + e.getMessage() + ")");
                         e.printStackTrace();
-                    }
+                    }*/
 
                     try {
                         Elements comments = feedback.selectFirst("ul[class=fbList]").select("li");
