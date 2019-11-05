@@ -9,8 +9,6 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:background="@drawable/bg_appbar_main"
         android:elevation="50dp"
         android:theme="@style/AppTheme.AppBarOverlay">
 
@@ -31,7 +29,8 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="8dp"
-                android:src="@drawable/ic_appbar_logo" />
+                android:src="@drawable/ic_appbar_logo"
+                android:tint="@android:color/holo_orange_dark"/>
         </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>

@@ -6,14 +6,6 @@
     android:background="#FFFFFFFF"
     android:paddingTop="0dp">
 
-    <include
-        android:id="@+id/item_article_list_first"
-        layout="@layout/article_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/view_article_list_header_bottomline" />
-
     <View
         android:id="@+id/view_article_list_header_bottomline"
         android:layout_width="match_parent"

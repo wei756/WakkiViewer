@@ -131,7 +131,7 @@ public abstract class RecyclerViewCustomAdapter extends RecyclerView.Adapter<Rec
                 notifyItemRangeInserted(originalSize, mList.size());
             }
         });
-        Log.v("RecyclerViewAdapter", mList.size() + "개 추가됨, " + originalSize + " -> " + this.mList.size() + ", " + getItemCount() + ". on RecyclerViewCustomAdapter.setListWith");
+        Log.v("RecyclerViewAdapter", mList.size() + "개 추가됨, " + originalSize + " -> " + this.mList.size() + ", " + getItemCount() + ". on RecyclerViewCustomAdapter.addListWith");
     }
 
     /**

@@ -48,7 +48,7 @@ public class ArticleList implements LoadedListner {
             scrollListener = new EndlessRecyclerViewScrollListener(mLinearLayoutManager) {
                 @Override
                 public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                    loadArticleList(mid, true, false);
+                    loadArticleList(mid, page, false);
                 }
             };
             mRecyclerView.addOnScrollListener(scrollListener);
@@ -63,7 +63,7 @@ public class ArticleList implements LoadedListner {
         setVisibility(View.GONE);
     }
 
-    public void loadArticleList(int mid, boolean moreLoad, boolean refresh) {
+    public void loadArticleList(int mid, int page, boolean refresh) {
         setRefreshing(true);
         this.mid = mid;
         this.page = page;
@@ -78,7 +78,7 @@ public class ArticleList implements LoadedListner {
     @Override
     public void onLoadedArticleList(int mid, ArrayList arrayList, boolean reset) {
         setVisibility(View.VISIBLE); // 로딩 완료 후 표시
-        //mAdapter.setTheme(mid);
+        mAdapter.setMidTheme(mid);
 
         if (reset == true)
             mAdapter.setListWith(arrayList, act);
@@ -91,7 +91,7 @@ public class ArticleList implements LoadedListner {
 
     @Override
     public void onLoadedArticleList(int mid, Exception e, boolean reset) {
-        //mAdapter.setTheme(mid);
+        mAdapter.setMidTheme(mid);
 
         if (reset)
             mAdapter.clearList(act);

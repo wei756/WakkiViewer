@@ -1,14 +1,14 @@
 package com.wei756.ukkiukki;
 
 public class Streamer {
-    private String mid;
+    private int mid;
     private String name;
     private int nameColor;
     private int icon;
     private String twitch;
     private String youtube;
 
-    public Streamer(String mid, String name, int nameColor, int icon, String twitch, String youtube) {
+    public Streamer(int mid, String name, int nameColor, int icon, String twitch, String youtube) {
         this.mid = mid;
         this.name = name;
         this.nameColor = nameColor;
@@ -17,11 +17,11 @@ public class Streamer {
         this.youtube = youtube;
     }
 
-    public String getMid() {
+    public int getMid() {
         return mid;
     }
 
-    public void setMid(String mid) {
+    public void setMid(int mid) {
         this.mid = mid;
     }
 

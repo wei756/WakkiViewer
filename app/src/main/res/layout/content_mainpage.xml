@@ -24,6 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:adjustViewBounds="true"
+                android:visibility="gone"
                 android:contentDescription="@string/content_description_mainpage_streamer_banner_bg"
                 android:src="@drawable/mainpage_banner_bg"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -34,7 +35,6 @@
                 android:adjustViewBounds="true"
                 android:contentDescription="@string/content_description_mainpage_streamer_banner"
                 android:padding="32dp"
-                android:src="@drawable/mainpage_banner_jinu"
                 app:layout_constraintBottom_toBottomOf="@id/img_main_banner_bg"
                 app:layout_constraintEnd_toEndOf="@+id/img_main_banner_bg"
                 app:layout_constraintStart_toStartOf="@+id/img_main_banner_bg"

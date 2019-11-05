@@ -15,6 +15,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Web extends Thread {
     private static final Web instance = new Web();
@@ -94,8 +96,8 @@ public class Web extends Thread {
                         Log.v("Web", "카테고리: 그룹: " + name);
 
                     } else if (category.selectFirst("div") != null) { // 카테고리
-
-                        String name = category.selectFirst("a[class=tit  ]").text();
+                        Element a = category.selectFirst("a[class=tit  ]");
+                        String name = a.text();
                         category1.setName(name);
 
                         // 카테고리 타입
@@ -127,7 +129,22 @@ public class Web extends Thread {
                                 break;
                         }
 
-                        Log.v("Web", "카테고리: 게시판: " + name);
+                        String menuId = a.attr("href");
+                        if (menuId.contains("PopularArticleList.nhn")) {
+                            category1.setMenuId(CategoryManager.CATEGORY_POPULAR_ARTICLE);
+                        } else if (menuId.contains("PopularMemberList.nhn")) {
+                            category1.setMenuId(CategoryManager.CATEGORY_POPULAR_MEMBER);
+                        } else if (menuId.contains("WeeklyPopularTagList.nhn")) {
+                            category1.setMenuId(CategoryManager.CATEGORY_TAG);
+                        } else {
+                            Pattern p= Pattern.compile("search.menuid=([0-9]*)");
+                            Matcher m = p.matcher(menuId);
+                            while(m.find()){
+                                category1.setMenuId(Integer.parseInt(m.group(1)));
+                            }
+                        }
+
+                        Log.v("Web", "카테고리: 게시판: " + name + "(id: " + menuId + ")");
 
                     } else if (category.selectFirst("span[class=blind]") != null) { // 구분선
 
@@ -211,10 +228,10 @@ public class Web extends Thread {
                     } else {
                         throw new NullPointerException();
                     }
-                    //Log.i("Web", "Article " + page + " page loaded. (" + URL + "mid=" + mid + "&page=" + page + ")" + " on Web.loadArticleList");
+                    Log.i("Web", "Article " + page + " page loaded. (mid=" + mid + "&page=" + page + ")" + " on Web.loadArticleList");
 
                     // callback
-                    //articleList.onLoadedArticleList(mid, arrayList, reset);
+                    articleList.onLoadedArticleList(mid, arrayList, reset);
 
                 } catch (IOException e) {
                     arrayList = null;
@@ -222,7 +239,7 @@ public class Web extends Thread {
                     e.printStackTrace();
 
                     // callback with exception
-                    //articleList.onLoadedArticleList(mid, e, reset);
+                    articleList.onLoadedArticleList(mid, e, reset);
 
                 } catch (NullPointerException e) {
                     arrayList = null;
@@ -230,7 +247,7 @@ public class Web extends Thread {
                     e.printStackTrace();
 
                     // callback with exception
-                    //articleList.onLoadedArticleList(mid, e, reset);
+                    articleList.onLoadedArticleList(mid, e, reset);
                 }
 
             }

@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity
 
     private SearchView mSearchView;
 
-    private String mid = "mainpage";
+    private int mid = CategoryManager.CATEGORY_MAINPAGE;
 
     // article page
     private View articlepageLayout;
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity
         imgLogo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setCategory("mainpage", true);
+                setCategory(CategoryManager.CATEGORY_MAINPAGE, true);
             }
         });
 
@@ -136,7 +137,7 @@ public class MainActivity extends AppCompatActivity
 
         announcementList = new ArticleList(this, announcementView, announcementViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
         freeList = new ArticleList(this, freeView, freeViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
-        //creativeList = new ArticleList(this, creativeView, creativeViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
+        creativeList = new ArticleList(this, creativeView, creativeViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
 
         // streamer page
         streamerpageLayout = findViewById(R.id.layout_streamerpage);
@@ -150,18 +151,14 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onRefresh() {
                 setCategory(mid, false); // reset and update article list
-                if (mid.equals("streamer")) {
-                    mSwipeRefreshLayout.setRefreshing(false);
-                }
             }
         });
 
+        // load category
+        CategoryManager.getInstance(this, navigationView.getMenu());
+
         // 초기화면 로드
         setCategory(mid, true);
-
-        // test naver cafe parsing
-        CategoryManager categoryManager = CategoryManager.getInstance();
-        Web.loadArticleList(null, 0, 1, true);
     }
 
     @Override
@@ -230,48 +227,20 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
+        String id = (String)item.getTitle();
+        Log.e("Drawerwwwwwwwwwwwwwwwww", "" + id);
 
-        if (id == R.id.nav_home) {
-            setCategory("mainpage", true);
-        } else if (id == R.id.nav_notice) {
-            setCategory("announcement", true);
-        } else if (id == R.id.nav_pixel_main) {
-            setCategory("pixel_main", true);
-        } else if (id == R.id.nav_pixel) {
-            setCategory("pixel", true);
-        } else if (id == R.id.nav_notice) {
-            setCategory("announcement", true);
-        } else if (id == R.id.nav_streamer) {
-            setCategory("streamer", true);
-        } else if (id == R.id.nav_jinu) {
-            setCategory("jinu", true);
-        } else if (id == R.id.nav_temtem) {
-            setCategory("temtem", true);
-        } else if (id == R.id.nav_dduddi) {
-            setCategory("dduddi", true);
-        } else if (id == R.id.nav_nanayang) {
-            setCategory("nanayang", true);
-        } else if (id == R.id.nav_collet) {
-            setCategory("collet11", true);
-        } else if (id == R.id.nav_gambler) {
-            setCategory("gambler", true);
-        } else if (id == R.id.nav_silph) {
-            setCategory("silph", true);
-        } else if (id == R.id.nav_free) {
-            setCategory("free", true);
-        } else if (id == R.id.nav_humor) {
-            setCategory("humor", true);
-        } else if (id == R.id.nav_humor_best) {
-            setCategory("humor_best", true);
-        } else if (id == R.id.nav_clip) {
-            setCategory("clip", true);
-        } else if (id == R.id.nav_creative) {
-            setCategory("creative", true);
-        } else if (id == R.id.nav_point) {
-            setCategory("point", true);
-        } else if (id == R.id.nav_commawang) {
-            setCategory("commawang", true);
+        int mid;
+        try {
+            mid = CategoryManager.getInstance().findIdByName(id);
+
+            if (mid == CategoryManager.CATEGORY_MAINPAGE) {
+                setCategory(CategoryManager.CATEGORY_MAINPAGE, true);
+            } else {
+                setCategory(mid, true);
+            }
+        } catch (InvalidCategoryException e) {
+            e.printStackTrace();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -279,27 +248,17 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void setCategory(String mid, boolean refresh) {
+    public void setCategory(int mid, boolean refresh) {
         this.mid = mid;
 
-        if (mid.equals("mainpage")) { // 메인페이지
+        if (mid == CategoryManager.CATEGORY_MAINPAGE) { // 메인페이지
             mainpageLayout.setVisibility(View.VISIBLE);
             streamerpageLayout.setVisibility(View.GONE);
             articlepageLayout.setVisibility(View.GONE);
 
-            //announcementList.loadArticleListFirst("announcement", refresh);
-            //freeList.loadArticleListFirst("free", refresh);
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    fab.hide();
-                }
-            });
-        } else if (mid.equals("streamer")) { //스트리머 페이지
-            mainpageLayout.setVisibility(View.GONE);
-            streamerpageLayout.setVisibility(View.VISIBLE);
-            articlepageLayout.setVisibility(View.GONE);
+            announcementList.loadArticleList(CategoryManager.CATEGORY_ALLLIST, 1, true);
+            freeList.loadArticleList(1, 1, true);
+            creativeList.loadArticleList(59, 1, true);
 
             runOnUiThread(new Runnable() {
                 @Override
@@ -312,7 +271,7 @@ public class MainActivity extends AppCompatActivity
             streamerpageLayout.setVisibility(View.GONE);
             articlepageLayout.setVisibility(View.VISIBLE);
 
-            //articleList.loadArticleListFirst(mid, refresh);
+            articleList.loadArticleList(mid, 1, true);
 
             runOnUiThread(new Runnable() {
                 @Override

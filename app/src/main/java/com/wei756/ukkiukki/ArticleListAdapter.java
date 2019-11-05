@@ -136,20 +136,23 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         switch (theme) {
             case THEME_BOARD:
                 maxItemCount = 0;
-                headerHasItem = true;
+                headerHasItem = false;
                 scrollable = true;
+                hasHeader = false;
                 break;
 
             case THEME_MAINPAGE:
                 maxItemCount = 5;
                 headerHasItem = false;
                 scrollable = false;
+                hasHeader = true;
                 break;
 
             case THEME_ARTICLE_VIEWER:
                 maxItemCount = 20;
-                headerHasItem = true;
+                headerHasItem = false;
                 scrollable = false;
+                hasHeader = true;
                 break;
         }
     }
@@ -163,7 +166,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
      *
      * @param mid 게시판 코드
      */
-    public void setTheme(String mi) {
+    public void setMidTheme(int mid) {
         //TODO
         CategoryManager category = CategoryManager.getInstance();
         try {
@@ -268,59 +271,12 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
 
         // header
         headerViewHolder.category.setText(category);
-        headerViewHolder.icon.setImageResource(icon);
-        if (TYPE_THEME == THEME_BOARD
-                || TYPE_THEME == THEME_ARTICLE_VIEWER) {
-            headerViewHolder.img.setImageResource(img);
-            ImageView viewImg = headerViewHolder.img;
-            // set marginTop of img
-            if (viewImg.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
-                ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) viewImg.getLayoutParams();
-                final float scale = act.getResources().getDisplayMetrics().density;
-                int pixels = (int) (imgMargin * scale + 0.5f);
-
-                p.topMargin = pixels;
-            }
-            if (icons) { // icon menu
-                headerViewHolder.icons.setVisibility(View.VISIBLE);
-
-                headerViewHolder.iconTwitch.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Uri uri = Uri.parse(URLTwitch + channelTwitch);
-
-                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                        act.startActivity(intent);
-                    }
-                });
-
-                headerViewHolder.iconYoutube.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Uri uri = Uri.parse(URLYoutube + channelYoutube);
-
-                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                        act.startActivity(intent);
-                    }
-                });
-            } else {
-                headerViewHolder.icons.setVisibility(View.GONE);
-            }
-
-            if (headerHasItem) {
-                if (mList.size() == 0) { // ArticleList에 Article 없을 경우 firstItem 숨김
-                    headerViewHolder.itemFirst.setVisibility(View.GONE);
-                } else {
-                    headerViewHolder.itemFirst.setVisibility(View.VISIBLE);
-                    bindItemViewHolder(viewholder, 0);
-                }
-            }
-        } else { // TYPE_THEME == THEME_MAINPAGE
+        //headerViewHolder.icon.setImageResource(icon);
+        if (TYPE_THEME == THEME_MAINPAGE) {
             headerViewHolder.more.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //TODO:
-                    //((MainActivity) act).setCategory(mid, true);
+                    ((MainActivity) act).setCategory(mid, true);
                 }
             });
         }
@@ -338,6 +294,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         itemViewHolder.author.setText(article.getAuthor());
 
         // levelIcon
+        /*
         if (TYPE_SUBTHEME == SUBTHEME_ARTICLE) {
             String levelIcon = article.getLevelIcon();
             if (!levelIcon.equals("")) {
@@ -350,10 +307,11 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                     e.printStackTrace();
                 }
             } else {
-                itemViewHolder.levelIcon.setVisibility(View.GONE);
+                //itemViewHolder.levelIcon.setVisibility(View.GONE);
             }
         }
-
+        */
+        itemViewHolder.levelIcon.setVisibility(View.GONE);
 
         if ((TYPE_THEME == THEME_BOARD
                 || TYPE_THEME == THEME_ARTICLE_VIEWER)
@@ -364,7 +322,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             itemViewHolder.comment.setText(article.getComment());
             itemViewHolder.thumbnail.setVisibility(View.GONE);
         } else if (TYPE_THEME == THEME_MAINPAGE) {
-            itemViewHolder.time.setText(article.getTime().substring(5).replace('.', '-'));
+            itemViewHolder.time.setText(article.getTime());
         }
 
         // thumbnail

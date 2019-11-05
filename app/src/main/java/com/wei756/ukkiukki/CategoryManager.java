@@ -1,5 +1,9 @@
 package com.wei756.ukkiukki;
 
+import android.app.Activity;
+import android.content.Context;
+import android.view.Menu;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +15,8 @@ import java.util.Map;
 public class CategoryManager {
     private static CategoryManager instance;
     private static ArrayList<Map> category = new ArrayList<>();
+    private static Menu menu;
+    private static Activity context;
 
     private boolean loaded = false;
 
@@ -38,6 +44,16 @@ public class CategoryManager {
     public static final int TYPE_REPORT = 5;
     public static final int TYPE_BEST = 6;
     public static final int TYPE_CONTOUR = 7;
+
+    /**
+     * 고정 category id
+     */
+    public static final int CATEGORY_MAINPAGE = -4; // 메인페이지
+    public static final int CATEGORY_ALLLIST = 0; // 전체글보기
+    public static final int CATEGORY_POPULAR_ARTICLE = -1; // 인기글
+    public static final int CATEGORY_POPULAR_MEMBER = -2; // 인기멤버
+    public static final int CATEGORY_TAG = -3; // 카페태그
+
 
     public static class CategoryBuilder {
         String name = null;
@@ -82,8 +98,27 @@ public class CategoryManager {
             public void run() {
                 // 카테고리 로드
                 ArrayList<Map> categoryList = Web.loadCategoryList();
+                category.add(new CategoryBuilder()
+                        .setName("메인페이지")
+                        .setType(TYPE_MAINPAGE)
+                        .setMenuId(CATEGORY_MAINPAGE)
+                        .build());
+                category.add(new CategoryBuilder()
+                        .setName("전체글보기")
+                        .setType(TYPE_BOARD)
+                        .setMenuId(CATEGORY_ALLLIST)
+                        .build());
                 for (Map cat : categoryList)
                     category.add(cat);
+
+                context.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Map cat : category)
+                            menu.add((String)cat.get(CategoryManager.NAME));
+                    }
+                });
+
             }
         }.start();
     }
@@ -91,14 +126,30 @@ public class CategoryManager {
     public Object getParam(int mid, int type) throws InvalidCategoryException {
         if (!(mid < category.size()))
             throw new InvalidCategoryException("" + mid);
+        for (Map cat : category) {
+            if ((int)cat.get(MENU_ID) == mid)
+                return cat.get(type);
+        }
+        throw new InvalidCategoryException("" + mid);
+    }
 
-        return category.get(mid).get(type);
+    public int findIdByName(String name) throws InvalidCategoryException {
+        for (Map cat : category) {
+            if (cat.get(NAME).equals(name))
+                return (int)cat.get(MENU_ID);
+        }
+        throw new InvalidCategoryException(name);
     }
 
     public static CategoryManager getInstance() {
         if (instance == null)
             instance = new CategoryManager();
         return instance;
+    }
+    public static CategoryManager getInstance(Activity context1, Menu menu1) {
+        context = context1;
+        menu = menu1;
+        return getInstance();
     }
 }
 

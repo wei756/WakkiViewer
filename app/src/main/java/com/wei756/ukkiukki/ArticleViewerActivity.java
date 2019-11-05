@@ -186,7 +186,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     webBody.loadDataWithBaseURL("", articleBody, "text/html", "UTF-8", "");
                     //Log.i("ArticleViewerActivity", articleBody);
 
-                    tvVote.setText(article.getVote());
+                    tvVote.setText(article.getLikeIt());
                     // profile box
                     Element footer = article.getFooter();
                     if (footer != null) {
