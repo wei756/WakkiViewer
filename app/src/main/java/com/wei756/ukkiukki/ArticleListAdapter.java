@@ -59,7 +59,8 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         protected TextView author;
         protected TextView time;
         protected TextView view;
-        protected Button comment;
+        protected LinearLayout btnComment;
+        protected TextView numComment;
         protected TextView commentCount;
         protected ImageView thumbnail;
         protected ConstraintLayout article;
@@ -72,7 +73,8 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             this.author = (TextView) view.findViewById(R.id.tv_author);
             this.time = (TextView) view.findViewById(R.id.tv_time);
             this.view = (TextView) view.findViewById(R.id.tv_view);
-            this.comment = (Button) view.findViewById(R.id.btn_comment);
+            this.btnComment = (LinearLayout) view.findViewById(R.id.btn_comment);
+            this.numComment = (TextView) view.findViewById(R.id.tv_comment);
             this.commentCount = (TextView) view.findViewById(R.id.tv_comment_count);
             this.thumbnail = (ImageView) view.findViewById(R.id.iv_thumbnail);
             this.article = (ConstraintLayout) view.findViewById(R.id.btn_layout_article);
@@ -196,10 +198,10 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 this.category = (String) category.getParam(mid, CategoryManager.NAME);
 
                 this.mid = mid;
-                Log.v("ArticleListAdapter", "게시판 헤더 \"" + this.category + "(" + mid + ")\" (으)로 설정됨. on ArticleListAdapter.setHeader");
+                Log.v("ArticleListAdapter", "게시판 헤더 \"" + this.category + "(" + mid + ")\" (으)로 설정됨. on ArticleListAdapter.setMidTheme");
             }
         } catch (InvalidCategoryException e) {
-            Log.e("에러", "존재하지 않는 게시판 코드입니다(" + e.getMessage() + ") on ArticleListAdapter.setHeader");
+            Log.e("에러", "존재하지 않는 게시판 코드입니다(" + e.getMessage() + ") on ArticleListAdapter.setMidTheme");
             e.printStackTrace();
         }
     }
@@ -291,7 +293,8 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         final Article article = (Article) mList.get(pos);
 
         itemViewHolder.title.setText(article.getTitle());
-        itemViewHolder.author.setText(article.getAuthor());
+        if (TYPE_THEME != THEME_MAINPAGE)
+            itemViewHolder.author.setText(article.getAuthor());
 
         // levelIcon
         /*
@@ -311,7 +314,8 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             }
         }
         */
-        itemViewHolder.levelIcon.setVisibility(View.GONE);
+        if (TYPE_THEME != THEME_MAINPAGE)
+            itemViewHolder.levelIcon.setVisibility(View.GONE);
 
         if ((TYPE_THEME == THEME_BOARD
                 || TYPE_THEME == THEME_ARTICLE_VIEWER)
@@ -319,20 +323,20 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             itemViewHolder.time.setText(article.getTime());
 
             itemViewHolder.view.setText(article.getView());
-            itemViewHolder.comment.setText(article.getComment());
+            itemViewHolder.numComment.setText(article.getComment());
             itemViewHolder.thumbnail.setVisibility(View.GONE);
         } else if (TYPE_THEME == THEME_MAINPAGE) {
             itemViewHolder.time.setText(article.getTime());
         }
 
         // thumbnail
-        if (TYPE_SUBTHEME == SUBTHEME_CLIP
-                || TYPE_SUBTHEME == SUBTHEME_ALBUM) {
-            itemViewHolder.commentCount.setText(article.getComment());
-
+        if (TYPE_THEME == THEME_BOARD
+                || TYPE_THEME == THEME_ARTICLE_VIEWER) {
             String thumbnailUrl = article.getThumbnailUrl();
-            if (thumbnailUrl != null)
+            if (thumbnailUrl != null) {
                 Glide.with(act.getApplicationContext()).load(thumbnailUrl).into(itemViewHolder.thumbnail);
+                itemViewHolder.thumbnail.setVisibility(View.VISIBLE);
+            }
         }
 
         // click event

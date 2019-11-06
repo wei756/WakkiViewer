@@ -14,8 +14,8 @@
         android:fontFamily="@font/nanumsquareround_extrabold"
         android:paddingTop="4dp"
         android:paddingBottom="16dp"
-        android:text="ⓒ 2018-2019 Pixel Network."
-        android:textColor="@color/colorTitleDark"
+        android:text="ⓒ Naver Corp."
+        android:textColor="@color/colorTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

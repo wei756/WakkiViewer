@@ -68,7 +68,6 @@ public class ToolbarColorizeHelper {
                 ((ImageButton)v).getDrawable().setColorFilter(colorFilter);
             }
 
-            /*
             if(v instanceof ActionMenuView) {
                 for(int j = 0; j < ((ActionMenuView)v).getChildCount(); j++) {
 
@@ -92,7 +91,7 @@ public class ToolbarColorizeHelper {
                         }
                     }
                 }
-            }*/
+            }
         }
 
         //Step 3: Changing the color of title and subtitle.

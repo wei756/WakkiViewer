@@ -69,7 +69,7 @@
         android:fontFamily="@font/nanumsquareround_bold"
         android:letterSpacing="0"
         android:text="지누"
-        android:textColor="@color/colorTextPrimaryWhite"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="30sp"
         android:tint="@android:color/black"
         app:layout_constraintStart_toEndOf="@id/img_article_list_header_icon"

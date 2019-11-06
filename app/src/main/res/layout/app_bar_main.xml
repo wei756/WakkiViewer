@@ -27,6 +27,7 @@
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true"
                 android:padding="8dp"
                 android:src="@drawable/ic_appbar_logo"

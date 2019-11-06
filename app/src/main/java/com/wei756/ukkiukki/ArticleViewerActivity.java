@@ -92,8 +92,8 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
 
         // set actionbar theme
         int begin = articleHref.indexOf("mid="), end = articleHref.indexOf("&page=");
-        articleBoard = articleHref.substring(begin + 4, end);
-        actBarManager.setActionBar(this, toolbar, articleBoard);
+        //articleBoard = articleHref.substring(begin + 4, end);
+        //actBarManager.setActionBar(this, toolbar, articleBoard);
 
         layoutArticle = findViewById(R.id.id_article_viewer_viewer);
 

@@ -124,8 +124,6 @@ public class CategoryManager {
     }
 
     public Object getParam(int mid, int type) throws InvalidCategoryException {
-        if (!(mid < category.size()))
-            throw new InvalidCategoryException("" + mid);
         for (Map cat : category) {
             if ((int)cat.get(MENU_ID) == mid)
                 return cat.get(type);

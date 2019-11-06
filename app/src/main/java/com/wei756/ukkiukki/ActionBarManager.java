@@ -1,6 +1,7 @@
 package com.wei756.ukkiukki;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.util.Log;
@@ -24,7 +25,7 @@ public class ActionBarManager {
      * @param toolbar 적용할 Toolbar
      */
     private void initActionBarBasic(Activity act, Toolbar toolbar) {
-        act.getWindow().setStatusBarColor(act.getResources().getColor(R.color.colorPrimaryDark));
+        act.getWindow().setStatusBarColor(act.getResources().getColor(R.color.colorPrimaryDark, null));
         toolbar.setBackgroundResource(R.color.colorPrimary); // color
     }
 
@@ -36,7 +37,7 @@ public class ActionBarManager {
      */
     public void initActionBar(Activity act, Toolbar toolbar) {
         initActionBarBasic(act, toolbar);
-        //ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(R.color.colorTitleDark, null), act);
+        ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(R.color.colorTitle, null), act);
     }
 
 
@@ -49,7 +50,7 @@ public class ActionBarManager {
      */
     public void initActionBar(Activity act, Toolbar toolbar, ActionBarDrawerToggle toggle) {
         initActionBar(act, toolbar);
-        //ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(R.color.colorTitleDark, null), act, toggle);
+        ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(R.color.colorTitle, null), act, toggle);
     }
 
     /**
@@ -59,23 +60,22 @@ public class ActionBarManager {
      * @param toolbar 적용할 Toolbar
      * @param mid     게시판
      */
-    public void setActionBar(Activity act, Toolbar toolbar, String mid) {
-        /*
+    public void setActionBar(Activity act, Toolbar toolbar, int mid) {
         try {
             CategoryManager category = CategoryManager.getInstance();
             String name = (String) category.getParam(mid, CategoryManager.NAME);
-            int color = (Integer) category.getParam(mid, CategoryManager.COLOR);
-            int colorStatus = (Integer) category.getParam(mid, CategoryManager.COLOR_STATUS);
-            int colorStatusText = (Integer) category.getParam(mid, CategoryManager.COLOR_STATUS_TEXT);
+            int color = R.color.colorPrimary;
+            int colorStatus = R.color.colorPrimaryDark;
+            int colorStatusText = R.color.colorTitle;
 
-            if (mid != "mainpage")
-                toolbar.setTitle(name); // toolbar title
+            // toolbar title
+            toolbar.setTitle(act.getResources().getString(R.string.app_name));
+
             toolbar.setBackgroundResource(color); // color
-            act.getWindow().setStatusBarColor(act.getResources().getColor(colorStatus)); // colorStatus
-            ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(colorStatusText), act); // colorStatusText
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                setSystemBarTheme(act, (colorStatusText == R.color.colorTitleDark)); // colorStatusText
-            }
+            act.getWindow().setStatusBarColor(act.getResources().getColor(colorStatus, null)); // colorStatus
+            ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(colorStatusText, null), act); // colorStatusText
+
+            setSystemBarTheme(act, (act.getResources().getColor(colorStatusText, null) == Color.WHITE)); // colorStatusText
 
             Log.i("ActionBarManager", "Open with board of " + mid + " on setActionBar");
         } catch (InvalidCategoryException e) {
@@ -83,7 +83,6 @@ public class ActionBarManager {
             e.printStackTrace();
             initActionBar(act, toolbar);
         }
-    */
     }
 
 
@@ -95,20 +94,13 @@ public class ActionBarManager {
      * @param mid     게시판
      * @param toggle  적용할 Toggle
      */
-    public void setActionBar(Activity act, Toolbar toolbar, String mid, ActionBarDrawerToggle toggle) {
-        /*try {
-            CategoryManager category = CategoryManager.getInstance();
-            int colorStatusText = (Integer) category.getParam(mid, CategoryManager.COLOR_STATUS_TEXT);
+    public void setActionBar(Activity act, Toolbar toolbar, int mid, ActionBarDrawerToggle toggle) {
+        int colorStatusText = R.color.colorTitle;
 
-            setActionBar(act, toolbar, mid);
-            ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(colorStatusText, null), act, toggle); // colorStatusText
+        setActionBar(act, toolbar, mid);
+        ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(colorStatusText, null), act, toggle); // colorStatusText
 
-            Log.i("ActionBarManager", "Open with board of " + mid + " on setActionBar");
-        } catch (InvalidCategoryException e) {
-            Log.e("에러", "존재하지 않는 게시판 코드입니다(" + e.getMessage() + ")");
-            e.printStackTrace();
-            initActionBar(act, toolbar);
-        }*/
+        Log.i("ActionBarManager", "Open with board of " + mid + " on setActionBar");
     }
 
     /**

@@ -3,18 +3,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="71dp"
-    android:background="#FFFFFFFF">
+    android:layout_height="wrap_content"
+    android:background="@color/colorArticleListItemBackground">
+
+
+    <ImageView
+        android:layout_width="3dp"
+        android:layout_height="3dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="18dp"
+        android:src="@drawable/ic_new_noti"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/btn_layout_article"
         android:layout_width="0dp"
-        android:layout_height="71dp"
+        android:layout_height="wrap_content"
         android:background="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
         android:paddingStart="16dp"
-        android:paddingTop="15dp"
+        android:paddingTop="12dp"
         android:paddingEnd="16dp"
         android:paddingBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -28,11 +38,9 @@
             android:id="@+id/tv_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:paddingBottom="6dp"
+            android:paddingBottom="2dp"
             android:text="게시글 제목"
-            android:textColor="@color/colorTextPrimaryWhite"
+            android:textColor="@color/colorTextPrimary"
             android:textSize="15sp"
             app:layout_constraintBottom_toTopOf="@id/icon_author_color"
             app:layout_constraintEnd_toStartOf="@id/iv_thumbnail"
@@ -52,7 +60,7 @@
             android:fontFamily="@font/montserrat_bold"
             android:text="S"
             android:textAlignment="center"
-            android:textColor="@color/colorTitleDark"
+            android:textColor="@color/colorTitle"
             android:textSize="9sp"
             android:visibility="gone"
             app:layout_constraintEnd_toStartOf="@id/tv_author"
@@ -65,11 +73,10 @@
             android:id="@+id/tv_author"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:letterSpacing="-0.1"
+            android:paddingBottom="12dp"
             android:text="author"
-            android:textColor="@color/colorTextSecondaryWhite"
+            android:textColor="@color/colorTextSecondary"
             android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/tv_time"
             app:layout_constraintStart_toEndOf="@id/icon_author_color"
             app:layout_constraintTop_toBottomOf="@id/tv_title" />
@@ -79,10 +86,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:fontFamily="@font/nanumsquareround_bold"
-            android:letterSpacing="-0.1"
             android:text="time"
-            android:textColor="@color/colorTextSecondaryWhite"
+            android:textColor="@color/colorTextSecondary"
             android:textSize="12sp"
             app:layout_constraintBaseline_toBaselineOf="@id/tv_author"
             app:layout_constraintEnd_toStartOf="@+id/tv_view"
@@ -94,10 +99,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:fontFamily="@font/nanumsquareround_bold"
-            android:letterSpacing="-0.1"
             android:text="view"
-            android:textColor="@color/colorTextSecondaryWhite"
+            android:textColor="@color/colorTextSecondary"
             android:textSize="12sp"
             app:layout_constraintBaseline_toBaselineOf="@id/tv_author"
             app:layout_constraintStart_toEndOf="@id/tv_time"
@@ -105,8 +108,8 @@
 
         <ImageView
             android:id="@+id/iv_thumbnail"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -118,19 +121,35 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <Button
+    <LinearLayout
         android:id="@+id/btn_comment"
         android:layout_width="40dp"
-        android:layout_height="71dp"
-        android:background="#fafafa"
-        android:fontFamily="@font/nanumsquareround_bold"
-        android:text="Button"
-        android:textColor="@color/colorTextPrimaryWhite"
-        android:textSize="14sp"
+        android:layout_height="0dp"
+        android:background="@color/colorArticleListBtnCommentBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toEndOf="@id/btn_layout_article"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tv_comment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="댓글"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="10sp" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,6 +1,7 @@
 package com.wei756.ukkiukki;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 
@@ -72,9 +73,15 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (InitApplication.getInstance().isNightModeEnabled()) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
         setContentView(R.layout.activity_main);
+
         toolbar = findViewById(R.id.toolbar_main);
-        toolbar.setTitle("");
+        toolbar.setTitle(R.string.app_name);
         toolbar.setOverflowIcon(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_overflow_24dp));
         setSupportActionBar(toolbar);
 
@@ -103,10 +110,10 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 
         // search bar
-        //toolbar.inflateMenu(R.menu.main);
+        toolbar.inflateMenu(R.menu.main);
 
         // set actionbar theme
-        actBarManager.setActionBar(MainActivity.this, toolbar, "mainpage");
+        actBarManager.setActionBar(MainActivity.this, toolbar, mid, toggle);
 
         drawer.addDrawerListener(toggle);
         toggle.syncState();
@@ -227,7 +234,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        String id = (String)item.getTitle();
+        String id = (String) item.getTitle();
         Log.e("Drawerwwwwwwwwwwwwwwwww", "" + id);
 
         int mid;

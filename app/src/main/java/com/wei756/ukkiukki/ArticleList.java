@@ -57,6 +57,7 @@ public class ArticleList implements LoadedListner {
             // 구분선
             DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
                     mLinearLayoutManager.getOrientation());
+            dividerItemDecoration.setDrawable(act.getApplicationContext().getDrawable(R.drawable.articlelist_divider));
             mRecyclerView.addItemDecoration(dividerItemDecoration);
         }
 

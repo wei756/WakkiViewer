@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ee6f3a</color>
+    <color name="colorPrimaryDark">#ee6f3a</color>
+    <color name="colorAccent">#D81B60</color>
+
+    <!-- Action bar -->
+    <color name="colorTitle">@android:color/white</color>
+
+    <color name="colorTextPrimary">#e0e0e0</color>
+    <color name="colorTextSecondary">#606060</color>
+
+    <!-- Article list-->
+    <color name="colorArticleListItemBackground">#33343B</color>
+    <color name="colorArticleListItemLine">#666</color>
+    <color name="colorArticleListHeaderTitle">#5f6a60</color>
+    <color name="colorArticleListHeaderMore">#9faaa0</color>
+
+    <color name="colorArticleListFooterBackground">#252525</color>
+    <color name="colorArticleListFooterLicenseText">#888</color>
+
+    <!-- Article viewer -->
+    <color name="colorArticleTitleText">#444</color>
+    <color name="colorArticleHeaderText">#666</color>
+
+    <color name="colorArticleBottomBorder">#ddd</color>
+
+    <color name="colorArticleBodyText">#333</color>
+
+    <color name="colorArticleVoteText">#000</color>
+    <color name="colorArticleVoteBorder">#d3d3d3</color>
+
+    <color name="colorArticleCommentHeaderText">#4b4b4b</color>
+
+    <color name="colorArticleCommentAuthorText">@color/colorArticleHeaderText</color>
+    <color name="colorArticleCommentTimeText">#8e8e8e</color>
+    <color name="colorArticleCommentParentAuthor">#000</color>
+    <color name="colorArticleCommentContentText">@color/colorArticleCommentAuthorText</color>
+    <color name="colorArticleCommentBottomBorder">#e9e9e9</color>
+</resources>
