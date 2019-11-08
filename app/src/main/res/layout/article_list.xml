@@ -6,6 +6,15 @@
     android:layout_height="wrap_content"
     android:background="@color/colorArticleListItemBackground">
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/articlelist_divider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
 
     <ImageView
         android:layout_width="3dp"
@@ -20,6 +29,7 @@
         android:id="@+id/btn_layout_article"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:minHeight="76dp"
         android:background="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
@@ -56,7 +66,7 @@
             android:layout_height="14dp"
             android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:background="@drawable/icon_shiftpsh"
+            android:background="@drawable/icon_green"
             android:fontFamily="@font/montserrat_bold"
             android:text="S"
             android:textAlignment="center"
@@ -73,7 +83,6 @@
             android:id="@+id/tv_author"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingBottom="12dp"
             android:text="author"
             android:textColor="@color/colorTextSecondary"
             android:textSize="12sp"
@@ -110,12 +119,12 @@
             android:id="@+id/iv_thumbnail"
             android:layout_width="52dp"
             android:layout_height="52dp"
-            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_chainStyle="spread"
             app:layout_constraintStart_toEndOf="@id/tv_title"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_goneMarginBottom="52dp"
             tools:srcCompat="@tools:sample/avatars" />
 
 
@@ -125,6 +134,7 @@
         android:id="@+id/btn_comment"
         android:layout_width="40dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="1dp"
         android:background="@color/colorArticleListBtnCommentBackground"
         android:clickable="true"
         android:focusable="true"
@@ -142,7 +152,7 @@
             android:layout_height="wrap_content"
             android:text="0"
             android:textColor="@color/colorTextPrimary"
-            android:textSize="14sp" />
+            android:textSize="16sp" />
 
         <TextView
             android:layout_width="wrap_content"

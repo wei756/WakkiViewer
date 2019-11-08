@@ -3,21 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="110dp"
-    android:background="#FFFFFFFF"
-    android:paddingTop="38dp">
-
-    <ImageView
-        android:id="@+id/img_article_list_header_icon"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:adjustViewBounds="true"
-        android:contentDescription="@string/content_description_article_list_header_icon"
-        android:src="@drawable/article_header_icon_streamer"
-        android:tint="@color/colorArticleListHeaderTitle"
-        app:layout_constraintEnd_toStartOf="@id/tv_article_list_header_title"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    android:layout_height="wrap_content"
+    android:background="@color/colorBackground"
+    android:paddingTop="32dp">
 
     <TextView
         android:id="@+id/tv_article_list_header_title"
@@ -25,14 +13,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:layout_marginTop="2dp"
-        android:fontFamily="@font/nanumsquareround_bold"
+        android:textStyle="bold"
         android:letterSpacing="0"
         android:text="게시판"
-        android:textColor="@color/colorArticleListHeaderTitle"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="25sp"
         app:layout_constraintBottom_toTopOf="@id/view_article_list_header_bottomline_bg"
         app:layout_constraintEnd_toStartOf="@id/tv_article_list_mainpage_more"
-        app:layout_constraintStart_toEndOf="@id/img_article_list_header_icon"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -43,10 +31,9 @@
         android:background="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
-        android:fontFamily="@font/nanumsquareround_bold"
         android:padding="10dp"
         android:text="more"
-        android:textColor="@color/colorArticleListHeaderMore"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="15sp"
         app:layout_constraintStart_toEndOf="@id/tv_article_list_header_title"
         app:layout_constraintTop_toTopOf="parent" />
@@ -54,21 +41,13 @@
     <View
         android:id="@+id/view_article_list_header_bottomline_bg"
         android:layout_width="450dp"
-        android:layout_height="4dp"
+        android:layout_height="2dp"
         android:layout_marginTop="12dp"
-        android:background="@color/colorArticleTitleText"
+        android:background="@color/colorArticleListItemLine"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_article_list_header_title" />
-
-    <View
-        android:id="@+id/view_article_list_header_bottomline_color"
-        android:layout_width="130dp"
-        android:layout_height="4dp"
-        android:background="@color/colorPrimary"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/view_article_list_header_bottomline_bg" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

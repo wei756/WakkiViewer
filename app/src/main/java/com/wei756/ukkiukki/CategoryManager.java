@@ -48,6 +48,7 @@ public class CategoryManager {
     /**
      * 고정 category id
      */
+    public static final int CATEGORY_LOGIN = -99; // 메인페이지
     public static final int CATEGORY_MAINPAGE = -4; // 메인페이지
     public static final int CATEGORY_ALLLIST = 0; // 전체글보기
     public static final int CATEGORY_POPULAR_ARTICLE = -1; // 인기글

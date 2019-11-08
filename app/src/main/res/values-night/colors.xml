@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#ee6f3a</color>
-    <color name="colorPrimaryDark">#ee6f3a</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#1f1f1f</color>
+    <color name="colorPrimaryDark">#1f1f1f</color>
+    <color name="colorAccent">#172d56</color>
+
+    <color name="colorBackground">#121212</color>
 
     <!-- Action bar -->
-    <color name="colorTitle">@android:color/white</color>
+    <color name="colorTitle">#e0e0e0</color>
 
     <color name="colorTextPrimary">#e0e0e0</color>
-    <color name="colorTextSecondary">#606060</color>
+    <color name="colorTextSecondary">#a4a4a4</color>
 
     <!-- Article list-->
-    <color name="colorArticleListItemBackground">#33343B</color>
-    <color name="colorArticleListItemLine">#666</color>
+    <color name="colorArticleListItemBackground">#1e1e1e</color>
+    <color name="colorArticleListItemLine">#333</color>
+    <color name="colorArticleListThumbnailLine">#222</color>
+    <color name="colorArticleListBtnCommentBackground">#252525</color>
     <color name="colorArticleListHeaderTitle">#5f6a60</color>
     <color name="colorArticleListHeaderMore">#9faaa0</color>
 

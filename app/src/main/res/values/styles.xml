@@ -20,27 +20,6 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"></style>
 
-
-    <style name="NanumSquareRoundTextViewStyle" parent="@android:style/Widget.DeviceDefault.TextView">
-        <item name="fontFamily">@font/nanumsquareround_regular</item>
-    </style>
-
-    <style name="NanumSquareRoundButtonStyle" parent="@android:style/Widget.DeviceDefault.Button.Borderless">
-        <item name="fontFamily">@font/nanumsquareround_regular</item>
-    </style>
-
-    <style name="NanumSquareRoundEditTextStyle" parent="@android:style/Widget.DeviceDefault.EditText">
-        <item name="fontFamily">@font/nanumsquareround_regular</item>
-    </style>
-
-    <style name="NanumSquareRoundRadioButtonStyle" parent="@android:style/Widget.DeviceDefault.CompoundButton.RadioButton">
-        <item name="fontFamily">@font/nanumsquareround_regular</item>
-    </style>
-
-    <style name="NanumSquareRoundCheckboxStyle" parent="@android:style/Widget.DeviceDefault.CompoundButton.CheckBox">
-        <item name="fontFamily">@font/nanumsquareround_regular</item>
-    </style>
-
     <!-- Splash Theme -->
     <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_background</item>

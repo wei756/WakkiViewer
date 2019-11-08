@@ -4,8 +4,10 @@
     <color name="colorPrimaryDark">#ee6f3a</color>
     <color name="colorAccent">#D81B60</color>
 
+    <color name="colorBackground">#ffffff</color>
+
     <!-- Action bar -->
-    <color name="colorTitle">@android:color/white</color>
+    <color name="colorTitle">#e0e0e0</color>
 
     <color name="colorTextPrimary">#101010</color>
     <color name="colorTextSecondary">#929292</color>
@@ -13,6 +15,7 @@
     <!-- Article list-->
     <color name="colorArticleListItemBackground">#FFFFFF</color>
     <color name="colorArticleListItemLine">#eee</color>
+    <color name="colorArticleListThumbnailLine">#eee</color>
     <color name="colorArticleListBtnCommentBackground">#fafafa</color>
     <color name="colorArticleListHeaderTitle">#5f6a60</color>
     <color name="colorArticleListHeaderMore">#9faaa0</color>

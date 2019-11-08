@@ -2,6 +2,7 @@ package com.wei756.ukkiukki;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -86,7 +87,6 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
      */
     public class HeaderViewHolder extends ItemViewHolder {
         protected TextView category;
-        protected ImageView img;
         protected ImageView icon;
 
         protected TextView more;
@@ -95,19 +95,15 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         protected ImageView iconTwitch;
         protected ImageView iconYoutube;
 
-        protected ConstraintLayout itemFirst;
-
 
         public HeaderViewHolder(View view) {
             super(view);
             this.category = (TextView) view.findViewById(R.id.tv_article_list_header_title);
-            this.img = (ImageView) view.findViewById(R.id.img_article_list_header_img);
             this.icon = (ImageView) view.findViewById(R.id.img_article_list_header_icon);
             this.more = (TextView) view.findViewById(R.id.tv_article_list_mainpage_more);
             this.icons = (LinearLayout) view.findViewById(R.id.layout_article_list_header_icons);
             this.iconTwitch = (ImageView) view.findViewById(R.id.btn_article_list_header_twitch);
             this.iconYoutube = (ImageView) view.findViewById(R.id.btn_article_list_header_youtube);
-            this.itemFirst = (ConstraintLayout) view.findViewById(R.id.item_article_list_first);
         }
     }
 
@@ -214,14 +210,14 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         layoutItem = new int[3 * SUBTHEME_NUMBER];
 
         layoutHeader[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list_header;
-        layoutHeader[THEME_BOARD + SUBTHEME_CLIP] = R.layout.article_list_clip_theme_header;
-        layoutHeader[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list_clip_theme_header;
+        layoutHeader[THEME_BOARD + SUBTHEME_CLIP] = R.layout.article_list_header;
+        layoutHeader[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list_header;
         layoutHeader[THEME_MAINPAGE + SUBTHEME_ARTICLE] = R.layout.article_list_mainpage_header;
         layoutHeader[THEME_MAINPAGE + SUBTHEME_CLIP] = R.layout.article_list_mainpage_header;
         layoutHeader[THEME_MAINPAGE + SUBTHEME_ALBUM] = R.layout.article_list_mainpage_header; //TODO: clip album 분리 필요
         layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list_header;
-        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_CLIP] = R.layout.article_list_clip_theme_header;
-        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list_clip_theme_header;
+        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_CLIP] = R.layout.article_list_header;
+        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list_header;
 
         layoutItem[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list;
         layoutItem[THEME_BOARD + SUBTHEME_CLIP] = R.layout.article_list_clip_theme;
@@ -335,7 +331,16 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             String thumbnailUrl = article.getThumbnailUrl();
             if (thumbnailUrl != null) {
                 Glide.with(act.getApplicationContext()).load(thumbnailUrl).into(itemViewHolder.thumbnail);
+
+                // rounded corners
+                GradientDrawable drawable=
+                        (GradientDrawable) act.getApplicationContext().getDrawable(R.drawable.article_list_bg_thumbnail);
+                itemViewHolder.thumbnail.setBackground(drawable);
+                itemViewHolder.thumbnail.setClipToOutline(true);
+
                 itemViewHolder.thumbnail.setVisibility(View.VISIBLE);
+            } else {
+                itemViewHolder.thumbnail.setVisibility(View.GONE);
             }
         }
 
@@ -343,7 +348,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         View.OnClickListener click = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Uri uri = Uri.parse(article.getHref());
+                //Uri uri = Uri.parse("https://m.cafe.naver.com" + article.getHref());
 
                 //Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 Intent intent = new Intent(act, ArticleViewerActivity.class);
@@ -353,7 +358,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             }
         };
         itemViewHolder.article.setOnClickListener(click);
-        Log.v("ArticleListAdapter", (pos + 1) + "번째 게시글 표시됨 \"" + article.getTitle() + "\"(" + article.getHref() + ") on ArticleListAdapter.onBindViewHolder");
+        //Log.v("ArticleListAdapter", (pos + 1) + "번째 게시글 표시됨 \"" + article.getTitle() + "\"(" + article.getHref() + ") on ArticleListAdapter.onBindViewHolder");
 
 
     }

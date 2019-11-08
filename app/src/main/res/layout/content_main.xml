@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".MainActivity"
+    android:background="@color/colorBackground"
     tools:showIn="@layout/app_bar_main">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -51,22 +52,11 @@
                 layout="@layout/content_mainpage"
                 android:visibility="gone" />
 
-            <!-- Streamer 목록페이지 -->
+            <!-- 로그인페이지 -->
             <include
-                android:id="@+id/layout_streamerpage"
-                layout="@layout/content_streamerpage"
+                android:id="@+id/layout_naver_loginpage"
+                layout="@layout/content_naver_login"
                 android:visibility="gone" />
-            <!--RelativeLayout
-                android:id="@+id/layout_streamerpage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone">
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/streamerList"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-            </RelativeLayout-->
 
 
         </LinearLayout>

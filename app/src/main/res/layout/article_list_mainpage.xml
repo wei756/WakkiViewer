@@ -8,9 +8,17 @@
     android:clickable="true"
     android:focusable="true"
     android:paddingStart="2dp"
-    android:paddingTop="10dp"
+    android:paddingTop="12dp"
     android:paddingEnd="2dp"
-    android:paddingBottom="10dp">
+    android:paddingBottom="0dp">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@drawable/articlelist_divider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/tv_title"
@@ -22,6 +30,7 @@
         android:textColor="@color/colorTextPrimary"
         android:textSize="16sp"
         android:paddingEnd="8dp"
+        android:paddingBottom="13dp"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintEnd_toStartOf="@id/tv_time"

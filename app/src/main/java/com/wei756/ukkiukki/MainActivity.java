@@ -28,8 +28,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.Menu;
+import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -56,10 +58,9 @@ public class MainActivity extends AppCompatActivity
     private RelativeLayout announcementViewProgressBar, freeViewProgressBar, creativeViewProgressBar;
     private RelativeLayout announcementLayout, freeLayout, creativeLayout;
 
-    // streamer page
-    private View streamerpageLayout;
-    private StreamerList streamerList;
-    private RecyclerView streamerView;
+    // login page
+    private View loginpageLayout;
+    private NaverLoginView loginView;
 
     // floating action bar
     private FloatingActionButton fab;
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         }
         setContentView(R.layout.activity_main);
 
@@ -108,6 +110,18 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
+        ImageView tvLogin = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.imageView);
+        tvLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // open login page
+                setCategory(CategoryManager.CATEGORY_LOGIN, true);
+
+                DrawerLayout drawer = findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+            }
+        });
 
         // search bar
         toolbar.inflateMenu(R.menu.main);
@@ -146,10 +160,9 @@ public class MainActivity extends AppCompatActivity
         freeList = new ArticleList(this, freeView, freeViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
         creativeList = new ArticleList(this, creativeView, creativeViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
 
-        // streamer page
-        streamerpageLayout = findViewById(R.id.layout_streamerpage);
-        streamerView = (RecyclerView) findViewById(R.id.view_streamer_list_streamerList);
-        streamerList = (StreamerList) new StreamerList(this, streamerView);
+        // login page
+        loginpageLayout = findViewById(R.id.layout_naver_loginpage);
+        loginView = (NaverLoginView) findViewById(R.id.web_naver_login);
 
 
         // Swipe refresh
@@ -177,7 +190,7 @@ public class MainActivity extends AppCompatActivity
         } else if (doubleBackToExitPressedOnce) {
             super.onBackPressed();
         } else {
-            // 두 번 누러 종료
+            // 두 번 눌러 종료
             doubleBackToExitPressedOnce = true;
             Toast.makeText(this, R.string.toast_text_press_back_again_to_exit, Toast.LENGTH_SHORT).show();
 
@@ -235,7 +248,6 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         String id = (String) item.getTitle();
-        Log.e("Drawerwwwwwwwwwwwwwwwww", "" + id);
 
         int mid;
         try {
@@ -260,7 +272,7 @@ public class MainActivity extends AppCompatActivity
 
         if (mid == CategoryManager.CATEGORY_MAINPAGE) { // 메인페이지
             mainpageLayout.setVisibility(View.VISIBLE);
-            streamerpageLayout.setVisibility(View.GONE);
+            loginpageLayout.setVisibility(View.GONE);
             articlepageLayout.setVisibility(View.GONE);
 
             announcementList.loadArticleList(CategoryManager.CATEGORY_ALLLIST, 1, true);
@@ -273,9 +285,22 @@ public class MainActivity extends AppCompatActivity
                     fab.hide();
                 }
             });
-        } else {
+        } else if (mid == CategoryManager.CATEGORY_LOGIN) { // 로그인페이지
             mainpageLayout.setVisibility(View.GONE);
-            streamerpageLayout.setVisibility(View.GONE);
+            loginpageLayout.setVisibility(View.VISIBLE);
+            articlepageLayout.setVisibility(View.GONE);
+
+            loginView.loadLoginPage();
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fab.hide();
+                }
+            });
+        } else { // 게시판 페이지
+            mainpageLayout.setVisibility(View.GONE);
+            loginpageLayout.setVisibility(View.GONE);
             articlepageLayout.setVisibility(View.VISIBLE);
 
             articleList.loadArticleList(mid, 1, true);

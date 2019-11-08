@@ -1,6 +1,5 @@
 package com.wei756.ukkiukki;
 
-import android.app.Activity;
 import android.os.Build;
 import android.util.Log;
 
@@ -12,6 +11,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,10 +21,11 @@ import java.util.regex.Pattern;
 public class Web extends Thread {
     private static final Web instance = new Web();
     private static boolean logined = false;
-    private final static String URL = "https://m.cafe.naver.com/steamindiegame?",
-            articleListUrl = "https://m.cafe.naver.com/ArticleListAjax.nhn?",
-            popularArticleListUrl = "https://m.cafe.naver.com/PopularArticleList.nhn?",
-            menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?";
+    private final static String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
+            articleListUrl = "https://m.cafe.naver.com/ArticleListAjax.nhn?search.clubid={0}&search.menuid={1}&search.page={2}",
+            popularArticleListUrl = "https://m.cafe.naver.com/PopularArticleList.nhn?cafeId={0}",
+            menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?",
+            articleReadUrl = "https://m.cafe.naver.com/ArticleRead.nhn?clubid={0}&articleid={1}";
     private final static String cafeId = "27842958";
     private final static int timeout = 5000;
     private final static Map<String, String> cookie = new HashMap<>(), header = new HashMap<>();
@@ -93,7 +94,7 @@ public class Web extends Thread {
                         category1.setType(CategoryManager.TYPE_GROUP)
                                 .setName(name);
 
-                        Log.v("Web", "카테고리: 그룹: " + name);
+                        //Log.v("Web", "카테고리: 그룹: " + name);
 
                     } else if (category.selectFirst("div") != null) { // 카테고리
                         Element a = category.selectFirst("a[class=tit  ]");
@@ -137,14 +138,14 @@ public class Web extends Thread {
                         } else if (menuId.contains("WeeklyPopularTagList.nhn")) {
                             category1.setMenuId(CategoryManager.CATEGORY_TAG);
                         } else {
-                            Pattern p= Pattern.compile("search.menuid=([0-9]*)");
-                            Matcher m = p.matcher(menuId);
-                            while(m.find()){
-                                category1.setMenuId(Integer.parseInt(m.group(1)));
+                            try {
+                                category1.setMenuId(getIntegerValue(menuId, "search.menuid"));
+                            } catch (NullPointerException e) {
+                                e.printStackTrace();
                             }
                         }
 
-                        Log.v("Web", "카테고리: 게시판: " + name + "(id: " + menuId + ")");
+                        //Log.v("Web", "카테고리: 게시판: " + name + "(id: " + menuId + ")");
 
                     } else if (category.selectFirst("span[class=blind]") != null) { // 구분선
 
@@ -204,25 +205,41 @@ public class Web extends Thread {
                     if (!articles.isEmpty()) { // 게시글이 있으면
                         for (Element article : articles) {
 
-                            // author
-                            String author = article.selectFirst("span[class=nick]").text();
-
                             // 리스트 추가
-                            Article article1 = new Article()
-                                    .setAuthor(author)
-                                    .setTitle(article.selectFirst("strong[class=tit]").text())
-                                    .setHref(article.selectFirst("a").attr("href"))
-                                    .setTime(article.selectFirst("span[class=time]").text())
-                                    .setView(article.selectFirst("span[class=no]").text())
-                                    .setComment(article.selectFirst("em[class=num]").text());
+                            Article article1 = new Article();
+                            if (mid == -1) { // 인기글
+                                // author
+                                String author = article.selectFirst("div[class=user]").text();
 
-                            // thumbnail
-                            if (article.selectFirst("div[class=thumb]") != null) {
-                                article1.setThumbnailUrl(article.selectFirst("div[class=thumb]").selectFirst("img").attr("src"));
+                                article1.setAuthor(author)
+                                        .setTitle(article.selectFirst("strong[class=tit ellip]").text())
+                                        .setHref(article.selectFirst("a").attr("href"))
+                                        .setLikeIt(article.selectFirst("em[class=u_cnt _count]").text())
+                                        .setComment(article.selectFirst("span[class=coment_btn]").text());
+
+                                // thumbnail
+                                Element thumbnail = article.selectFirst("img[class=lazy]");
+                                if (thumbnail != null) {
+                                    article1.setThumbnailUrl(thumbnail.attr("data-original"));
+                                }
+                            } else { // 전체글보기, 일반게시판
+                                // author
+                                String author = article.selectFirst("span[class=nick]").text();
+
+                                article1.setAuthor(author)
+                                        .setTitle(article.selectFirst("strong[class=tit]").text())
+                                        .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
+                                        .setTime(article.selectFirst("span[class=time]").text())
+                                        .setView(article.selectFirst("span[class=no]").text())
+                                        .setComment(article.selectFirst("em[class=num]").text());
+
+                                // thumbnail
+                                if (article.selectFirst("div[class=thumb]") != null) {
+                                    article1.setThumbnailUrl(article.selectFirst("div[class=thumb]").selectFirst("img").attr("src"));
+                                }
                             }
-
                             arrayList.add(article1);
-                            Log.e("Web", "제목: " + article1.getTitle());
+                            //Log.e("Web", "제목: " + article1.getTitle());
                         }
 
                     } else {
@@ -234,16 +251,14 @@ public class Web extends Thread {
                     articleList.onLoadedArticleList(mid, arrayList, reset);
 
                 } catch (IOException e) {
-                    arrayList = null;
-                    //Log.w("Web.err", "Connection error. (" + URL + "mid=" + mid + "&page=" + page + ")" + " on Web.loadArticleList");
+                    Log.w("Web.err", "Connection error. (mid=" + mid + "&page=" + page + ")" + " on Web.loadArticleList");
                     e.printStackTrace();
 
                     // callback with exception
                     articleList.onLoadedArticleList(mid, e, reset);
 
                 } catch (NullPointerException e) {
-                    arrayList = null;
-                    //Log.w("Web.err", "Error occurred. (" + URL + "mid=" + mid + "&page=" + page + ")" + " on Web.loadArticleList");
+                    Log.w("Web.err", "Error occurred. (mid=" + mid + "&page=" + page + ")" + " on Web.loadArticleList");
                     e.printStackTrace();
 
                     // callback with exception
@@ -273,12 +288,10 @@ public class Web extends Thread {
         // connect
         Document document;
         String url;
-        if (mid == 0)
-            url = articleListUrl + "search.clubid=" + cafeId + "&search.menuid=" + "&search.page=" + page;
-        else if (mid == -1)
-            url = popularArticleListUrl + "cafeId=" + cafeId;
+        if (mid == -1)
+            url = MessageFormat.format(popularArticleListUrl, cafeId);
         else
-            url = articleListUrl + "search.clubid=" + cafeId + "&search.menuid=" + mid + "&search.page=" + page;
+            url = MessageFormat.format(articleListUrl, cafeId, mid != 0 ? mid : "", page);
 
         document = httpRequest(url, Connection.Method.GET, false, true).parse();
 
@@ -292,6 +305,8 @@ public class Web extends Thread {
         }*/
         if (mid == -1) { // 인기글
             //TODO:인기글 파싱
+            Element articleTable = document.getElementsByClass("list_area").first();
+            articles = articleTable.selectFirst("ul[id=listArea]").getElementsByClass("popularItem"); // 게시글 추출
         } else { // 전체글보기, 일반게시판
             Element articleTable = document.getElementsByClass("list_area").first();
             articles = articleTable.getElementsByClass("board_box"); // 게시글 추출
@@ -317,10 +332,16 @@ public class Web extends Thread {
      * http response로부터 전달받은 cookie를 저장합니다.
      */
     private static void getCookies(Connection.Response response) {
-        resetCookies();
-        cookie.putAll(response.cookies());
+        setCookies(response.cookies());
         Log.i("Web", "Get cookies.");
-        printMap(cookie);
+        //printMap(cookie); // for debug
+    }
+
+    /**
+     * 전달받은 Map을 cookie에 저장합니다.
+     */
+    private static void setCookies(Map map) {
+        cookie.putAll(map);
     }
 
     /**
@@ -354,13 +375,14 @@ public class Web extends Thread {
      * @param map 표시할 Map
      */
     private static void printMap(Map<String, String> map) {
-        for (Map.Entry<String, String> elem : map.entrySet()) {
+        if (map != null)
+            for (Map.Entry<String, String> elem : map.entrySet()) {
 
-            String key = elem.getKey();
-            String value = elem.getValue();
+                String key = elem.getKey();
+                String value = elem.getValue();
 
-            Log.i("Web", key + " : " + value);
-        }
+                Log.d("Web", key + " : " + value);
+            }
     }
 
     /**
@@ -391,65 +413,73 @@ public class Web extends Thread {
      * 게시글을 불러옵니다.
      *
      * @param articleViewerActivity 불러온 게시글을 출력할 Activity
-     * @param articleHref           불러올 게시글의 주소
+     * @param articleId             불러올 게시글의 id
      * @see ArticleViewerActivity
      */
-    public static void getArticle(final ArticleViewerActivity articleViewerActivity, final String articleHref) {
+    public static void getArticle(final ArticleViewerActivity articleViewerActivity, final String articleId) {
         new Thread() {
             public void run() {
-                int begin = articleHref.indexOf("mid="), end = articleHref.indexOf("&page=");
-                String mid = articleHref.substring(begin + 4, end);
+                String articleUrl = MessageFormat.format(articleReadUrl, cafeId, articleId);
+                //String _mid = articleId.substring(begin + 4, end);
 
                 // get html
                 Document document = null;
                 try {
-                    document = httpRequest(articleHref, Connection.Method.GET, false, true).parse();
+                    document = httpRequest(articleUrl, Connection.Method.GET, false, true).parse();
+                    Element error = document.selectFirst("div[class=error_content_body]");
+                    boolean noerror = true;
+                    if (error != null) {
+                        String errorCode = error.selectFirst("h2").text();
 
-                    Element header = document.selectFirst("div[class=read_header]");
-                    Element body = document.selectFirst("div[class=read_body]");
-                    Element footer = document.selectFirst("div[class=read_footer]");
-                    Element feedback = document.selectFirst("div[class=feedback]");
-
-                    // get header
-                    Article data = null;
-                    if (!document.text().contains("대상을 찾을 수 없습니다.")) {
-                        // 레벨 아이콘과 닉네임 분리
-                        Element elementAuthor = header.selectFirst("span[class=author]");
-                        String author = elementAuthor.html(), levelIcon = "";
-                        if (author.contains("<a")) {
-                            if (author.contains("</span>")) { // 레벨 아이콘이 있을 경우
-                                levelIcon = elementAuthor.selectFirst("a").selectFirst("span").text();
-                                author = author.substring(author.indexOf("</span>") + 7, author.indexOf("</a>"));
-                            } else {                          // 레벨 아이콘이 없을 경우
-                                author = elementAuthor.selectFirst("a").text();
-                            }
-                        } else {
-                            if (author.contains("</span>")) {
-                                levelIcon = elementAuthor.selectFirst("span").text();
-                                author = author.substring(author.indexOf("</span>") + 7);
-                            } else {
-                                author = elementAuthor.text();
-                            }
-                        }
-                        // 데이터 입력
-                        data = new Article(header.selectFirst("h1").text(),
-                                mid,
-                                levelIcon,
-                                author,
-                                header.selectFirst("span[class=time]").text(),
-                                header.selectFirst("span[class=read_count]").text(),
-                                header.selectFirst("span[class=vote_count]").text(),
-                                articleHref,
-                                body,
-                                footer,
-                                feedback);
-                        Log.i("Web", " article(s) found from page. (" + articleHref + ")" + " on Web.getArticle");
+                        if (errorCode.equals("카페 멤버만 볼 수 있습니다.")) // 로그인 필요
+                            throw new RequiresLoginException();
+                        if (!errorCode.equals("게시글이 존재하지 않거나 삭제되었습니다.")) // 존재하지 않는 게시글
+                            noerror = false;
                     }
 
+                    Article data = new Article();
+                    if (noerror) { // 존재하는 게시글
+
+                        // 컴포넌트 로드
+                        Element header = document.selectFirst("div[class=post_title]");
+                        Element body = document.selectFirst("div[id=postContent]");
+                        Element comment = document.selectFirst("div[id=commentArea]");
+                        Element footer = document.selectFirst("div[class=footer_fix]");
+
+                        // mid
+                        String mid = "" + getIntegerValue(header.selectFirst("a[class=border_name]").attr("href"), "search.menuid");
+
+
+                        String title = header.selectFirst("h2[class=tit]").text();
+                        String author = header.selectFirst("span[class=end_user_nick]").text();
+                        String time = header.selectFirst("span[class=date font_l]").text();
+                        String view = header.selectFirst("span[class=no font_l]").selectFirst("em").text();
+                        String likeIt = footer.selectFirst("em[class=u_cnt _count]").text();
+
+                        // 데이터 입력
+                        data.setTitle(title)
+                                .setMid(mid)
+                                .setAuthor(author)
+                                .setTime(time)
+                                .setView(view)
+                                .setLikeIt(likeIt)
+                                .setHref(articleId)
+                                .setBody(body)
+                                .setFeedback(comment);
+
+                        Log.i("Web", " article(s) found from page. (" + articleId + ")" + " on Web.getArticle");
+
+                    }
                     // callback
                     articleViewerActivity.onLoadArticle(data);
                 } catch (IOException e) {
-                    Log.w("Web.err", "Connection error. (" + URL + ")" + " on Web.getArticle");
+                    Log.w("Web.err", "Connection error. (" + articleUrl + ")" + " on Web.getArticle");
+                    e.printStackTrace();
+
+                    // callback
+                    articleViewerActivity.onLoadArticle(null);
+                } catch (RequiresLoginException e) {
+                    Log.w("Web.err", "Require login. (" + articleUrl + ")" + " on Web.getArticle");
                     e.printStackTrace();
 
                     // callback
@@ -460,12 +490,39 @@ public class Web extends Thread {
     }
 
     /**
+     * 로그인 세션을 cookie에 저장합니다
+     *
+     * @param cookies
+     */
+    public static void applyLoginSession(Map<String, String> cookies) {
+        setCookies(cookies);
+    }
+
+    /**
+     * url 끝에 포함된 paramter값을 추출합니다
+     */
+    private static Integer getIntegerValue(String str, String valName) throws NullPointerException {
+        Pattern p = Pattern.compile(valName + "=([0-9]*)");
+        Matcher m = p.matcher(str);
+        while (m.find()) {
+            return Integer.parseInt(m.group(1));
+        }
+        return null;
+    }
+
+    /**
      * Singleton
      *
      * @return
      */
     public Web getInstance() {
         return instance;
+    }
+}
+
+class RequiresLoginException extends Exception {
+    RequiresLoginException() {
+        super();
     }
 }
 

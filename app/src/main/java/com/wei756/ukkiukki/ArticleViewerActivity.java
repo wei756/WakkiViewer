@@ -52,7 +52,6 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
     WebView webBody;
 
     TextView tvVoteUp, tvVoteDown;
-    ConstraintLayout loProfile;
     ImageView ivProfile;
     TextView tvProfile;
 
@@ -91,7 +90,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         articleHref = intent.getStringExtra("article_href");
 
         // set actionbar theme
-        int begin = articleHref.indexOf("mid="), end = articleHref.indexOf("&page=");
+        //int begin = articleHref.indexOf("mid="), end = articleHref.indexOf("&page=");
         //articleBoard = articleHref.substring(begin + 4, end);
         //actBarManager.setActionBar(this, toolbar, articleBoard);
 
@@ -109,15 +108,16 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         webBody = findViewById(R.id.web_article_viewer_body);
 
         // read_footer
+        /*
         tvVoteUp = findViewById(R.id.tv_article_viewer_vote_up);
         tvVoteDown = findViewById(R.id.tv_article_viewer_vote_down);
         loProfile = findViewById(R.id.layout_article_viewer_footer_profile);
         ivProfile = findViewById(R.id.iv_article_viewer_profile);
         tvProfile = findViewById(R.id.tv_article_viewer_profile);
+        */
 
         tvTitle.setText(articleTitle);
         layoutArticle.setVisibility(View.GONE);
-        loProfile.setVisibility(View.GONE);
 
         // feedback
         tvCommentCount = findViewById(R.id.tv_article_viewer_comment_count);
@@ -154,7 +154,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                 @Override
                 public void run() {
                     tvTitle.setText(article.getTitle());
-
+                    /*
                     String levelIcon = article.getLevelIcon();
                     if (!levelIcon.equals("")) {
                         tvLevelIcon.setText(levelIcon);
@@ -168,6 +168,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     } else {
                         tvLevelIcon.setVisibility(View.GONE);
                     }
+                    */
                     tvAuthor.setText(article.getAuthor());
                     tvTime.setText(article.getTime());
                     tvView.setText(article.getView());
@@ -176,9 +177,9 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     String articleBody = "<!DOCTYPE html>\n" +
                             "<html lang=\"ko\">\n" +
                             "<head>\n" +
-                            "<link rel=\"stylesheet\" href=\"file:///android_asset/css/board.default.css\" />\n" +
+                            "<link rel=\"stylesheet\" href=\"file:///android_asset/css/MyCafeStyle.css\" type=\"text/css\">\n" +/*
                             "<link rel=\"stylesheet\" href=\"file:///android_asset/css/commons.css\" />\n" +
-                            "<link rel=\"stylesheet\" href=\"file:///android_asset/css/nanumsquareround.min.css\" />\n" +
+                            "<link rel=\"stylesheet\" href=\"file:///android_asset/css/nanumsquareround.min.css\" />\n" +*/
                             "</head><body>\n" +
                             article.getBody().outerHtml() +
                             "</body></html>";
@@ -187,6 +188,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     //Log.i("ArticleViewerActivity", articleBody);
 
                     tvVote.setText(article.getLikeIt());
+                    /*
                     // profile box
                     Element footer = article.getFooter();
                     if (footer != null) {
@@ -216,17 +218,12 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                             loProfile.setVisibility(View.VISIBLE);
                         }
                     }
+                    */
 
+                    /*
                     // commnet box
                     Element feedback = article.getFeedback();
                     tvCommentCount.setText(feedback.selectFirst("em[class=theme_color_dark]").text());
-                    /*
-                    try {
-                        tvCommentCount.setTextColor(getResources().getColor((Integer) CategoryManager.getInstance().getParam(articleBoard, CategoryManager.COLOR_DARK)));
-                    } catch (InvalidCategoryException e) {
-                        Log.e("에러", "존재하지 않는 게시판 코드입니다(" + e.getMessage() + ")");
-                        e.printStackTrace();
-                    }*/
 
                     try {
                         Elements comments = feedback.selectFirst("ul[class=fbList]").select("li");
@@ -285,10 +282,12 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                             arrayList.add(comment1);
                         }
                         mAdapter.setListWith(arrayList, ArticleViewerActivity.this);
+
                     } catch (NullPointerException e) {
                         //TODO: 댓글 없을 경우
                         e.printStackTrace();
                     }
+                    */
 
                     layoutArticle.setVisibility(View.VISIBLE);
                 }

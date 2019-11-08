@@ -16,18 +16,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/img_article_list_header_img"
-        android:layout_width="220dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="58dp"
-        android:adjustViewBounds="true"
-        android:contentDescription="@string/content_description_article_list_header_img"
-        android:src="@drawable/article_header_img_commawang"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_weight="3" />
-
     <View
         android:id="@+id/view_article_list_header_line"
         android:layout_width="2dp"
@@ -58,7 +46,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:layout_marginTop="40dp"
-        android:fontFamily="@font/nanumsquareround_bold"
         android:letterSpacing="0"
         android:text="지누"
         android:textColor="@color/colorTextPrimary"

@@ -30,7 +30,6 @@
                 android:visibility="gone"
                 android:focusable="true"
                 android:padding="8dp"
-                android:src="@drawable/ic_appbar_logo"
                 android:tint="@android:color/holo_orange_dark"/>
         </androidx.appcompat.widget.Toolbar>
 
