@@ -4,19 +4,15 @@ public class Comment extends Item {
     private int id;
     private String parentAuthor;
     private int indentLevel;
-    private String levelIcon;
+    private String imgProfile;
     private String author;
     private String time;
     private String content;
+    private String contentImage;
+    private String sticker;
     private String href;
-
-    public Comment(String levelIcon, String author, String time, String content, String href) {
-        this.levelIcon = levelIcon;
-        this.author = author;
-        this.time = time;
-        this.content = content;
-        this.href = href;
-    }
+    private boolean iconNew;
+    private boolean iconArticleAuthor;
 
     public Comment() {
 
@@ -76,6 +72,24 @@ public class Comment extends Item {
         return this;
     }
 
+    public String getContentImage() {
+        return contentImage;
+    }
+
+    public Comment setContentImage(String contentImage) {
+        this.contentImage = contentImage;
+        return this;
+    }
+
+    public String getSticker() {
+        return sticker;
+    }
+
+    public Comment setSticker(String sticker) {
+        this.sticker = sticker;
+        return this;
+    }
+
     public String getHref() {
         return href;
     }
@@ -85,12 +99,30 @@ public class Comment extends Item {
         return this;
     }
 
-    public String getLevelIcon() {
-        return levelIcon;
+    public String getImgProfile() {
+        return imgProfile;
     }
 
-    public Comment setLevelIcon(String levelIcon) {
-        this.levelIcon = levelIcon;
+    public Comment setImgProfile(String imgProfile) {
+        this.imgProfile = imgProfile;
+        return this;
+    }
+
+    public boolean isIconNew() {
+        return iconNew;
+    }
+
+    public Comment setIconNew(boolean iconNew) {
+        this.iconNew = iconNew;
+        return this;
+    }
+
+    public boolean isIconArticleAuthor() {
+        return iconArticleAuthor;
+    }
+
+    public Comment setIconArticleAuthor(boolean iconArticleAuthor) {
+        this.iconArticleAuthor = iconArticleAuthor;
         return this;
     }
 }

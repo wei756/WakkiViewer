@@ -28,13 +28,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.Menu;
-import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, RefreshListner {
@@ -74,11 +70,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (InitApplication.getInstance().isNightModeEnabled()) {
+        if (DarkModeManager.getInstance(this).isNightModeEnabled()) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         }
         setContentView(R.layout.activity_main);
 
@@ -224,25 +219,25 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    /*
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            // Handle action bar item clicks here. The action bar will
-            // automatically handle clicks on the Home/Up button, so long
-            // as you specify a parent activity in AndroidManifest.xml.
-            int id = item.getItemId();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
 
-            //noinspection SimplifiableIfStatement
-            if (id == R.id.action_update) {
-                // 다음 페이지 불러오기
-                //page++;
-                //Web.loadArticleList(MainActivity.this, mAdapter, mArrayList, mid, page, false); // update article list
-                return true;
+        if (id == R.id.action_toggle_darkmode) {
+            // 다크모드 전환
+            DarkModeManager initApplication = DarkModeManager.getInstance(this);
+            initApplication.setIsNightModeEnabled(!initApplication.isNightModeEnabled());
+            if (DarkModeManager.getInstance(this).isNightModeEnabled()) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             }
-
-            return super.onOptionsItemSelected(item);
+            return true;
         }
-    */
+
+        return super.onOptionsItemSelected(item);
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {

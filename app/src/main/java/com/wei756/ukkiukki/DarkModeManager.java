@@ -1,30 +1,31 @@
 package com.wei756.ukkiukki;
 
-import android.app.Application;
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+
+import static android.content.Context.MODE_PRIVATE;
 
 
-public class InitApplication extends Application {
+public class DarkModeManager {
     public static final String NIGHT_MODE = "NIGHT_MODE";
     private boolean isNightModeEnabled = false;
 
-    private static InitApplication singleton = null;
+    private static DarkModeManager singleton = null;
+    private static Context context;
 
-    public static InitApplication getInstance() {
-
+    public static DarkModeManager getInstance(Context context1) {
+        context = context1;
         if(singleton == null)
         {
-            singleton = new InitApplication();
+            singleton = new DarkModeManager();
         }
         return singleton;
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
+    private void darkManager() {
         singleton = this;
-        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences mPrefs = context.getSharedPreferences("pref", MODE_PRIVATE);
+        //SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         this.isNightModeEnabled = mPrefs.getBoolean(NIGHT_MODE, false);
     }
 
@@ -35,9 +36,9 @@ public class InitApplication extends Application {
     public void setIsNightModeEnabled(boolean isNightModeEnabled) {
         this.isNightModeEnabled = isNightModeEnabled;
 
-        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences mPrefs = context.getSharedPreferences("pref", MODE_PRIVATE);
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putBoolean(NIGHT_MODE, isNightModeEnabled);
-        editor.apply();
+        editor.commit();
     }
 }

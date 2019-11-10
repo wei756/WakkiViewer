@@ -16,9 +16,7 @@
         android:layout_height="wrap_content"
         android:descendantFocusability="blocksDescendants"
         android:orientation="vertical"
-        android:paddingStart="16dp"
         android:paddingTop="16dp"
-        android:paddingEnd="16dp"
         android:paddingBottom="16dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -27,6 +25,8 @@
             android:layout_height="match_parent"
             android:layout_marginBottom="16dp"
             android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             app:layout_constraintBottom_toTopOf="@id/view_article_viewer_header_line"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -39,11 +39,12 @@
                 android:id="@+id/tv_article_viewer_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:lineSpacingExtra="10dp"
-                android:paddingBottom="16dp"
+                android:lineSpacingExtra="1dp"
+                android:paddingBottom="12dp"
                 android:text="게시글 제목"
+                android:textStyle="bold"
                 android:textColor="@color/colorTextPrimary"
-                android:textSize="21sp"
+                android:textSize="22sp"
                 app:layout_constraintBottom_toTopOf="@+id/icon_article_viewer_author"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0"
@@ -92,33 +93,17 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
                 android:layout_weight="1"
-                android:paddingBottom="8dp"
+                android:paddingBottom="2dp"
                 android:text="작성자 닉네임"
-                android:textColor="@color/colorTextSecondary"
-                android:textSize="12sp"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="13sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toEndOf="@id/icon_article_viewer_author_color"
                 app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_title" />
 
-            <!-- 날짜, 조회, 추천 -->
-            <TextView
-                android:id="@+id/icon_article_viewer_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:fontFamily="@font/xe_icon"
-                android:lineSpacingExtra="6dp"
-                android:text="@string/xi_time"
-                android:textColor="@color/colorTextSecondary"
-                android:textSize="12sp"
-                app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_time"
-                app:layout_constraintEnd_toStartOf="@id/tv_article_viewer_time"
-                app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintHorizontal_chainStyle="packed"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_author" />
+            <!-- 날짜, 조회 -->
 
             <TextView
                 android:id="@+id/tv_article_viewer_time"
@@ -129,8 +114,9 @@
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="12sp"
                 app:layout_constraintEnd_toStartOf="@+id/icon_article_viewer_view"
+                app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintHorizontal_chainStyle="packed"
-                app:layout_constraintStart_toEndOf="@+id/icon_article_viewer_time"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_author" />
 
             <TextView
@@ -138,9 +124,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
-                android:fontFamily="@font/xe_icon"
                 android:lineSpacingExtra="6dp"
-                android:text="@string/xi_eye"
+                android:text="조회"
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="12sp"
                 app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_time"
@@ -154,7 +139,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:text="조회 수 0"
+                android:text="0"
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="12sp"
                 app:layout_constraintBaseline_toBaselineOf="@id/tv_article_viewer_time"
@@ -200,7 +185,6 @@
             android:id="@+id/view_article_viewer_header_line"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginBottom="10dp"
             android:background="@color/colorArticleListItemLine"
             app:layout_constraintBottom_toTopOf="@id/layout_article_viewer_body"
             app:layout_constraintEnd_toEndOf="parent"
@@ -212,7 +196,7 @@
             android:id="@+id/layout_article_viewer_body"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingBottom="50dp"
+            android:paddingBottom="8dp"
             app:layout_constraintBottom_toTopOf="@id/id_article_viewer_viewer"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -243,35 +227,21 @@
 
         <!-- 댓글 -->
         <TextView
-            android:id="@+id/icon_article_viewer_comment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/xe_icon"
-            android:lineSpacingExtra="6dp"
-            android:text="@string/xi_comment"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="14sp"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/view_article_viewer_footer_line" />
-
-        <TextView
             android:id="@+id/tv_article_viewer_comment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
             android:layout_marginTop="16dp"
             android:layout_weight="1"
             android:text="댓글"
+            android:layout_marginStart="16dp"
             android:textColor="@color/colorTextPrimary"
+            android:textStyle="bold"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintEnd_toStartOf="@id/tv_article_viewer_comment_count"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@id/icon_article_viewer_comment"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/view_article_viewer_footer_line" />
 
         <TextView
@@ -282,7 +252,7 @@
             android:layout_marginTop="16dp"
             android:layout_weight="1"
             android:text="0"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/colorTextPrimary"
             android:textSize="14sp"
             app:layout_constraintBottom_toTopOf="@id/layout_article_viewer_comment"
             app:layout_constraintEnd_toEndOf="parent"
@@ -296,6 +266,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_comment_count">
 

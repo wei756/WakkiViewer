@@ -13,6 +13,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
@@ -174,12 +175,15 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     tvView.setText(article.getView());
 
                     // body 출력용 html 문서 생성
+                    String cssTheme;
+                    if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) // TODO: 다크모드
+                        cssTheme = "<link rel=\"stylesheet\" href=\"file:///android_asset/css/MyCafeStyle-dark.css\" type=\"text/css\">\n"; // dark theme
+                    else
+                        cssTheme = "<link rel=\"stylesheet\" href=\"file:///android_asset/css/MyCafeStyle.css\" type=\"text/css\">\n"; // light theme
                     String articleBody = "<!DOCTYPE html>\n" +
                             "<html lang=\"ko\">\n" +
                             "<head>\n" +
-                            "<link rel=\"stylesheet\" href=\"file:///android_asset/css/MyCafeStyle.css\" type=\"text/css\">\n" +/*
-                            "<link rel=\"stylesheet\" href=\"file:///android_asset/css/commons.css\" />\n" +
-                            "<link rel=\"stylesheet\" href=\"file:///android_asset/css/nanumsquareround.min.css\" />\n" +*/
+                            cssTheme +
                             "</head><body>\n" +
                             article.getBody().outerHtml() +
                             "</body></html>";
@@ -220,75 +224,70 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     }
                     */
 
-                    /*
+
                     // commnet box
                     Element feedback = article.getFeedback();
-                    tvCommentCount.setText(feedback.selectFirst("em[class=theme_color_dark]").text());
+                    tvCommentCount.setText(feedback.selectFirst("h3[class=tit]").selectFirst("em").text()); // comment table
 
-                    try {
-                        Elements comments = feedback.selectFirst("ul[class=fbList]").select("li");
+                    Elements comments = feedback.select("li");
 
-                        ArrayList<Comment> arrayList = new ArrayList<>();
-                        String author, commentLevelIcon;
-                        for (Element comment : comments) {
-                            // 레벨 아이콘과 닉네임 분리
-                            Element elementAuthor = comment.selectFirst("h3[class=author]");
-                            author = elementAuthor.html();
-                            commentLevelIcon = "";
-                            if (author.contains("<a")) {
-                                if (author.contains("</span>")) { // 레벨 아이콘이 있을 경우
-                                    commentLevelIcon = elementAuthor.selectFirst("a").selectFirst("span").text();
-                                    author = author.substring(author.indexOf("</span>") + 7, author.indexOf("</a>"));
-                                } else {                          // 레벨 아이콘이 없을 경우
-                                    author = author.substring(author.indexOf("\">") + 2, author.indexOf("</a>"));
-                                }
-                            } else {
-                                if (author.contains("</span>")) {
-                                    commentLevelIcon = elementAuthor.selectFirst("span").text();
-                                    author = author.substring(author.indexOf("</span>") + 7);
-                                }
-                            }
+                    ArrayList<Comment> arrayList = new ArrayList<>();
+
+                    for (Element comment : comments) {
+                        String author = "", time = "", imgProfile = "",
+                                contentText = "", contentImage = "", sticker = "";
+                        boolean iconNew = false, iconArticleAuthor = false;
+                        if (comment.classNames().contains("comment")) { // 댓글인 경우에만
+                            Comment comment1 = new Comment();
+
+                            imgProfile = comment.selectFirst("span[class=thumb]").selectFirst("img").attr("src");
+                            author = comment.selectFirst("span[class=name ellip]").text();
+                            time = comment.selectFirst("span[class=date]").text();
+
+                            // 댓글 내용
+                            Element elementContentText = comment.selectFirst("p[class=txt]");
+                            if (elementContentText.selectFirst("a[class=u_cbox_target_name]") != null) // 대댓글이면
+                                elementContentText.removeClass("u_cbox_target_name"); // 닉네임 중복 방지
+                            contentText = elementContentText.text();
+                            // 댓글 이미지/스티커
+                            Element elementSticker = comment.selectFirst("div[class=u_cbox_sticker_section]"),
+                                    elementImage = comment.selectFirst("div[class=image_section]");
+                            if (elementSticker != null) // 스티커
+                                sticker = elementSticker.selectFirst("img").attr("src");
+                            if (elementImage != null) // 이미지
+                                contentImage = elementImage.selectFirst("img").attr("src");
+
+                            iconNew = comment.selectFirst("span[class=u_cbox_ico_new]") != null;
+                            iconArticleAuthor = comment.selectFirst("span[class=ico_author]") != null;
+
                             // 데이터 입력
-                            Comment comment1 = new Comment()
-                                    .setId(parseNumber(comment.attr("id")))
-                                    .setLevelIcon(commentLevelIcon)
-                                    .setAuthor(author)
-                                    .setTime(comment.selectFirst("p[class=time]").text())
-                                    .setContent(comment.select("div").get(1).text())
-                                    .setHref(comment.selectFirst("p[class=action]").selectFirst("a").attr("href"));
+                            comment1.setAuthor(author)
+                                    .setTime(time)
+                                    .setContent(contentText)
+                                    .setContentImage(contentImage)
+                                    .setSticker(sticker)
+                                    .setImgProfile(imgProfile)
+                                    .setIconNew(iconNew)
+                                    .setIconArticleAuthor(iconArticleAuthor);
 
                             // 대댓글 관련
-                            int indent;
-                            try {
-                                indent = parseNumber(comment.className());
-                            } catch (NumberFormatException e) {
-                                // 대댓글 아닐 경우
-                                indent = 0;
-                            }
+                            int indent = 0;
+                            if (comment.classNames().contains("re")) // 대댓글이면
+                                indent = 1;
                             comment1.setIndentLevel(indent);
+                            Log.e("ArticleViewerActivity", comment.className() + " " + indent);
+                            Element targetName = comment.selectFirst("a[class=u_cbox_target_name]");// 대상 닉네임
+                            if (targetName != null)
+                                comment1.setParentAuthor(targetName.text());
 
-                            if (indent > 1) { // 대댓글일 때
-                                Comment parent;
-                                for (int i = arrayList.size() - 1; i >= 0; i--) {
-                                    parent = arrayList.get(i);
-                                    if (indent > parent.getIndentLevel()) { // 부모 댓글 확인
-                                        comment1.setParentAuthor(parent.getAuthor());
-                                        break;
-                                    }
-
-                                }
-                            }
-
+                            // 데이터 입력
                             arrayList.add(comment1);
                         }
-                        mAdapter.setListWith(arrayList, ArticleViewerActivity.this);
-
-                    } catch (NullPointerException e) {
-                        //TODO: 댓글 없을 경우
-                        e.printStackTrace();
                     }
-                    */
+                    Log.v("ArticleViewerActivity", "Comment count: " + arrayList.size());
+                    mAdapter.setListWith(arrayList, ArticleViewerActivity.this);
 
+                    // 로딩 완료
                     layoutArticle.setVisibility(View.VISIBLE);
                 }
             });
