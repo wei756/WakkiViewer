@@ -213,7 +213,7 @@ public class Web extends Thread {
 
                                 article1.setAuthor(author)
                                         .setTitle(article.selectFirst("strong[class=tit ellip]").text())
-                                        .setHref(article.selectFirst("a").attr("href"))
+                                        .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
                                         .setLikeIt(article.selectFirst("em[class=u_cnt _count]").text())
                                         .setComment(article.selectFirst("span[class=coment_btn]").text());
 
