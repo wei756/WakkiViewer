@@ -246,8 +246,10 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
 
                             // 댓글 내용
                             Element elementContentText = comment.selectFirst("p[class=txt]");
+                            /*
                             if (elementContentText.selectFirst("a[class=u_cbox_target_name]") != null) // 대댓글이면
                                 elementContentText.removeClass("u_cbox_target_name"); // 닉네임 중복 방지
+                            */
                             contentText = elementContentText.text();
                             // 댓글 이미지/스티커
                             Element elementSticker = comment.selectFirst("div[class=u_cbox_sticker_section]"),

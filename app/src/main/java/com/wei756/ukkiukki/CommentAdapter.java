@@ -134,7 +134,7 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
             if (parentAuthor == null)
                 itemViewHolder.content.setText(content);
             else {
-                SpannableStringBuilder text = new SpannableStringBuilder(parentAuthor + "  " + content);
+                SpannableStringBuilder text = new SpannableStringBuilder(content);
                 //int color = act.getResources().getColor(R.color.colorTextPrimary, null);
 
                 text.setSpan(new StyleSpan(BOLD), 0, parentAuthor.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

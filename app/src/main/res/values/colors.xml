@@ -7,7 +7,7 @@
     <color name="colorBackground">#ffffff</color>
 
     <!-- Action bar -->
-    <color name="colorTitle">#e0e0e0</color>
+    <color name="colorTitle">#fafafa</color>
 
     <color name="colorTextPrimary">#101010</color>
     <color name="colorTextSecondary">#929292</color>
