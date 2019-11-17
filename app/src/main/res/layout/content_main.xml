@@ -52,12 +52,6 @@
                 layout="@layout/content_mainpage"
                 android:visibility="gone" />
 
-            <!-- 로그인페이지 -->
-            <include
-                android:id="@+id/layout_naver_loginpage"
-                layout="@layout/content_naver_login"
-                android:visibility="gone" />
-
 
         </LinearLayout>
 

@@ -9,29 +9,37 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="50dp"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:elevation="50dp">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_main"
+        <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:layout_gravity="center"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/AppTheme.PopupOverlay">
-
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:contentScrim="?attr/colorPrimary"
+            app:expandedTitleMarginEnd="64dp"
+            app:titleEnabled="false"
+            app:expandedTitleMarginStart="48dp"
+            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|enterAlways">
             <ImageView
-                android:id="@+id/img_appbar_main_logo"
-                android:layout_width="wrap_content"
+                android:id="@+id/imageView01"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
+                android:maxHeight="200dp"
                 android:adjustViewBounds="true"
-                android:clickable="true"
-                android:visibility="gone"
-                android:focusable="true"
-                android:padding="8dp"
-                android:tint="@android:color/holo_orange_dark"/>
-        </androidx.appcompat.widget.Toolbar>
+                android:scaleType="centerCrop"
+                android:fitsSystemWindows="true"
+                android:src="@drawable/img_cafe_skin01"
+                app:layout_collapseMode="parallax" />
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar_main"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@android:color/transparent"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 

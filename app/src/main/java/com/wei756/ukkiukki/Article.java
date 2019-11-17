@@ -2,11 +2,13 @@ package com.wei756.ukkiukki;
 
 import org.jsoup.nodes.Element;
 
-public class Article extends Item{
+public class Article extends Item {
     private String title;
     private String mid;
     private String levelIcon;
     private String author;
+    private String authorId;
+    private String authorProfile;
     private String time;
     private String view;
     private String comment;
@@ -18,23 +20,7 @@ public class Article extends Item{
     private Element footer;
     private Element feedback;
 
-    // on article viewer
-    public Article(String title, String mid, String levelIcon, String author, String time, String view, String likeIt, String href, Element body, Element footer, Element feedback) {
-        this.title = title;
-        this.mid = mid;
-        this.levelIcon = levelIcon;
-        this.author = author;
-        this.time = time;
-        this.view = view;
-        //this.comment = comment;
-        this.likeIt = likeIt;
-        this.href = href;
-        this.body = body;
-        this.footer = footer;
-        this.feedback = feedback;
-    }
-
-    public Article(){
+    public Article() {
 
     }
 
@@ -53,6 +39,24 @@ public class Article extends Item{
 
     public Article setAuthor(String author) {
         this.author = author;
+        return this;
+    }
+
+    public String getAuthorId() {
+        return authorId;
+    }
+
+    public Article setAuthorId(String authorId) {
+        this.authorId = authorId;
+        return this;
+    }
+
+    public String getAuthorProfile() {
+        return authorProfile;
+    }
+
+    public Article setAuthorProfile(String authorProfile) {
+        this.authorProfile = authorProfile;
         return this;
     }
 

@@ -2,11 +2,16 @@
     <string name="app_name">우리왁굳끼리</string>
     <string name="title_activity_main">MainActivity</string>
 
+    <!-- Navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">여기를 눌러 로그인</string>
-    <string name="nav_header_subtitle"></string>
     <string name="nav_header_desc">Navigation header</string>
+    <string name="nav_header_logout">로그아웃</string>
+    <string name="nav_header_settings">환경설정</string>
+    <string name="nav_header_article">게시글수</string>
+    <string name="nav_header_comment">댓글수</string>
+    <string name="nav_header_visit">방문수</string>
 
     <string name="toast_text_press_back_again_to_exit">한 번 더 누르면 종료됩니다.</string>
     <string name="action_toggle_darkmode">다크모드 온오프</string>

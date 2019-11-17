@@ -11,6 +11,9 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // load category
+        CategoryManager.getInstance().updateCategoryList();
+
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
 

@@ -2,14 +2,12 @@ package com.wei756.ukkiukki;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
-
-import org.w3c.dom.Attr;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +17,10 @@ import java.util.regex.Pattern;
 @SuppressLint("SetJavaScriptEnabled")
 public class NaverLoginView extends WebView {
 
+    private Web web = Web.getInstance();
     private WebClient webClient;
+    private WebClientManager webClientManager = WebClientManager.getInstance();
+    private NaverLoginActivity naverLoginActivity;
 
     public NaverLoginView(Context context) {
         super(context);
@@ -42,7 +43,8 @@ public class NaverLoginView extends WebView {
         Log.v("NaverLoginView", "NaverLoginView loaded.");
     }
 
-    public void loadLoginPage() {
+    public void loadLoginPage(NaverLoginActivity naverLoginActivity) {
+        this.naverLoginActivity = naverLoginActivity;
         loadUrl("https://nid.naver.com/nidlogin.login?url=https%3A%2F%2Fm.cafe.naver.com%2FArticleAllList.nhn%3Fcluburl%3Dsteamindiegame");
     }
 
@@ -58,12 +60,12 @@ public class NaverLoginView extends WebView {
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            ((MainActivity)m_context).mSwipeRefreshLayout.setRefreshing(false);
-            Log.v("NaverLoginView", "Loading URL finished: " + url);
+            super.onPageFinished(view, url);
+            Log.v("NaverLoginView", "Loading URL started: " + url);
 
             // get cookies
             String[] cookies = CookieManager.getInstance().getCookie(url).split(" ");
-            Log.d("WebClient", "All the cookies in a string:");
+            Log.d("WebClientManager", "All the cookies in a string:");
 
             // generate cookies map
             Map<String, String> mapCookies = new HashMap<>();
@@ -85,11 +87,21 @@ public class NaverLoginView extends WebView {
             }
 
             if (url.equals("https://m.cafe.naver.com/ArticleAllList.nhn?cluburl=steamindiegame")) { // 로그인 성공
+                Log.i("NaverLoginView", "Login success");
                 // 로그인 세션 저장
-                Web.applyLoginSession(mapCookies);
+                web.applyLoginSession(mapCookies);
+                webClientManager.setLogined(true);
+                Web.getInstance().loadMyInfomation();
 
                 // 페이지 복귀
-                ((MainActivity)m_context).setCategory(CategoryManager.CATEGORY_MAINPAGE, true);
+                naverLoginActivity.finish();
+            }
+        }
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            if (url.equals("https://m.cafe.naver.com/ArticleAllList.nhn?cluburl=steamindiegame")) { // 로그인 성공
+                // 로딩 레이아웃 표시
+                naverLoginActivity.setLoading();
             }
         }
 

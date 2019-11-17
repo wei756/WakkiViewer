@@ -39,6 +39,8 @@ import org.jsoup.select.Elements;
 import java.util.ArrayList;
 
 public class ArticleViewerActivity extends AppCompatActivity implements LoadArticleListner {
+    private Web web = Web.getInstance();
+
     ActionBarManager actBarManager = ActionBarManager.getInstance();
 
     Toolbar toolbar;
@@ -46,14 +48,13 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
     ConstraintLayout layoutArticle;
 
     TextView tvTitle;
-    TextView tvLevelIcon;
+    ImageView ivProfile;
     TextView tvAuthor;
     TextView tvTime, tvView, tvVote;
 
     WebView webBody;
 
     TextView tvVoteUp, tvVoteDown;
-    ImageView ivProfile;
     TextView tvProfile;
 
     TextView tvCommentCount;
@@ -90,16 +91,11 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         articleTitle = intent.getStringExtra("article_title");
         articleHref = intent.getStringExtra("article_href");
 
-        // set actionbar theme
-        //int begin = articleHref.indexOf("mid="), end = articleHref.indexOf("&page=");
-        //articleBoard = articleHref.substring(begin + 4, end);
-        //actBarManager.setActionBar(this, toolbar, articleBoard);
-
         layoutArticle = findViewById(R.id.id_article_viewer_viewer);
 
         // read_header
         tvTitle = findViewById(R.id.tv_article_viewer_title);
-        tvLevelIcon = findViewById(R.id.icon_article_viewer_author_color);
+        ivProfile = findViewById(R.id.iv_article_viewer_profile);
         tvAuthor = findViewById(R.id.tv_article_viewer_author);
         tvTime = findViewById(R.id.tv_article_viewer_time);
         tvView = findViewById(R.id.tv_article_viewer_view);
@@ -132,7 +128,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         mRecyclerView.setAdapter(mAdapter);
 
         try {
-            Web.getArticle(this, articleHref);
+            web.getArticle(this, articleHref);
         } catch (Exception e) {
             e.printStackTrace();
             Log.e("ArticleViewerActivity", "Article load error(" + articleHref + ") on getArticle");
@@ -154,22 +150,23 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    tvTitle.setText(article.getTitle());
-                    /*
-                    String levelIcon = article.getLevelIcon();
-                    if (!levelIcon.equals("")) {
-                        tvLevelIcon.setText(levelIcon);
-                        tvLevelIcon.setVisibility(View.VISIBLE);
-                        try {
-                            tvLevelIcon.setBackground(getResources().getDrawable(LevelIcon.getInstance().getIcon(levelIcon)));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Log.e("PersonalColor", "Wrong color error(" + levelIcon + ") on getIcon");
-                        }
-                    } else {
-                        tvLevelIcon.setVisibility(View.GONE);
+                    // set actionbar theme
+                    //int begin = articleHref.indexOf("mid="), end = articleHref.indexOf("&page=");
+                    CategoryManager categoryManager = CategoryManager.getInstance();
+                    try {
+                        articleBoard = article.getMid();
+                        actBarManager.setActionBar(ArticleViewerActivity.this, toolbar, Integer.parseInt(article.getMid()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Log.e("PersonalColor", "Wrong color error(" + articleBoard + ") on getIcon");
                     }
-                    */
+
+                    tvTitle.setText(article.getTitle());
+
+                    String imgAuthorProfile = article.getAuthorProfile();
+                    if (imgAuthorProfile.equals(""))
+                        imgAuthorProfile = "https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_profile_77.png"; // default image
+                    Glide.with(getApplicationContext()).load(imgAuthorProfile).into(ivProfile); // load image
                     tvAuthor.setText(article.getAuthor());
                     tvTime.setText(article.getTime());
                     tvView.setText(article.getView());
@@ -188,6 +185,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                             article.getBody().outerHtml() +
                             "</body></html>";
                     webBody.getSettings().setJavaScriptEnabled(true);
+                    webBody.getSettings().setUserAgentString(WebClientManager.userAgentMobile);
                     webBody.loadDataWithBaseURL("", articleBody, "text/html", "UTF-8", "");
                     //Log.i("ArticleViewerActivity", articleBody);
 

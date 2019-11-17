@@ -3,8 +3,10 @@ package com.wei756.ukkiukki;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -30,6 +32,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
@@ -38,6 +41,8 @@ public class MainActivity extends AppCompatActivity
     private Toolbar toolbar;
 
     private SearchView mSearchView;
+
+    public NavigationView navigationView;
 
     private int mid = CategoryManager.CATEGORY_MAINPAGE;
 
@@ -54,9 +59,6 @@ public class MainActivity extends AppCompatActivity
     private RelativeLayout announcementViewProgressBar, freeViewProgressBar, creativeViewProgressBar;
     private RelativeLayout announcementLayout, freeLayout, creativeLayout;
 
-    // login page
-    private View loginpageLayout;
-    private NaverLoginView loginView;
 
     // floating action bar
     private FloatingActionButton fab;
@@ -82,14 +84,6 @@ public class MainActivity extends AppCompatActivity
         toolbar.setOverflowIcon(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_overflow_24dp));
         setSupportActionBar(toolbar);
 
-        ImageView imgLogo = (ImageView) findViewById(R.id.img_appbar_main_logo);
-        imgLogo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                setCategory(CategoryManager.CATEGORY_MAINPAGE, true);
-            }
-        });
-
         // Floating button
         fab = findViewById(R.id.fab_write_article);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -101,24 +95,50 @@ public class MainActivity extends AppCompatActivity
         });
 
         // Navigation drawer
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        final ProfileManager profileManager = ProfileManager.getInstance();
+        profileManager.setNavigationView(navigationView);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                profileManager.updateNavigationDrawerProfile(MainActivity.this);
+                CategoryManager.getInstance().updateCategoryMenu(MainActivity.this, navigationView.getMenu());
+            }
+        };
 
-        ImageView tvLogin = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.imageView);
-        tvLogin.setOnClickListener(new View.OnClickListener() {
+        ConstraintLayout btnLogin = (ConstraintLayout) navigationView.getHeaderView(0).findViewById(R.id.layout_nav_profile);
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (WebClientManager.getInstance().getLogined()) { // 로그인 페이지
+                    // open login page
+                    Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
+                    intent.putExtra("login_type", "LOGIN");
+                    startActivity(intent);
+                } else { // 프로필 페이지
+
+                }
+
+                drawer.closeDrawer(GravityCompat.START);
+            }
+        });
+        TextView btnLogout = (TextView) navigationView.getHeaderView(0).findViewById(R.id.btn_nav_logout);
+        btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // open login page
-                setCategory(CategoryManager.CATEGORY_LOGIN, true);
+                Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
+                intent.putExtra("login_type", "LOGOUT");
+                startActivity(intent);
 
-                DrawerLayout drawer = findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
 
-        // search bar
+        // menu
         toolbar.inflateMenu(R.menu.main);
 
         // set actionbar theme
@@ -155,25 +175,19 @@ public class MainActivity extends AppCompatActivity
         freeList = new ArticleList(this, freeView, freeViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
         creativeList = new ArticleList(this, creativeView, creativeViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
 
-        // login page
-        loginpageLayout = findViewById(R.id.layout_naver_loginpage);
-        loginView = (NaverLoginView) findViewById(R.id.web_naver_login);
-
-
         // Swipe refresh
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.layout_article_list_swipe);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 setCategory(mid, false); // reset and update article list
+                Web.getInstance().loadMyInfomation();
             }
         });
 
-        // load category
-        CategoryManager.getInstance(this, navigationView.getMenu());
-
         // 초기화면 로드
         setCategory(mid, true);
+
     }
 
     @Override
@@ -204,6 +218,7 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.main, menu);
 
         // SearchView
+        /*
         mSearchView = (SearchView) toolbar.getMenu().findItem(R.id.menu_search).getActionView();
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -216,6 +231,7 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
+        */
         return true;
     }
 
@@ -264,14 +280,18 @@ public class MainActivity extends AppCompatActivity
 
     public void setCategory(int mid, boolean refresh) {
         this.mid = mid;
+        if (refresh) {
+            actBarManager.setActionBar(this, toolbar, mid);
+            Web.getInstance().loadMyInfomation();
+        }
+
 
         if (mid == CategoryManager.CATEGORY_MAINPAGE) { // 메인페이지
             mainpageLayout.setVisibility(View.VISIBLE);
-            loginpageLayout.setVisibility(View.GONE);
             articlepageLayout.setVisibility(View.GONE);
 
-            announcementList.loadArticleList(CategoryManager.CATEGORY_ALLLIST, 1, true);
-            freeList.loadArticleList(1, 1, true);
+            announcementList.loadArticleList(CategoryManager.CATEGORY_POPULAR_ARTICLE, 1, true);
+            freeList.loadArticleList(CategoryManager.CATEGORY_ALLLIST, 1, true);
             creativeList.loadArticleList(59, 1, true);
 
             runOnUiThread(new Runnable() {
@@ -281,21 +301,11 @@ public class MainActivity extends AppCompatActivity
                 }
             });
         } else if (mid == CategoryManager.CATEGORY_LOGIN) { // 로그인페이지
-            mainpageLayout.setVisibility(View.GONE);
-            loginpageLayout.setVisibility(View.VISIBLE);
-            articlepageLayout.setVisibility(View.GONE);
-
-            loginView.loadLoginPage();
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    fab.hide();
-                }
-            });
+            Intent intent = new Intent(this, NaverLoginActivity.class);
+            this.startActivity(intent);
+            setCategory(CategoryManager.CATEGORY_MAINPAGE, true);
         } else { // 게시판 페이지
             mainpageLayout.setVisibility(View.GONE);
-            loginpageLayout.setVisibility(View.GONE);
             articlepageLayout.setVisibility(View.VISIBLE);
 
             articleList.loadArticleList(mid, 1, true);

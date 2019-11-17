@@ -5,6 +5,7 @@
     <color name="colorAccent">#172d56</color>
 
     <color name="colorBackground">#121212</color>
+    <color name="colorNaviHeaderBackground">#393939</color>
 
     <!-- Action bar -->
     <color name="colorTitle">#e0e0e0</color>

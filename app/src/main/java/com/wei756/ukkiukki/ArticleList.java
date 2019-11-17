@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ArticleList implements LoadedListner {
+    private Web web = Web.getInstance();
+
     private final Activity act;
 
     private ArticleListAdapter mAdapter;
@@ -70,7 +72,7 @@ public class ArticleList implements LoadedListner {
         setRefreshing(true);
         this.mid = mid;
         this.page = page;
-        Web.loadArticleList(this, mid, page, refresh); // update article list
+        web.loadArticleList(this, mid, page, refresh); // update article list
     }
 
     private void setRefreshing(boolean refreshing) {

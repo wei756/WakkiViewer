@@ -5,9 +5,11 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="colorBackground">#ffffff</color>
+    <color name="colorNaviHeaderBackground">#fafafa</color>
 
     <!-- Action bar -->
     <color name="colorTitle">#fafafa</color>
+    <color name="colorTransparent">#00000000</color>
 
     <color name="colorTextPrimary">#101010</color>
     <color name="colorTextSecondary">#929292</color>

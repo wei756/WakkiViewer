@@ -69,13 +69,20 @@ public class ActionBarManager {
             int colorStatusText = R.color.colorTitle;
 
             // toolbar title
-            toolbar.setTitle(act.getResources().getString(R.string.app_name));
+            if (act instanceof MainActivity) {
+                toolbar.setTitle(act.getResources().getString(R.string.app_name));
+                toolbar.setBackgroundResource(R.color.colorTransparent); // color
+                act.getWindow().setStatusBarColor(act.getResources().getColor(R.color.colorTransparent, null)); // colorStatus
+            } else {
+                toolbar.setTitle((String) category.getParam(mid, CategoryManager.NAME));
+                toolbar.setBackgroundResource(color); // color
+                act.getWindow().setStatusBarColor(act.getResources().getColor(colorStatus, null)); // colorStatus
+            }
 
-            toolbar.setBackgroundResource(color); // color
-            act.getWindow().setStatusBarColor(act.getResources().getColor(colorStatus, null)); // colorStatus
             ToolbarColorizeHelper.colorizeToolbar(toolbar, act.getResources().getColor(colorStatusText, null), act); // colorStatusText
 
-            setSystemBarTheme(act, (act.getResources().getColor(colorStatusText, null) == Color.WHITE)); // colorStatusText
+            //setSystemBarTheme(act, (act.getResources().getColor(colorStatusText, null) == Color.rgb(250, 250, 250))); // colorStatusText
+            setSystemBarTheme(act, true); // colorStatusText
 
             Log.i("ActionBarManager", "Open with board of " + mid + " on setActionBar");
         } catch (InvalidCategoryException e) {
@@ -109,7 +116,6 @@ public class ActionBarManager {
      * @param pActivity 적용할 Activity
      * @param pIsDark   color
      */
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public static final void setSystemBarTheme(final Activity pActivity, final boolean pIsDark) {
         // Fetch the current flags.
         final int lFlags = pActivity.getWindow().getDecorView().getSystemUiVisibility();

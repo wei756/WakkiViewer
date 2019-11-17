@@ -36,8 +36,6 @@ import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.util.ArrayList;
 
-import com.wei756.ukkiukki.R;
-
 /**
  * Helper class that iterates through Toolbar views, and sets dynamically icons and texts color
  * Created by chomi3 on 2015-01-19.
@@ -126,11 +124,6 @@ public class ToolbarColorizeHelper {
     }
 
     private static void removeOnGlobalLayoutListener(View v, ViewTreeObserver.OnGlobalLayoutListener listener) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            v.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
-        }
-        else {
-            v.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
-        }
+        v.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
     }
 }

@@ -9,7 +9,9 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar_article_viewer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:elevation="50dp"
+        android:theme="@style/AppTheme.AppBarOverlay">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar_article_viewer"

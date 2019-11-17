@@ -13,10 +13,10 @@ import java.util.Map;
  * 코드 구현에 있어 switch 문의 사용이 지나치게 많아져 이를 줄이고 코드 가독성을 늘리기 위해 선언함.
  */
 public class CategoryManager {
+    private Web web = Web.getInstance();
+
     private static CategoryManager instance;
     private static ArrayList<Map> category = new ArrayList<>();
-    private static Menu menu;
-    private static Activity context;
 
     private boolean loaded = false;
 
@@ -95,10 +95,15 @@ public class CategoryManager {
     }
 
     private CategoryManager() {
+
+    }
+
+    public void updateCategoryList() {
         new Thread() {
             public void run() {
                 // 카테고리 로드
-                ArrayList<Map> categoryList = Web.loadCategoryList();
+                category.clear();
+                ArrayList<Map> categoryList = web.loadCategoryList();
                 category.add(new CategoryBuilder()
                         .setName("메인페이지")
                         .setType(TYPE_MAINPAGE)
@@ -112,21 +117,24 @@ public class CategoryManager {
                 for (Map cat : categoryList)
                     category.add(cat);
 
-                context.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (Map cat : category)
-                            menu.add((String)cat.get(CategoryManager.NAME));
-                    }
-                });
-
             }
         }.start();
     }
 
+    public void updateCategoryMenu(MainActivity act, final Menu menu) {
+        act.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                menu.clear();
+                for (Map cat : category)
+                    menu.add((String) cat.get(CategoryManager.NAME));
+            }
+        });
+    }
+
     public Object getParam(int mid, int type) throws InvalidCategoryException {
         for (Map cat : category) {
-            if ((int)cat.get(MENU_ID) == mid)
+            if ((int) cat.get(MENU_ID) == mid)
                 return cat.get(type);
         }
         throw new InvalidCategoryException("" + mid);
@@ -135,7 +143,7 @@ public class CategoryManager {
     public int findIdByName(String name) throws InvalidCategoryException {
         for (Map cat : category) {
             if (cat.get(NAME).equals(name))
-                return (int)cat.get(MENU_ID);
+                return (int) cat.get(MENU_ID);
         }
         throw new InvalidCategoryException(name);
     }
@@ -144,11 +152,6 @@ public class CategoryManager {
         if (instance == null)
             instance = new CategoryManager();
         return instance;
-    }
-    public static CategoryManager getInstance(Activity context1, Menu menu1) {
-        context = context1;
-        menu = menu1;
-        return getInstance();
     }
 }
 

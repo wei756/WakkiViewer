@@ -1,6 +1,5 @@
 package com.wei756.ukkiukki;
 
-import android.os.Build;
 import android.util.Log;
 
 import org.jsoup.Connection;
@@ -10,28 +9,26 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Web extends Thread {
-    private static final Web instance = new Web();
-    private static boolean logined = false;
-    private final static String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
+    private static Web instance = null;
+
+    private final String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
             articleListUrl = "https://m.cafe.naver.com/ArticleListAjax.nhn?search.clubid={0}&search.menuid={1}&search.page={2}",
             popularArticleListUrl = "https://m.cafe.naver.com/PopularArticleList.nhn?cafeId={0}",
-            menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?",
-            articleReadUrl = "https://m.cafe.naver.com/ArticleRead.nhn?clubid={0}&articleid={1}";
-    private final static String cafeId = "27842958";
-    private final static int timeout = 5000;
-    private final static Map<String, String> cookie = new HashMap<>(), header = new HashMap<>();
-    private final static String userAgentMobile = "Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + "; " + Build.MODEL + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36";
-    private final static String userAgentPC = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36";
-    private static String sessionId;
+            menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?search.clubid={0}&search.perPage=9999",
+            articleReadUrl = "https://m.cafe.naver.com/ArticleRead.nhn?clubid={0}&articleid={1}",
+            myActivityUrl = "https://cafe.naver.com/MyCafeMyActivityAjax.nhn?clubid={0}";
+    private final String cafeId = "27842958";
+    private final int timeout = 5000;
+
+    private final WebClientManager webClientManager = WebClientManager.getInstance();
+
 
     private Web() {
 
@@ -45,19 +42,19 @@ public class Web extends Thread {
      * @return Response
      * @throws IOException
      */
-    public static Connection.Response httpRequest(String url, Connection.Method method, boolean connectByPC, boolean usingCookie) throws IOException {
+    private Connection.Response httpRequest(String url, Connection.Method method, boolean connectByPC, boolean usingCookie) throws IOException {
         Connection.Response response = null;
         Connection connection = Jsoup.connect(url)
-                .userAgent(connectByPC ? userAgentPC : userAgentMobile)
+                .userAgent(connectByPC ? WebClientManager.userAgentPC : WebClientManager.userAgentMobile)
                 .timeout(timeout)
                 .method(method);
         if (usingCookie)
-            connection = putHeader(connection);
+            connection = webClientManager.putHeader(connection);
         response = connection.execute();
 
         if (usingCookie) {
-            getCookies(response);
-            Log.v("Web", "JSESSIONID is " + cookie.get("JSESSIONID") + " now.");
+            webClientManager.getCookies(response);
+            Log.v("Web", "JSESSIONID is " + webClientManager.getCookiesMap().get("JSESSIONID") + " now.");
         }
 
         //Log.e("Web", response.parse().text()); // for debug: view loaded page with text
@@ -66,13 +63,69 @@ public class Web extends Thread {
     }
 
     /**
+     * 프로필 정보를 불러옵니다.
+     */
+    public void loadMyInfomation() {
+        new Thread() {
+            public void run() {
+                String url = MessageFormat.format(myActivityUrl, cafeId);
+                Document document;
+                ProfileManager profileManager = ProfileManager.getInstance();
+                if (webClientManager.getLogined()) {
+                    try {
+                        document = httpRequest(url, Connection.Method.GET, true, true).parse();
+
+                        String id, nickname, profile;
+                        String date, grade;
+                        int visit, article, comment;
+
+                        id = getStringValue(document.selectFirst("li[class=info2]").selectFirst("a[class=gm-tcol-c]").attr("href"), "memberid");
+                        nickname = document.selectFirst("div[class=prfl_info]").text();
+                        profile = document.selectFirst("img").attr("src");
+
+                        date = document.selectFirst("li[class=date gm-tcol-c]").selectFirst("em").text();
+                        grade = document.selectFirst("li[class=grade gm-tcol-c]").attr("title");
+
+                        visit = Integer.parseInt(document.selectFirst("li[class=info]").selectFirst("em").text().replaceAll("[,회]", ""));
+                        article = Integer.parseInt(document.selectFirst("li[class=info2]").selectFirst("em").selectFirst("a").text());
+                        comment = Integer.parseInt(document.selectFirst("li[class=info3]").selectFirst("em").selectFirst("a").text());
+
+                        Log.e("Web", "Profile-------------------");
+                        Log.e("Web", "id: " + id + " 닉네임: " + nickname + " 프로필 사진 url: " + profile +
+                                "\n 가입날짜: " + date + " 등급: " + grade +
+                                "\n 방문수: " + visit + " 글: " + article + " 댓글: " + comment);
+
+
+                        profileManager.setId(id);
+                        profileManager.setNickname(nickname);
+                        profileManager.setProfile(profile);
+                        profileManager.setDate(date);
+                        profileManager.setGrade(grade);
+
+                        profileManager.setArticle(article);
+                        profileManager.setComment(comment);
+                        profileManager.setVisit(visit);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    //TODO: 로그인 안되어있을 시
+                }
+                profileManager.setLogined(webClientManager.getLogined());
+            }
+
+        }.start();
+    }
+
+    /**
      * 게시판 목록을 불러옵니다.
      *
      * @see CategoryManager
      */
-    public static ArrayList<Map> loadCategoryList() {
+    public ArrayList<Map> loadCategoryList() {
         ArrayList arrayList = null;
-        String url = menuListUrl + "search.clubid=" + cafeId + "&search.perPage=9999";
+        String url = MessageFormat.format(menuListUrl, cafeId);
         try {
             Elements categories = null;
 
@@ -192,7 +245,7 @@ public class Web extends Thread {
      * @see ArticleListAdapter
      * @see MainActivity
      */
-    public static void loadArticleList(final ArticleList articleList, final int mid, final int page, final boolean reset) {
+    public void loadArticleList(final ArticleList articleList, final int mid, final int page, final boolean reset) {
         new Thread() {
             public void run() {
                 ArrayList arrayList = null;
@@ -282,7 +335,7 @@ public class Web extends Thread {
      * @throws NullPointerException 게시판에 게시글이 없는 경우
      * @see Web#loadArticleList(ArticleList, int, int, boolean)
      */
-    public static Elements getArticleElements(int mid, int page) throws IOException, NullPointerException {
+    public Elements getArticleElements(int mid, int page) throws IOException, NullPointerException {
         Elements articles = null;
 
         // connect
@@ -317,64 +370,11 @@ public class Web extends Thread {
     }
 
     /**
-     * http request로 전송할 cookie를 설정합니다.
-     *
-     * @return Connection
-     */
-    private static Connection putHeader(Connection connection) {
-        if (!cookie.containsKey("JSESSIONID")) // 최초 접속인지 확인
-            resetCookies();
-
-        return connection.cookies(cookie).headers(getHeader());
-    }
-
-    /**
-     * http response로부터 전달받은 cookie를 저장합니다.
-     */
-    private static void getCookies(Connection.Response response) {
-        setCookies(response.cookies());
-        Log.i("Web", "Get cookies.");
-        //printMap(cookie); // for debug
-    }
-
-    /**
-     * 전달받은 Map을 cookie에 저장합니다.
-     */
-    private static void setCookies(Map map) {
-        cookie.putAll(map);
-    }
-
-    /**
-     * cookie를 초기화합니다.
-     */
-    private static void resetCookies() {
-        cookie.clear();
-    }
-
-    /**
-     * http request에 필요한 header와 cookie를 반환합니다.
-     *
-     * @return header
-     */
-    private static Map getHeader() {
-        if (!header.containsKey("user-agent")) {
-            header.put("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3");
-            header.put("accept-encoding", "gzip, deflate, br");
-            header.put("accept-language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7");
-            header.put("sec-fetch-mode", "navigate");
-            header.put("sec-fetch-site", "none");
-            header.put("sec-fetch-user", "?1");
-            header.put("upgrade-insecure-requests", "1");
-        }
-        return header;
-    }
-
-    /**
      * Map 의 데이터를 모두 디버그 메세지로 표시합니다.
      *
      * @param map 표시할 Map
      */
-    private static void printMap(Map<String, String> map) {
+    private void printMap(Map<String, String> map) {
         if (map != null)
             for (Map.Entry<String, String> elem : map.entrySet()) {
 
@@ -390,7 +390,7 @@ public class Web extends Thread {
      *
      * @return 뱅온 여부
      */
-    public static boolean getTwitchLive() {
+    public boolean getTwitchLive() {
         boolean live = false;
         String twitchChannel;
         CategoryManager category = CategoryManager.getInstance();
@@ -416,7 +416,7 @@ public class Web extends Thread {
      * @param articleId             불러올 게시글의 id
      * @see ArticleViewerActivity
      */
-    public static void getArticle(final ArticleViewerActivity articleViewerActivity, final String articleId) {
+    public void getArticle(final ArticleViewerActivity articleViewerActivity, final String articleId) {
         new Thread() {
             public void run() {
                 String articleUrl = MessageFormat.format(articleReadUrl, cafeId, articleId);
@@ -456,10 +456,36 @@ public class Web extends Thread {
                         String view = header.selectFirst("span[class=no font_l]").selectFirst("em").text();
                         String likeIt = footer.selectFirst("em[class=u_cnt _count]").text();
 
+                        Elements elementsA = header.selectFirst("div[class=user_wrap]").select("a");
+                        Element elementProfile = null;
+                        for (Element a : elementsA) {
+                            for (String className : a.classNames()) {
+                                if (className.equals("thumb"))
+                                    elementProfile = a;
+                            }
+                        }
+                        String authorId = null, authorProfile = null;
+                        if (elementProfile != null) {
+                            authorProfile = elementProfile.selectFirst("img").attr("src");
+
+                            for (String className : elementProfile.classNames())
+                                if (className.contains("_click")) {
+                                    Pattern p = Pattern.compile("MoveMemberProfile\\|([\\w_\\-]*)");
+                                    Matcher m = p.matcher(className);
+                                    while (m.find()) {
+                                        authorId = m.group(1);
+                                    }
+                                }
+                        }
+                        Log.e("Web", "authorid: " + authorId + "\n" +
+                                "authorProfile: " + authorProfile);
+
                         // 데이터 입력
                         data.setTitle(title)
                                 .setMid(mid)
                                 .setAuthor(author)
+                                .setAuthorProfile(authorProfile)
+                                .setAuthorId(authorId)
                                 .setTime(time)
                                 .setView(view)
                                 .setLikeIt(likeIt)
@@ -494,8 +520,25 @@ public class Web extends Thread {
      *
      * @param cookies
      */
-    public static void applyLoginSession(Map<String, String> cookies) {
-        setCookies(cookies);
+    public void applyLoginSession(Map<String, String> cookies) {
+        webClientManager.setCookiesMap(cookies);
+    }
+
+    /**
+     * 로그아웃시켜 세션을 만료합니다.
+     */
+    public int logoutLoginSession() {
+        try {
+            Document document = httpRequest("https://nid.naver.com/nidlogin.logout", Connection.Method.GET, false, true).parse();
+            webClientManager.setLogined(false);
+            ProfileManager.getInstance().setLogined(false);
+            return 0;
+
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error. (logout)" + " on Web.logoutLoginSession");
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     /**
@@ -511,11 +554,24 @@ public class Web extends Thread {
     }
 
     /**
-     * Singleton
-     *
-     * @return
+     * url 끝에 포함된 paramter값을 추출합니다
      */
-    public Web getInstance() {
+    private static String getStringValue(String str, String valName) throws NullPointerException {
+        Pattern p = Pattern.compile(valName + "=([\\w-]*)");
+        Matcher m = p.matcher(str);
+        while (m.find()) {
+            return m.group(1);
+        }
+        return null;
+    }
+
+    /**
+     * Singleton
+     */
+    public static Web getInstance() {
+        if (instance == null) {
+            instance = new Web();
+        }
         return instance;
     }
 }
