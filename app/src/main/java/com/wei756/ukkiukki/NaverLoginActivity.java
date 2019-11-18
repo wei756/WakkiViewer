@@ -8,6 +8,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.wei756.ukkiukki.Network.NaverLoginView;
+import com.wei756.ukkiukki.Network.Web;
+
 public class NaverLoginActivity extends AppCompatActivity {
     private NaverLoginView loginView;
     private ConstraintLayout layoutLoadingPanel;

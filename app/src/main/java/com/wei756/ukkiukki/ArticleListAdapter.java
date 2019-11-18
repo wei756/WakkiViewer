@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.bumptech.glide.Glide;
 
@@ -26,9 +29,10 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
     public final static int THEME_BOARD = 0;
     public final static int THEME_MAINPAGE = 3;
     public final static int THEME_ARTICLE_VIEWER = 6;
+    public final static int THEME_HEADER_POPULAR = 9;
 
     public final static int SUBTHEME_ARTICLE = 0;
-    public final static int SUBTHEME_CLIP = 1;
+    public final static int SUBTHEME_POPULAR = 1;
     public final static int SUBTHEME_ALBUM = 2;
 
     /**
@@ -55,13 +59,17 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
      * ItemView 정의
      */
     public class ItemViewHolder extends RecyclerView.ViewHolder {
+        protected ConstraintLayout layout;
+        protected ImageView newIcon;
         protected TextView title;
         protected TextView levelIcon;
         protected TextView author;
         protected TextView time;
         protected TextView view;
         protected LinearLayout btnComment;
+        protected LinearLayout layoutFooter;
         protected TextView numComment;
+        protected TextView numLikeIt;
         protected TextView commentCount;
         protected ImageView thumbnail;
         protected ConstraintLayout article;
@@ -69,16 +77,20 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
 
         public ItemViewHolder(View view) {
             super(view);
+            this.layout = (ConstraintLayout) view.findViewById(R.id.layout_article);
+            this.article = (ConstraintLayout) view.findViewById(R.id.btn_layout_article);
+            this.newIcon = (ImageView) view.findViewById(R.id.iv_icon_new);
             this.title = (TextView) view.findViewById(R.id.tv_title);
             this.levelIcon = (TextView) view.findViewById(R.id.icon_author_color);
             this.author = (TextView) view.findViewById(R.id.tv_author);
             this.time = (TextView) view.findViewById(R.id.tv_time);
             this.view = (TextView) view.findViewById(R.id.tv_view);
             this.btnComment = (LinearLayout) view.findViewById(R.id.btn_comment);
+            this.layoutFooter = (LinearLayout) view.findViewById(R.id.layout_footer);
             this.numComment = (TextView) view.findViewById(R.id.tv_comment);
+            this.numLikeIt = (TextView) view.findViewById(R.id.tv_likeit);
             this.commentCount = (TextView) view.findViewById(R.id.tv_comment_count);
             this.thumbnail = (ImageView) view.findViewById(R.id.iv_thumbnail);
-            this.article = (ConstraintLayout) view.findViewById(R.id.btn_layout_article);
         }
     }
 
@@ -98,6 +110,37 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
 
         public HeaderViewHolder(View view) {
             super(view);
+            this.layout = (ConstraintLayout) view.findViewById(R.id.layout_article);
+            this.category = (TextView) view.findViewById(R.id.tv_article_list_header_title);
+            this.icon = (ImageView) view.findViewById(R.id.img_article_list_header_icon);
+            this.more = (TextView) view.findViewById(R.id.tv_article_list_mainpage_more);
+            this.icons = (LinearLayout) view.findViewById(R.id.layout_article_list_header_icons);
+            this.iconTwitch = (ImageView) view.findViewById(R.id.btn_article_list_header_twitch);
+            this.iconYoutube = (ImageView) view.findViewById(R.id.btn_article_list_header_youtube);
+        }
+    }
+
+    /**
+     * FooterView 정의
+     */
+    public class FooterViewHolder extends RecyclerView.ViewHolder {
+        protected ConstraintLayout layout;
+        protected ConstraintLayout article;
+
+        protected TextView category;
+        protected ImageView icon;
+
+        protected TextView more;
+
+        protected LinearLayout icons;
+        protected ImageView iconTwitch;
+        protected ImageView iconYoutube;
+
+
+        public FooterViewHolder(View view) {
+            super(view);
+            this.layout = (ConstraintLayout) view.findViewById(R.id.layout_article);
+            this.article = (ConstraintLayout) view.findViewById(R.id.btn_layout_article);
             this.category = (TextView) view.findViewById(R.id.tv_article_list_header_title);
             this.icon = (ImageView) view.findViewById(R.id.img_article_list_header_icon);
             this.more = (TextView) view.findViewById(R.id.tv_article_list_mainpage_more);
@@ -121,7 +164,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         hasHeader = true;
         hasFooter = false;
 
-        THEME_NUMBER = 3;
+        THEME_NUMBER = 4;
         SUBTHEME_NUMBER = 3;
 
         setTheme(theme);
@@ -137,6 +180,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 headerHasItem = false;
                 scrollable = true;
                 hasHeader = false;
+                hasFooter = false;
                 break;
 
             case THEME_MAINPAGE:
@@ -144,6 +188,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 headerHasItem = false;
                 scrollable = false;
                 hasHeader = true;
+                hasFooter = false;
                 break;
 
             case THEME_ARTICLE_VIEWER:
@@ -151,6 +196,15 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 headerHasItem = false;
                 scrollable = false;
                 hasHeader = true;
+                hasFooter = false;
+                break;
+
+            case THEME_HEADER_POPULAR:
+                maxItemCount = 5;
+                headerHasItem = false;
+                scrollable = false;
+                hasHeader = true;
+                hasFooter = true;
                 break;
         }
     }
@@ -165,26 +219,14 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
      * @param mid 게시판 코드
      */
     public void setMidTheme(int mid) {
-        //TODO
         CategoryManager category = CategoryManager.getInstance();
         try {
             int type = (int) category.getParam(mid, CategoryManager.TYPE);
 
-            if (type == CategoryManager.TYPE_ALBUM) {
-                setSubTheme(SUBTHEME_CLIP);
+            if (type == CategoryManager.TYPE_BEST) {
+                setSubTheme(SUBTHEME_POPULAR);
             } else {
                 setSubTheme(SUBTHEME_ARTICLE);
-            }
-            // 레이아웃 전환 시 필요
-            if (this.mid != mid) {
-                final ArticleListAdapter mAdapter = this;
-                act.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mRecyclerView.removeAllViewsInLayout();
-                        mRecyclerView.setAdapter(mAdapter);
-                    }
-                });
             }
 
             if ((Integer) category.getParam(mid, CategoryManager.TYPE) == CategoryManager.TYPE_MAINPAGE) { // 메인 페이지
@@ -206,28 +248,48 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
      * layout 정의
      */
     protected void setItemLayout() {
-        layoutHeader = new int[3 * SUBTHEME_NUMBER];
-        layoutItem = new int[3 * SUBTHEME_NUMBER];
+        layoutHeader = new int[THEME_NUMBER * SUBTHEME_NUMBER];
+        layoutItem = new int[THEME_NUMBER * SUBTHEME_NUMBER];
+        layoutFooter = new int[THEME_NUMBER * SUBTHEME_NUMBER];
 
         layoutHeader[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list_header;
-        layoutHeader[THEME_BOARD + SUBTHEME_CLIP] = R.layout.article_list_header;
+        layoutHeader[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list_header;
         layoutHeader[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list_header;
         layoutHeader[THEME_MAINPAGE + SUBTHEME_ARTICLE] = R.layout.article_list_mainpage_header;
-        layoutHeader[THEME_MAINPAGE + SUBTHEME_CLIP] = R.layout.article_list_mainpage_header;
+        layoutHeader[THEME_MAINPAGE + SUBTHEME_POPULAR] = R.layout.article_list_mainpage_header;
         layoutHeader[THEME_MAINPAGE + SUBTHEME_ALBUM] = R.layout.article_list_mainpage_header; //TODO: clip album 분리 필요
         layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list_header;
-        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_CLIP] = R.layout.article_list_header;
+        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list_header;
         layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list_header;
+        layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_popular_theme_header;
+        layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme_header;
+        layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_popular_theme_header;
 
         layoutItem[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list;
-        layoutItem[THEME_BOARD + SUBTHEME_CLIP] = R.layout.article_list_clip_theme;
+        layoutItem[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme;
         layoutItem[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list_clip_theme;
         layoutItem[THEME_MAINPAGE + SUBTHEME_ARTICLE] = R.layout.article_list_mainpage;
-        layoutItem[THEME_MAINPAGE + SUBTHEME_CLIP] = R.layout.article_list_mainpage;
+        layoutItem[THEME_MAINPAGE + SUBTHEME_POPULAR] = R.layout.article_list_mainpage;
         layoutItem[THEME_MAINPAGE + SUBTHEME_ALBUM] = R.layout.article_list_mainpage; //TODO: clip album 분리 필요
         layoutItem[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list;
-        layoutItem[THEME_ARTICLE_VIEWER + SUBTHEME_CLIP] = R.layout.article_list_clip_theme;
+        layoutItem[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list_clip_theme;
         layoutItem[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list_clip_theme;
+        layoutItem[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_popular_theme;
+        layoutItem[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme;
+        layoutItem[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_popular_theme;
+
+        layoutFooter[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list_header; // dummy
+        layoutFooter[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list_header; // dummy
+        layoutFooter[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list_header; // dummy
+        layoutFooter[THEME_MAINPAGE + SUBTHEME_ARTICLE] = R.layout.article_list_mainpage_header; // dummy
+        layoutFooter[THEME_MAINPAGE + SUBTHEME_POPULAR] = R.layout.article_list_mainpage_header; // dummy
+        layoutFooter[THEME_MAINPAGE + SUBTHEME_ALBUM] = R.layout.article_list_mainpage_header; // dummy
+        layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list_header; // dummy
+        layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list_header; // dummy
+        layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list_header; // dummy
+        layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_popular_theme_footer;
+        layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme_footer;
+        layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_popular_theme_footer;
     }
 
     /**
@@ -257,7 +319,10 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
      */
     @Override
     protected RecyclerView.ViewHolder createFooterViewHolder(ViewGroup viewGroup) {
-        return null;
+        View view = LayoutInflater.from(viewGroup.getContext())
+                .inflate(layoutFooter[TYPE_THEME + TYPE_SUBTHEME], viewGroup, false);
+
+        return new FooterViewHolder(view);
     }
 
     /**
@@ -266,15 +331,37 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
     @Override
     protected void bindHeaderViewHolder(@NonNull RecyclerView.ViewHolder viewholder) {
         HeaderViewHolder headerViewHolder = (HeaderViewHolder) viewholder;
+        // size
+        if (TYPE_THEME == THEME_HEADER_POPULAR) {
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, act.getResources().getDisplayMetrics());
+            headerViewHolder.layout.setPadding(padding, padding, padding, padding);
+            headerViewHolder.layout.setBackgroundResource(R.color.colorTransparent);
+            ViewGroup.LayoutParams params = headerViewHolder.layout.getLayoutParams();
+            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, act.getResources().getDisplayMetrics());
+            headerViewHolder.layout.setLayoutParams(params);
+
+            params = headerViewHolder.article.getLayoutParams();
+            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            headerViewHolder.article.setLayoutParams(params);
+        }
 
         // header
-        headerViewHolder.category.setText(category);
-        //headerViewHolder.icon.setImageResource(icon);
+        if (TYPE_THEME != THEME_HEADER_POPULAR)
+            headerViewHolder.category.setText(category);
         if (TYPE_THEME == THEME_MAINPAGE) {
             headerViewHolder.more.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     ((MainActivity) act).setCategory(mid, true);
+                }
+            });
+        }
+        if (TYPE_THEME == THEME_HEADER_POPULAR) {
+            headerViewHolder.article.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ((MainActivity) act).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true);
                 }
             });
         }
@@ -288,10 +375,40 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         ItemViewHolder itemViewHolder = (ItemViewHolder) viewholder;
         final Article article = (Article) mList.get(pos);
 
+        // size
+        if (TYPE_THEME == THEME_HEADER_POPULAR) {
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, act.getResources().getDisplayMetrics());
+            itemViewHolder.layout.setPadding(padding, padding, padding, padding);
+            itemViewHolder.layout.setBackgroundResource(R.color.colorTransparent);
+            ViewGroup.LayoutParams params = itemViewHolder.layout.getLayoutParams();
+            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, act.getResources().getDisplayMetrics());
+            itemViewHolder.layout.setLayoutParams(params);
+
+            params = itemViewHolder.article.getLayoutParams();
+            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            itemViewHolder.article.setLayoutParams(params);
+        }
+
+        // title
         itemViewHolder.title.setText(article.getTitle());
+        if (TYPE_THEME == THEME_BOARD) {
+            if (TYPE_SUBTHEME == SUBTHEME_ARTICLE) {
+                if (article.isReadArticle())
+                    itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorTextSecondary, null));
+                else
+                    itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorTextPrimary, null));
+            } else if (TYPE_SUBTHEME == SUBTHEME_POPULAR) {
+                if (article.isReadArticle())
+                    itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorPopularListTextSecondary, null));
+                else
+                    itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorPopularListTextPrimary, null));
+            }
+        }
         if (TYPE_THEME != THEME_MAINPAGE)
             itemViewHolder.author.setText(article.getAuthor());
 
+        //TODO: 회원등급 표시기능 추가 가능성 있음
         // levelIcon
         /*
         if (TYPE_SUBTHEME == SUBTHEME_ARTICLE) {
@@ -309,18 +426,26 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 //itemViewHolder.levelIcon.setVisibility(View.GONE);
             }
         }
-        */
         if (TYPE_THEME != THEME_MAINPAGE)
             itemViewHolder.levelIcon.setVisibility(View.GONE);
+        */
 
-        if ((TYPE_THEME == THEME_BOARD
-                || TYPE_THEME == THEME_ARTICLE_VIEWER)
+        if ((TYPE_THEME == THEME_BOARD || TYPE_THEME == THEME_ARTICLE_VIEWER)
                 && TYPE_SUBTHEME == SUBTHEME_ARTICLE) {
+            if (article.isNewArticle() && !article.isReadArticle())
+                itemViewHolder.newIcon.setVisibility(View.VISIBLE);
+            else
+                itemViewHolder.newIcon.setVisibility(View.GONE);
             itemViewHolder.time.setText(article.getTime());
-
             itemViewHolder.view.setText(article.getView());
             itemViewHolder.numComment.setText(article.getComment());
-            itemViewHolder.thumbnail.setVisibility(View.GONE);
+        } else if (TYPE_THEME == THEME_BOARD
+                && TYPE_SUBTHEME == SUBTHEME_POPULAR) {
+            itemViewHolder.layoutFooter.setVisibility(View.VISIBLE);
+            itemViewHolder.numComment.setText(article.getComment());
+            itemViewHolder.numLikeIt.setText(article.getLikeIt());
+        } else if (TYPE_THEME == THEME_HEADER_POPULAR) {
+            itemViewHolder.layoutFooter.setVisibility(View.GONE);
         } else if (TYPE_THEME == THEME_MAINPAGE) {
             itemViewHolder.time.setText(article.getTime());
         }
@@ -332,11 +457,13 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             if (thumbnailUrl != null) {
                 Glide.with(act.getApplicationContext()).load(thumbnailUrl).into(itemViewHolder.thumbnail);
 
-                // rounded corners
-                GradientDrawable drawable=
-                        (GradientDrawable) act.getApplicationContext().getDrawable(R.drawable.article_list_bg_thumbnail);
-                itemViewHolder.thumbnail.setBackground(drawable);
-                itemViewHolder.thumbnail.setClipToOutline(true);
+                if (TYPE_SUBTHEME == SUBTHEME_ARTICLE) { // 인기글 리스트 적용 제외
+                    // rounded corners
+                    GradientDrawable drawable =
+                            (GradientDrawable) act.getApplicationContext().getDrawable(R.drawable.article_list_bg_thumbnail);
+                    itemViewHolder.thumbnail.setBackground(drawable);
+                    itemViewHolder.thumbnail.setClipToOutline(true);
+                }
 
                 itemViewHolder.thumbnail.setVisibility(View.VISIBLE);
             } else {
@@ -348,9 +475,13 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         View.OnClickListener click = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Uri uri = Uri.parse("https://m.cafe.naver.com" + article.getHref());
-
-                //Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                article.setReadArticle(true);
+                act.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyDataSetChanged();
+                    }
+                });
                 Intent intent = new Intent(act, ArticleViewerActivity.class);
                 intent.putExtra("article_title", article.getTitle());
                 intent.putExtra("article_href", article.getHref());
@@ -368,6 +499,30 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
      */
     @Override
     protected void bindFooterViewHolder(@NonNull RecyclerView.ViewHolder viewholder) {
+        FooterViewHolder footerViewHolder = (FooterViewHolder) viewholder;
 
+        // size
+        if (TYPE_THEME == THEME_HEADER_POPULAR) {
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, act.getResources().getDisplayMetrics());
+            footerViewHolder.layout.setPadding(padding, padding, padding, padding);
+            footerViewHolder.layout.setBackgroundResource(R.color.colorTransparent);
+            ViewGroup.LayoutParams params = footerViewHolder.layout.getLayoutParams();
+            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, act.getResources().getDisplayMetrics());
+            footerViewHolder.layout.setLayoutParams(params);
+
+            params = footerViewHolder.article.getLayoutParams();
+            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            footerViewHolder.article.setLayoutParams(params);
+        }
+
+        if (TYPE_THEME == THEME_HEADER_POPULAR) {
+            footerViewHolder.article.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ((MainActivity) act).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true);
+                }
+            });
+        }
     }
 }

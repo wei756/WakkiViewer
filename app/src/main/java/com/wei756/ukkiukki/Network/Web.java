@@ -1,6 +1,14 @@
-package com.wei756.ukkiukki;
+package com.wei756.ukkiukki.Network;
 
 import android.util.Log;
+
+import com.wei756.ukkiukki.Article;
+import com.wei756.ukkiukki.ArticleList;
+import com.wei756.ukkiukki.ArticleListAdapter;
+import com.wei756.ukkiukki.ArticleViewerActivity;
+import com.wei756.ukkiukki.CategoryManager;
+import com.wei756.ukkiukki.MainActivity;
+import com.wei756.ukkiukki.ProfileManager;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -280,6 +288,7 @@ public class Web extends Thread {
                                 String author = article.selectFirst("span[class=nick]").text();
 
                                 article1.setAuthor(author)
+                                        .setNewArticle(article.selectFirst("span[class=icon_new_txt]") != null)
                                         .setTitle(article.selectFirst("strong[class=tit]").text())
                                         .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
                                         .setTime(article.selectFirst("span[class=time]").text())

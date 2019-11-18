@@ -9,11 +9,18 @@
 
     <!-- Action bar -->
     <color name="colorTitle">#e0e0e0</color>
+    <color name="colorTransparent">#00000000</color>
 
     <color name="colorTextPrimary">#e0e0e0</color>
     <color name="colorTextSecondary">#a4a4a4</color>
 
     <!-- Article list-->
+    <color name="colorPopularListMoreIconBackground">#363837</color>
+    <color name="colorPopularListBackgroundTransparent">#00363837</color>
+    <color name="colorPopularListBackground">#363837</color>
+    <color name="colorPopularListItemBackground">#EB444745</color>
+    <color name="colorPopularListTextPrimary">#e0e0e0</color>
+    <color name="colorPopularListTextSecondary">#a4a4a4</color>
     <color name="colorArticleListItemBackground">#1e1e1e</color>
     <color name="colorArticleListItemLine">#333</color>
     <color name="colorArticleListThumbnailLine">#222</color>

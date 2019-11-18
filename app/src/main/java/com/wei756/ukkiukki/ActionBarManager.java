@@ -25,8 +25,8 @@ public class ActionBarManager {
      * @param toolbar 적용할 Toolbar
      */
     private void initActionBarBasic(Activity act, Toolbar toolbar) {
-        act.getWindow().setStatusBarColor(act.getResources().getColor(R.color.colorPrimaryDark, null));
-        toolbar.setBackgroundResource(R.color.colorPrimary); // color
+        act.getWindow().setStatusBarColor(act.getResources().getColor(R.color.colorTransparent, null));
+        toolbar.setBackgroundResource(R.color.colorTransparent); // color
     }
 
     /**

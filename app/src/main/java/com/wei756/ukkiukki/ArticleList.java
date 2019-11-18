@@ -5,12 +5,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
+import com.wei756.ukkiukki.Network.Web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ArticleList implements LoadedListner {
     private Web web = Web.getInstance();
@@ -37,33 +40,12 @@ public class ArticleList implements LoadedListner {
 
         // RecyclerView
         this.mRecyclerView = mRecyclerView;
-        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(act);
         mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(mLinearLayoutManager);
 
+        // RecyclerViewAdapter
         mAdapter = new ArticleListAdapter(new ArrayList<Item>(), act, theme, this.mRecyclerView);
         mRecyclerView.setAdapter(mAdapter);
-
-        // Endless scrolling
-        this.scollable = mAdapter.getScollable();
-        if (scollable) {
-            scrollListener = new EndlessRecyclerViewScrollListener(mLinearLayoutManager) {
-                @Override
-                public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                    loadArticleList(mid, page, false);
-                }
-            };
-            mRecyclerView.addOnScrollListener(scrollListener);
-            mAdapter.setScrollListener(scrollListener); // for endless scroll
-
-            // 구분선
-            /*
-            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
-                    mLinearLayoutManager.getOrientation());
-            dividerItemDecoration.setDrawable(act.getApplicationContext().getDrawable(R.drawable.articlelist_divider));
-            mRecyclerView.addItemDecoration(dividerItemDecoration);
-            */
-        }
+        setMidTheme(mid, true);
 
         setVisibility(View.GONE);
     }
@@ -83,8 +65,9 @@ public class ArticleList implements LoadedListner {
     @Override
     public void onLoadedArticleList(int mid, ArrayList arrayList, boolean reset) {
         setVisibility(View.VISIBLE); // 로딩 완료 후 표시
-        mAdapter.setMidTheme(mid);
-
+        setMidTheme(mid, reset);
+        if (theme == ArticleListAdapter.THEME_HEADER_POPULAR)
+            Collections.shuffle(arrayList);
         if (reset == true)
             mAdapter.setListWith(arrayList, act);
         else
@@ -96,7 +79,7 @@ public class ArticleList implements LoadedListner {
 
     @Override
     public void onLoadedArticleList(int mid, Exception e, boolean reset) {
-        mAdapter.setMidTheme(mid);
+        setMidTheme(mid, reset);
 
         if (reset)
             mAdapter.clearList(act);
@@ -125,12 +108,57 @@ public class ArticleList implements LoadedListner {
             @Override
             public void run() {
                 mRecyclerView.setVisibility(visibility);
-                if (visibility == View.GONE)
-                    mProgressBar.setVisibility(View.VISIBLE);
-                else
-                    mProgressBar.setVisibility(View.GONE);
+                if (mProgressBar != null) {
+                    if (visibility == View.GONE)
+                        mProgressBar.setVisibility(View.VISIBLE);
+                    else
+                        mProgressBar.setVisibility(View.GONE);
+                }
             }
         });
+    }
+
+    private void setMidTheme(final int mid, boolean refresh) {
+        mAdapter.setMidTheme(mid);
+        if (refresh) {
+            // 레이아웃 전환
+            act.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mRecyclerView.removeAllViewsInLayout();
+                    mRecyclerView.setAdapter(mAdapter);
+                    RecyclerView.LayoutManager mLayoutManager;
+                    if (mAdapter.TYPE_THEME == ArticleListAdapter.THEME_BOARD) {
+                        if (mAdapter.TYPE_SUBTHEME == ArticleListAdapter.SUBTHEME_POPULAR) {
+                            mLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+                        } else {
+                            mLayoutManager = new LinearLayoutManager(act);
+                            ((LinearLayoutManager) mLayoutManager).setOrientation(RecyclerView.VERTICAL);
+                        }
+                    } else if (mAdapter.TYPE_THEME == ArticleListAdapter.THEME_HEADER_POPULAR) {
+                        mLayoutManager = new LinearLayoutManager(act);
+                        ((LinearLayoutManager) mLayoutManager).setOrientation(RecyclerView.HORIZONTAL);
+                    } else {
+                        mLayoutManager = new LinearLayoutManager(act);
+                        ((LinearLayoutManager) mLayoutManager).setOrientation(RecyclerView.VERTICAL);
+                    }
+                    mRecyclerView.setLayoutManager(mLayoutManager);
+
+                    // Endless scrolling
+                    scollable = mAdapter.getScollable();
+                    if (scollable && mAdapter.TYPE_SUBTHEME != ArticleListAdapter.SUBTHEME_POPULAR) {
+                        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager) {
+                            @Override
+                            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                                loadArticleList(mid, page, false);
+                            }
+                        };
+                        mRecyclerView.addOnScrollListener(scrollListener);
+                        mAdapter.setScrollListener(scrollListener); // for endless scroll
+                    }
+                }
+            });
+        }
     }
 }
 

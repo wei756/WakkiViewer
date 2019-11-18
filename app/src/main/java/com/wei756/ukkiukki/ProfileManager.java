@@ -64,6 +64,7 @@ public class ProfileManager {
                     btnLogout.setVisibility(View.VISIBLE);
                     tvNickname.setText(nickname);
                     tvGrade.setText(grade);
+                    tvGrade.setVisibility(View.VISIBLE);
 
                     llStats.setVisibility(View.VISIBLE);
                     vFooterLine.setVisibility(View.VISIBLE);
@@ -80,7 +81,7 @@ public class ProfileManager {
                 } else {
                     btnLogout.setVisibility(View.GONE);
                     tvNickname.setText(R.string.nav_header_title);
-                    tvGrade.setText("");
+                    tvGrade.setVisibility(View.GONE);
 
                     llStats.setVisibility(View.GONE);
                     vFooterLine.setVisibility(View.GONE);

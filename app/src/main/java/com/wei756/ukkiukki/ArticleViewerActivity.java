@@ -10,6 +10,8 @@ import android.os.Bundle;
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.wei756.ukkiukki.Network.Web;
+import com.wei756.ukkiukki.Network.WebClientManager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;

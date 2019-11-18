@@ -22,6 +22,10 @@
         <item name="android:actionBarSize">52dp</item>
     </style>
 
+    <style name="CollapsingToolbarTitleTheme" parent="TextAppearance.AppCompat.Title">
+        <item name="android:textColor">@color/colorTitle</item>
+    </style>
+
     <!-- Splash Theme -->
     <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_background</item>

@@ -1,4 +1,4 @@
-package com.wei756.ukkiukki;
+package com.wei756.ukkiukki.Network;
 
 import android.os.Build;
 import android.util.Log;

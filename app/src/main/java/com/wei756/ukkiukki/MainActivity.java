@@ -1,17 +1,19 @@
 package com.wei756.ukkiukki;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -22,6 +24,9 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
+import com.wei756.ukkiukki.Network.Web;
+import com.wei756.ukkiukki.Network.WebClientManager;
+import com.wei756.ukkiukki.Preference.DarkModeManager;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -31,6 +36,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.Menu;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,12 +45,21 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, RefreshListner {
 
     private Toolbar toolbar;
+    private AppBarLayout appBarLayout;
 
     private SearchView mSearchView;
 
     public NavigationView navigationView;
+    private ActionBarDrawerToggle toggle;
 
     private int mid = CategoryManager.CATEGORY_MAINPAGE;
+
+    // header popular list
+    private CollapsingToolbarLayout collapsingToolbarLayout;
+    private ArticleList popularList;
+    private RecyclerView popularView;
+    private ImageView popularBackground, popularIcon;
+    private LinearLayout popularInfo;
 
     // article page
     private View articlepageLayout;
@@ -54,10 +69,10 @@ public class MainActivity extends AppCompatActivity
 
     // main page
     private View mainpageLayout;
-    private ArticleList announcementList, freeList, creativeList;
-    private RecyclerView announcementView, freeView, creativeView;
-    private RelativeLayout announcementViewProgressBar, freeViewProgressBar, creativeViewProgressBar;
-    private RelativeLayout announcementLayout, freeLayout, creativeLayout;
+    private ArticleList freeList, creativeList;
+    private RecyclerView freeView, creativeView;
+    private RelativeLayout freeViewProgressBar, creativeViewProgressBar;
+    private RelativeLayout freeLayout, creativeLayout;
 
 
     // floating action bar
@@ -72,13 +87,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (DarkModeManager.getInstance(this).isNightModeEnabled()) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
         setContentView(R.layout.activity_main);
 
+        // Dark mode
+        DarkModeManager.getInstance(this).setDefaultNightMode();
+
+        // Toolbar
         toolbar = findViewById(R.id.toolbar_main);
         toolbar.setTitle(R.string.app_name);
         toolbar.setOverflowIcon(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_overflow_24dp));
@@ -99,7 +113,8 @@ public class MainActivity extends AppCompatActivity
         navigationView = findViewById(R.id.nav_view);
         final ProfileManager profileManager = ProfileManager.getInstance();
         profileManager.setNavigationView(navigationView);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        CategoryManager.getInstance().updateCategoryMenu(MainActivity.this, navigationView.getMenu());
+        toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
@@ -109,30 +124,43 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        ConstraintLayout btnLogin = (ConstraintLayout) navigationView.getHeaderView(0).findViewById(R.id.layout_nav_profile);
+        ConstraintLayout btnLogin = (ConstraintLayout) navigationView.getHeaderView(0).findViewById(R.id.layout_nav_profile); // 로그인 버튼
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (WebClientManager.getInstance().getLogined()) { // 로그인 페이지
+                if (WebClientManager.getInstance().getLogined()) { // 프로필 페이지
+                } else { // 로그인 페이지
                     // open login page
                     Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
                     intent.putExtra("login_type", "LOGIN");
                     startActivity(intent);
-                } else { // 프로필 페이지
-
                 }
 
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
-        TextView btnLogout = (TextView) navigationView.getHeaderView(0).findViewById(R.id.btn_nav_logout);
+        TextView btnLogout = (TextView) navigationView.getHeaderView(0).findViewById(R.id.btn_nav_logout); // 로그아웃 버튼
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // open login page
-                Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
-                intent.putExtra("login_type", "LOGOUT");
-                startActivity(intent);
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(R.string.app_name);
+                builder.setMessage("정말로 로그아웃하겠습니까?");
+                builder.setPositiveButton("예",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // open logout page
+                                Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
+                                intent.putExtra("login_type", "LOGOUT");
+                                startActivity(intent);
+                            }
+                        });
+                builder.setNegativeButton("아니오",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        });
+                builder.show();
 
                 drawer.closeDrawer(GravityCompat.START);
             }
@@ -141,12 +169,30 @@ public class MainActivity extends AppCompatActivity
         // menu
         toolbar.inflateMenu(R.menu.main);
 
-        // set actionbar theme
-        actBarManager.setActionBar(MainActivity.this, toolbar, mid, toggle);
 
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+
+        // header popular list
+        collapsingToolbarLayout = findViewById(R.id.layout_article_list_collapsing_appbar);
+        popularView = findViewById(R.id.view_appbar_popular);
+        popularBackground = findViewById(R.id.iv_article_list_header_background);
+        popularIcon = findViewById(R.id.iv_article_list_header_icon);
+        popularInfo = findViewById(R.id.layout_article_list_header_info);
+
+        appBarLayout = findViewById(R.id.layout_article_list_appbar);
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int i) {
+                float percentage = 1 - ((float)Math.abs(i)/appBarLayout.getTotalScrollRange());
+                popularIcon.setAlpha(percentage);
+                popularInfo.setAlpha(percentage);
+                popularView.setAlpha(percentage);
+            }
+        });
+
+        popularList = new ArticleList(this, popularView, null, ArticleListAdapter.THEME_HEADER_POPULAR);
 
         // Pages
         // article page
@@ -159,19 +205,15 @@ public class MainActivity extends AppCompatActivity
         // main page
         mainpageLayout = findViewById(R.id.layout_mainpage);
 
-        announcementView = (RecyclerView) findViewById(R.id.view_article_list_announcement);
         freeView = (RecyclerView) findViewById(R.id.view_article_list_free);
         creativeView = (RecyclerView) findViewById(R.id.view_article_list_creative);
 
-        announcementViewProgressBar = (RelativeLayout) findViewById(R.id.view_article_list_announcement_loadingPanel);
         freeViewProgressBar = (RelativeLayout) findViewById(R.id.view_article_list_free_loadingPanel);
         creativeViewProgressBar = (RelativeLayout) findViewById(R.id.view_article_list_creative_loadingPanel);
 
-        announcementLayout = (RelativeLayout) findViewById(R.id.layout_article_list_announcement);
         freeLayout = (RelativeLayout) findViewById(R.id.layout_article_list_free);
         creativeLayout = (RelativeLayout) findViewById(R.id.layout_article_list_creative);
 
-        announcementList = new ArticleList(this, announcementView, announcementViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
         freeList = new ArticleList(this, freeView, freeViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
         creativeList = new ArticleList(this, creativeView, creativeViewProgressBar, ArticleListAdapter.THEME_MAINPAGE);
 
@@ -241,13 +283,9 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.action_toggle_darkmode) {
             // 다크모드 전환
-            DarkModeManager initApplication = DarkModeManager.getInstance(this);
-            initApplication.setIsNightModeEnabled(!initApplication.isNightModeEnabled());
-            if (DarkModeManager.getInstance(this).isNightModeEnabled()) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            }
+            DarkModeManager darkModeManager = DarkModeManager.getInstance(this);
+            darkModeManager.toggleIsNightModeEnabled();
+            darkModeManager.setDefaultNightMode();
             return true;
         }
 
@@ -281,8 +319,17 @@ public class MainActivity extends AppCompatActivity
     public void setCategory(int mid, boolean refresh) {
         this.mid = mid;
         if (refresh) {
-            actBarManager.setActionBar(this, toolbar, mid);
+            // set actionbar theme
+            actBarManager.setActionBar(MainActivity.this, toolbar, mid, toggle);
             Web.getInstance().loadMyInfomation();
+            if (mid != CategoryManager.CATEGORY_POPULAR_ARTICLE
+                    && mid != CategoryManager.CATEGORY_LOGIN) {
+                setPopularList(true);
+
+                popularList.loadArticleList(CategoryManager.CATEGORY_POPULAR_ARTICLE, 1, true);
+            } else {
+                setPopularList(false);
+            }
         }
 
 
@@ -290,7 +337,6 @@ public class MainActivity extends AppCompatActivity
             mainpageLayout.setVisibility(View.VISIBLE);
             articlepageLayout.setVisibility(View.GONE);
 
-            announcementList.loadArticleList(CategoryManager.CATEGORY_POPULAR_ARTICLE, 1, true);
             freeList.loadArticleList(CategoryManager.CATEGORY_ALLLIST, 1, true);
             creativeList.loadArticleList(59, 1, true);
 
@@ -316,6 +362,27 @@ public class MainActivity extends AppCompatActivity
                     fab.show();
                 }
             });
+        }
+    }
+
+    /**
+     * CollapsingAppbarLayout 에 인기글 리스트 표시여부를 설정합니다.
+     *
+     * @param open 인기글 리스트 표시여부
+     */
+    public void setPopularList(boolean open) {
+        if (open) {
+            popularBackground.setVisibility(View.VISIBLE);
+            popularIcon.setVisibility(View.VISIBLE);
+            popularInfo.setVisibility(View.VISIBLE);
+            popularView.setVisibility(View.VISIBLE);
+            collapsingToolbarLayout.setTitleEnabled(true);
+        } else {
+            popularBackground.setVisibility(View.GONE);
+            popularIcon.setVisibility(View.GONE);
+            popularInfo.setVisibility(View.GONE);
+            popularView.setVisibility(View.GONE);
+            collapsingToolbarLayout.setTitleEnabled(false);
         }
     }
 

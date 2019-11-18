@@ -14,6 +14,7 @@ public class SplashActivity extends AppCompatActivity {
         // load category
         CategoryManager.getInstance().updateCategoryList();
 
+        // Start MainActivity
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
 

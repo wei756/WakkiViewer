@@ -1,8 +1,9 @@
 package com.wei756.ukkiukki;
 
-import android.app.Activity;
-import android.content.Context;
 import android.view.Menu;
+import android.view.SubMenu;
+
+import com.wei756.ukkiukki.Network.Web;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -126,8 +127,25 @@ public class CategoryManager {
             @Override
             public void run() {
                 menu.clear();
-                for (Map cat : category)
-                    menu.add((String) cat.get(CategoryManager.NAME));
+                boolean grouped = false;
+                SubMenu subMenu = null;
+                for (Map cat : category) {
+                    int type = (int) cat.get(CategoryManager.TYPE);
+                    String name = (String) cat.get(CategoryManager.NAME);
+
+                    if (type == CategoryManager.TYPE_GROUP) {
+                        if (!grouped)
+                            grouped = true;
+                        subMenu = menu.addSubMenu(name);
+                    } else if (type == CategoryManager.TYPE_CONTOUR) {
+                        subMenu = menu.addSubMenu("");
+                    } else {
+                        if (grouped)
+                            subMenu.add(name);
+                        else
+                            menu.add(name);
+                    }
+                }
             }
         });
     }

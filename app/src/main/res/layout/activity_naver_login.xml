@@ -7,7 +7,7 @@
     android:background="@color/colorBackground"
     tools:context=".NaverLoginActivity">
 
-    <com.wei756.ukkiukki.NaverLoginView
+    <com.wei756.ukkiukki.Network.NaverLoginView
         android:id="@+id/web_naver_login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

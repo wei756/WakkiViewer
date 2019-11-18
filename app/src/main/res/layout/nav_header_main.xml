@@ -86,15 +86,20 @@
             android:textColor="@color/colorTextPrimary"
             android:textSize="16sp"
             app:layout_constraintStart_toEndOf="@id/iv_nav_profile"
-            app:layout_constraintTop_toTopOf="@id/iv_nav_profile" />
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintTop_toTopOf="@id/iv_nav_profile"
+            app:layout_constraintBottom_toTopOf="@id/tv_nav_grade"/>
 
         <TextView
             android:id="@+id/tv_nav_grade"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:text="ffff"
+            android:visibility="gone"
             android:textColor="@color/colorTextSecondary"
             android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/iv_nav_profile"
             app:layout_constraintTop_toBottomOf="@id/tv_nav_nickname" />
     </androidx.constraintlayout.widget.ConstraintLayout>

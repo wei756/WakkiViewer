@@ -16,6 +16,8 @@ public class Article extends Item {
     private String thumbnailUrl;
     private String href;
 
+    private boolean newArticle = true, readArticle = false, newComment = false;
+
     private Element body;
     private Element footer;
     private Element feedback;
@@ -91,7 +93,7 @@ public class Article extends Item {
         return likeIt;
     }
 
-    public Article setLikeIt(String vote) {
+    public Article setLikeIt(String likeIt) {
         this.likeIt = likeIt;
         return this;
     }
@@ -156,6 +158,33 @@ public class Article extends Item {
 
     public Article setLevelIcon(String levelIcon) {
         this.levelIcon = levelIcon;
+        return this;
+    }
+
+    public boolean isNewArticle() {
+        return newArticle;
+    }
+
+    public Article setNewArticle(boolean newArticle) {
+        this.newArticle = newArticle;
+        return this;
+    }
+
+    public boolean isReadArticle() {
+        return readArticle;
+    }
+
+    public Article setReadArticle(boolean readArticle) {
+        this.readArticle = readArticle;
+        return this;
+    }
+
+    public boolean isNewComment() {
+        return newComment;
+    }
+
+    public Article setNewComment(boolean newComment) {
+        this.newComment = newComment;
         return this;
     }
 }

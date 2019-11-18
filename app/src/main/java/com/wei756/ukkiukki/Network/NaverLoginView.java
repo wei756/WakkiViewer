@@ -1,4 +1,4 @@
-package com.wei756.ukkiukki;
+package com.wei756.ukkiukki.Network;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -8,6 +8,8 @@ import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.wei756.ukkiukki.NaverLoginActivity;
 
 import java.util.HashMap;
 import java.util.Map;
