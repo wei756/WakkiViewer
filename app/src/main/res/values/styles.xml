@@ -25,11 +25,20 @@
     <style name="CollapsingToolbarTitleTheme" parent="TextAppearance.AppCompat.Title">
         <item name="android:textColor">@color/colorTitle</item>
     </style>
+    <style name="ProfileCollapsingToolbarTitleTheme" parent="TextAppearance.AppCompat.Title">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+    </style>
 
     <!-- Splash Theme -->
     <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_background</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 
 </resources>

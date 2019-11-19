@@ -14,8 +14,7 @@ import android.view.View;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 
 import androidx.core.view.GravityCompat;
@@ -76,7 +75,7 @@ public class MainActivity extends AppCompatActivity
 
 
     // floating action bar
-    private FloatingActionButton fab;
+    //private FloatingActionButton fab;
 
     private ActionBarManager actBarManager = ActionBarManager.getInstance();
 
@@ -99,6 +98,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         // Floating button
+        /*
         fab = findViewById(R.id.fab_write_article);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,6 +107,10 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
+        */
+        // Bottom navigation view
+        BottomNavigationView mBottomNavigationView = findViewById(R.id.view_main_bottom_navview);
+        mBottomNavigationView.getMenu().setGroupCheckable(0, false, true);
 
         // Navigation drawer
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -129,6 +133,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 if (WebClientManager.getInstance().getLogined()) { // 프로필 페이지
+                    // open profile page
+                    Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                    intent.putExtra("id", ProfileManager.getInstance().getId());
+                    startActivity(intent);
                 } else { // 로그인 페이지
                     // open login page
                     Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
@@ -145,8 +153,8 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle(R.string.app_name);
-                builder.setMessage("정말로 로그아웃하겠습니까?");
-                builder.setPositiveButton("예",
+                builder.setMessage(R.string.real_logout);
+                builder.setPositiveButton(R.string.dialog_yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // open logout page
@@ -155,7 +163,7 @@ public class MainActivity extends AppCompatActivity
                                 startActivity(intent);
                             }
                         });
-                builder.setNegativeButton("아니오",
+                builder.setNegativeButton(R.string.dialog_no,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                             }
@@ -174,8 +182,9 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        // header popular list
+        // appbar header popular list
         collapsingToolbarLayout = findViewById(R.id.layout_article_list_collapsing_appbar);
+
         popularView = findViewById(R.id.view_appbar_popular);
         popularBackground = findViewById(R.id.iv_article_list_header_background);
         popularIcon = findViewById(R.id.iv_article_list_header_icon);
@@ -343,7 +352,7 @@ public class MainActivity extends AppCompatActivity
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fab.hide();
+                    //fab.hide();
                 }
             });
         } else if (mid == CategoryManager.CATEGORY_LOGIN) { // 로그인페이지
@@ -359,7 +368,7 @@ public class MainActivity extends AppCompatActivity
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fab.show();
+                    //fab.show();
                 }
             });
         }

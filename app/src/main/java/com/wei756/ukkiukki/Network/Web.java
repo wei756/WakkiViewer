@@ -31,7 +31,10 @@ public class Web extends Thread {
             popularArticleListUrl = "https://m.cafe.naver.com/PopularArticleList.nhn?cafeId={0}",
             menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?search.clubid={0}&search.perPage=9999",
             articleReadUrl = "https://m.cafe.naver.com/ArticleRead.nhn?clubid={0}&articleid={1}",
-            myActivityUrl = "https://cafe.naver.com/MyCafeMyActivityAjax.nhn?clubid={0}";
+            myActivityUrl = "https://cafe.naver.com/MyCafeMyActivityAjax.nhn?clubid={0}",
+            profileArticleListUrl = "https://m.cafe.naver.com/CafeMemberArticleList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
+            profileCommentListUrl = "https://m.cafe.naver.com/CafeMemberCommentList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
+            profileCommentArticleListUrl = "https://m.cafe.naver.com/CafeMemberReplyList.nhn?search.clubid={0}&search.query={1}&search.page={2}&search.perPage={3}";
     private final String cafeId = "27842958";
     private final int timeout = 5000;
 
@@ -268,7 +271,7 @@ public class Web extends Thread {
 
                             // 리스트 추가
                             Article article1 = new Article();
-                            if (mid == -1) { // 인기글
+                            if (mid == CategoryManager.CATEGORY_POPULAR_ARTICLE) { // 인기글
                                 // author
                                 String author = article.selectFirst("div[class=user]").text();
 
@@ -283,6 +286,28 @@ public class Web extends Thread {
                                 if (thumbnail != null) {
                                     article1.setThumbnailUrl(thumbnail.attr("data-original"));
                                 }
+                            } else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT) { // 프로필 작성댓글
+                                // content
+                                String time = article.selectFirst("span[class=info_item]").ownText();
+                                String articleTitle = article.selectFirst("span[class=desc]").ownText();
+                                String comment = "";
+                                if (!articleTitle.equals("원글이 삭제된 게시글입니다."))
+                                    comment = article.selectFirst("span[class=num]").text();
+
+                                // content
+                                Element contentElement = article.selectFirst("strong[class=txt]");
+                                String content;
+                                if (contentElement == null)
+                                    content = "";
+                                else
+                                    content = article.selectFirst("strong[class=txt]").text();
+
+                                article1.setContent(content)
+                                        .setTime(time)
+                                        .setArticleTitle(articleTitle)
+                                        .setComment(comment)
+                                        .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"));
+
                             } else { // 전체글보기, 일반게시판
                                 // author
                                 String author = article.selectFirst("span[class=nick]").text();
@@ -300,6 +325,8 @@ public class Web extends Thread {
                                     article1.setThumbnailUrl(article.selectFirst("div[class=thumb]").selectFirst("img").attr("src"));
                                 }
                             }
+
+                            // add
                             arrayList.add(article1);
                             //Log.e("Web", "제목: " + article1.getTitle());
                         }
@@ -350,8 +377,14 @@ public class Web extends Thread {
         // connect
         Document document;
         String url;
-        if (mid == -1)
+        if (mid == CategoryManager.CATEGORY_POPULAR_ARTICLE)
             url = MessageFormat.format(popularArticleListUrl, cafeId);
+        else if (mid == CategoryManager.CATEGORY_PROFILE_ARTICLE)
+            url = MessageFormat.format(profileArticleListUrl, cafeId, ProfileManager.getInstance().getId(), page, 30);
+        else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT)
+            url = MessageFormat.format(profileCommentListUrl, cafeId, ProfileManager.getInstance().getId(), page, 30);
+        else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT_ARTICLE)
+            url = MessageFormat.format(profileCommentArticleListUrl, cafeId, ProfileManager.getInstance().getId(), page, 30);
         else
             url = MessageFormat.format(articleListUrl, cafeId, mid != 0 ? mid : "", page);
 
@@ -365,10 +398,14 @@ public class Web extends Thread {
         } catch (InvalidCategoryException e) {
             e.printStackTrace();
         }*/
-        if (mid == -1) { // 인기글
+        if (mid == CategoryManager.CATEGORY_POPULAR_ARTICLE) { // 인기글
             //TODO:인기글 파싱
             Element articleTable = document.getElementsByClass("list_area").first();
             articles = articleTable.selectFirst("ul[id=listArea]").getElementsByClass("popularItem"); // 게시글 추출
+        } else if (mid == CategoryManager.CATEGORY_PROFILE_ARTICLE
+                || mid == CategoryManager.CATEGORY_PROFILE_COMMENT
+                || mid == CategoryManager.CATEGORY_PROFILE_COMMENT_ARTICLE) { // 프로필 작성글, 작성댓글, 댓글단 글
+            articles = document.select("li"); // 게시글 추출
         } else { // 전체글보기, 일반게시판
             Element articleTable = document.getElementsByClass("list_area").first();
             articles = articleTable.getElementsByClass("board_box"); // 게시글 추출

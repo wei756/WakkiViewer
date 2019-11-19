@@ -45,6 +45,7 @@ public class CategoryManager {
     public static final int TYPE_REPORT = 5;
     public static final int TYPE_BEST = 6;
     public static final int TYPE_CONTOUR = 7;
+    public static final int TYPE_PROFILE = 8;
 
     /**
      * 고정 category id
@@ -55,6 +56,12 @@ public class CategoryManager {
     public static final int CATEGORY_POPULAR_ARTICLE = -1; // 인기글
     public static final int CATEGORY_POPULAR_MEMBER = -2; // 인기멤버
     public static final int CATEGORY_TAG = -3; // 카페태그
+
+    public static final int CATEGORY_PROFILE_ARTICLE = -10; // 프로필 작성글
+    public static final int CATEGORY_PROFILE_COMMENT = -11; // 프로필 작성댓글
+    public static final int CATEGORY_PROFILE_COMMENT_ARTICLE = -12; // 프로필 댓글단 글
+    public static final int CATEGORY_PROFILE_LIKEIT = -13; // 프로필 좋아요한 글
+    public static final int CATEGORY_PROFILE_WARDING = -14; // 프로필 와딩한 글
 
 
     public static class CategoryBuilder {
@@ -118,6 +125,32 @@ public class CategoryManager {
                 for (Map cat : categoryList)
                     category.add(cat);
 
+                category.add(new CategoryBuilder()
+                        .setName("작성글")
+                        .setType(TYPE_PROFILE)
+                        .setMenuId(CATEGORY_PROFILE_ARTICLE)
+                        .build());
+                category.add(new CategoryBuilder()
+                        .setName("작성댓글")
+                        .setType(TYPE_PROFILE)
+                        .setMenuId(CATEGORY_PROFILE_COMMENT)
+                        .build());
+                category.add(new CategoryBuilder()
+                        .setName("댓글단 글")
+                        .setType(TYPE_PROFILE)
+                        .setMenuId(CATEGORY_PROFILE_COMMENT_ARTICLE)
+                        .build());
+                category.add(new CategoryBuilder()
+                        .setName("좋아요한 글")
+                        .setType(TYPE_PROFILE)
+                        .setMenuId(CATEGORY_PROFILE_LIKEIT)
+                        .build());
+                category.add(new CategoryBuilder()
+                        .setName("와딩한 글")
+                        .setType(TYPE_PROFILE)
+                        .setMenuId(CATEGORY_PROFILE_WARDING)
+                        .build());
+
             }
         }.start();
     }
@@ -139,7 +172,7 @@ public class CategoryManager {
                         subMenu = menu.addSubMenu(name);
                     } else if (type == CategoryManager.TYPE_CONTOUR) {
                         subMenu = menu.addSubMenu("");
-                    } else {
+                    } else if (type != CategoryManager.TYPE_PROFILE){
                         if (grouped)
                             subMenu.add(name);
                         else

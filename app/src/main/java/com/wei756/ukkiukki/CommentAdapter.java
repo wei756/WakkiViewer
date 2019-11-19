@@ -1,5 +1,7 @@
 package com.wei756.ukkiukki;
 
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
@@ -50,12 +52,23 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
         }
     }
 
+    public class FooterViewHolder extends RecyclerView.ViewHolder {
+        protected ImageView profile;
+        protected TextView content;
+
+        public FooterViewHolder(View view) {
+            super(view);
+            this.profile = (ImageView) view.findViewById(R.id.iv_article_comment_profile);
+            this.content = (TextView) view.findViewById(R.id.tv_article_comment_content);
+        }
+    }
+
     public CommentAdapter(ArrayList<Item> list, ArticleViewerActivity act) {
         this.mList = list;
         this.act = act;
 
         hasHeader = false;
-        hasFooter = false;
+        hasFooter = true;
         headerHasItem = false;
 
         THEME_NUMBER = 0;
@@ -90,7 +103,11 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
      */
     @Override
     protected RecyclerView.ViewHolder createFooterViewHolder(ViewGroup viewGroup) {
-        return null;
+        View view = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.comment_list_footer, viewGroup, false);
+        FooterViewHolder viewHolder = new FooterViewHolder(view);
+
+        return viewHolder;
     }
 
     /**
@@ -105,6 +122,21 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
      */
     @Override
     protected void bindFooterViewHolder(@NonNull RecyclerView.ViewHolder viewholder) {
+        FooterViewHolder itemViewHolder = (FooterViewHolder) viewholder;
+
+        // profile image
+        String imgProfile = ProfileManager.getInstance().getProfile();
+        if (imgProfile == null || imgProfile.equals(""))
+            imgProfile = "https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_profile_77.png"; // default image
+        Glide.with(act.getApplicationContext()).load(imgProfile).into(itemViewHolder.profile); // load image
+        // rounded corners
+        itemViewHolder.profile.setBackground(new ShapeDrawable(new OvalShape()));
+        itemViewHolder.profile.setClipToOutline(true);
+
+        if (mList.size() > 0) // 댓글이 있을 경우
+            itemViewHolder.content.setText(R.string.comment_list_new_comment);
+        else // 댓글이 없을 경우
+            itemViewHolder.content.setText(R.string.comment_list_first_comment);
     }
 
     /**

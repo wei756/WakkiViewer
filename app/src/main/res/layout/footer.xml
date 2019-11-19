@@ -22,7 +22,7 @@
         android:id="@+id/tv_article_footer_license"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/pixel_license"
+        android:text="네이버 어쩌구"
         android:lineSpacingExtra="3dp"
         android:textColor="@color/colorArticleListFooterLicenseText"
         app:layout_constraintStart_toStartOf="parent"

@@ -20,6 +20,7 @@
             app:contentScrim="?attr/colorPrimary"
             app:expandedTitleMarginBottom="162dp"
             app:expandedTitleMarginStart="72dp"
+            app:collapsedTitleTextAppearance="@style/CollapsingToolbarTitleTheme"
             app:expandedTitleTextAppearance="@style/CollapsingToolbarTitleTheme"
             app:layout_scrollFlags="scroll|enterAlwaysCollapsed|enterAlways"
             app:scrimVisibleHeightTrigger="150dp"
@@ -102,13 +103,14 @@
 
     <include layout="@layout/content_main" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_write_article"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/ic_create_black_24dp"
-        tools:ignore="VectorDrawableCompat" />
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/view_main_bottom_navview"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="bottom"
+        android:background="@color/colorBackground"
+        android:elevation="10dp"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/menu_bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

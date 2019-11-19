@@ -30,10 +30,12 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
     public final static int THEME_MAINPAGE = 3;
     public final static int THEME_ARTICLE_VIEWER = 6;
     public final static int THEME_HEADER_POPULAR = 9;
+    public final static int THEME_PROFILE = 12;
 
     public final static int SUBTHEME_ARTICLE = 0;
     public final static int SUBTHEME_POPULAR = 1;
     public final static int SUBTHEME_ALBUM = 2;
+    public final static int SUBTHEME_PROFILE_COMMENT = 3;
 
     /**
      * 표시할 게시판 코드
@@ -74,6 +76,12 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         protected ImageView thumbnail;
         protected ConstraintLayout article;
 
+        // 프로필 작성댓글
+        protected TextView content;
+        //protected TextView time;
+        protected TextView articleTitle;
+        //protected TextView numComment;
+
 
         public ItemViewHolder(View view) {
             super(view);
@@ -91,6 +99,9 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             this.numLikeIt = (TextView) view.findViewById(R.id.tv_likeit);
             this.commentCount = (TextView) view.findViewById(R.id.tv_comment_count);
             this.thumbnail = (ImageView) view.findViewById(R.id.iv_thumbnail);
+
+            this.content = (TextView) view.findViewById(R.id.tv_content);
+            this.articleTitle = (TextView) view.findViewById(R.id.tv_article_title);
         }
     }
 
@@ -104,19 +115,13 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         protected TextView more;
 
         protected LinearLayout icons;
-        protected ImageView iconTwitch;
-        protected ImageView iconYoutube;
 
 
         public HeaderViewHolder(View view) {
             super(view);
             this.layout = (ConstraintLayout) view.findViewById(R.id.layout_article);
             this.category = (TextView) view.findViewById(R.id.tv_article_list_header_title);
-            this.icon = (ImageView) view.findViewById(R.id.img_article_list_header_icon);
             this.more = (TextView) view.findViewById(R.id.tv_article_list_mainpage_more);
-            this.icons = (LinearLayout) view.findViewById(R.id.layout_article_list_header_icons);
-            this.iconTwitch = (ImageView) view.findViewById(R.id.btn_article_list_header_twitch);
-            this.iconYoutube = (ImageView) view.findViewById(R.id.btn_article_list_header_youtube);
         }
     }
 
@@ -133,8 +138,6 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         protected TextView more;
 
         protected LinearLayout icons;
-        protected ImageView iconTwitch;
-        protected ImageView iconYoutube;
 
 
         public FooterViewHolder(View view) {
@@ -142,11 +145,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             this.layout = (ConstraintLayout) view.findViewById(R.id.layout_article);
             this.article = (ConstraintLayout) view.findViewById(R.id.btn_layout_article);
             this.category = (TextView) view.findViewById(R.id.tv_article_list_header_title);
-            this.icon = (ImageView) view.findViewById(R.id.img_article_list_header_icon);
             this.more = (TextView) view.findViewById(R.id.tv_article_list_mainpage_more);
-            this.icons = (LinearLayout) view.findViewById(R.id.layout_article_list_header_icons);
-            this.iconTwitch = (ImageView) view.findViewById(R.id.btn_article_list_header_twitch);
-            this.iconYoutube = (ImageView) view.findViewById(R.id.btn_article_list_header_youtube);
         }
     }
 
@@ -164,8 +163,8 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         hasHeader = true;
         hasFooter = false;
 
-        THEME_NUMBER = 4;
-        SUBTHEME_NUMBER = 3;
+        THEME_NUMBER = 5;
+        SUBTHEME_NUMBER = 4;
 
         setTheme(theme);
         setItemLayout();
@@ -206,6 +205,14 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 hasHeader = true;
                 hasFooter = true;
                 break;
+
+            case THEME_PROFILE:
+                maxItemCount = 0;
+                headerHasItem = false;
+                scrollable = true;
+                hasHeader = false;
+                hasFooter = false;
+                break;
         }
     }
 
@@ -223,11 +230,14 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         try {
             int type = (int) category.getParam(mid, CategoryManager.TYPE);
 
-            if (type == CategoryManager.TYPE_BEST) {
+            if (type == CategoryManager.TYPE_BEST) { // 인기글
                 setSubTheme(SUBTHEME_POPULAR);
             } else {
                 setSubTheme(SUBTHEME_ARTICLE);
             }
+
+            if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT)
+                setSubTheme(SUBTHEME_PROFILE_COMMENT);
 
             if ((Integer) category.getParam(mid, CategoryManager.TYPE) == CategoryManager.TYPE_MAINPAGE) { // 메인 페이지
 
@@ -252,18 +262,21 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         layoutItem = new int[THEME_NUMBER * SUBTHEME_NUMBER];
         layoutFooter = new int[THEME_NUMBER * SUBTHEME_NUMBER];
 
-        layoutHeader[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list_header;
-        layoutHeader[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list_header;
-        layoutHeader[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list_header;
+        layoutHeader[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list; //TODO: deprecated
+        layoutHeader[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list; //TODO: deprecated
+        layoutHeader[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list; //TODO: deprecated
         layoutHeader[THEME_MAINPAGE + SUBTHEME_ARTICLE] = R.layout.article_list_mainpage_header;
         layoutHeader[THEME_MAINPAGE + SUBTHEME_POPULAR] = R.layout.article_list_mainpage_header;
         layoutHeader[THEME_MAINPAGE + SUBTHEME_ALBUM] = R.layout.article_list_mainpage_header; //TODO: clip album 분리 필요
-        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list_header;
-        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list_header;
-        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list_header;
+        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list; //TODO: deprecated
+        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list; //TODO: deprecated
+        layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list; //TODO: deprecated
         layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_popular_theme_header;
         layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme_header;
         layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_popular_theme_header;
+        layoutHeader[THEME_PROFILE + SUBTHEME_ARTICLE] = R.layout.article_list; //TODO: 프로필 레이아웃 변경 필요
+        layoutHeader[THEME_PROFILE + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme; //TODO: 프로필 레이아웃 변경 필요
+        layoutHeader[THEME_PROFILE + SUBTHEME_ALBUM] = R.layout.article_list_clip_theme; //TODO: 프로필 레이아웃 변경 필요
 
         layoutItem[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list;
         layoutItem[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme;
@@ -277,19 +290,27 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         layoutItem[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_popular_theme;
         layoutItem[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme;
         layoutItem[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_popular_theme;
+        layoutItem[THEME_PROFILE + SUBTHEME_ARTICLE] = R.layout.article_list; //TODO: 프로필 레이아웃 변경 필요
+        layoutItem[THEME_PROFILE + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme; //TODO: 프로필 레이아웃 변경 필요
+        layoutItem[THEME_PROFILE + SUBTHEME_ALBUM] = R.layout.article_list_clip_theme; //TODO: 프로필 레이아웃 변경 필요
+        layoutItem[THEME_PROFILE + SUBTHEME_PROFILE_COMMENT] = R.layout.article_list_comment_theme;
 
-        layoutFooter[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list_header; // dummy
-        layoutFooter[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list_header; // dummy
-        layoutFooter[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list_header; // dummy
+        layoutFooter[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list; // dummy
+        layoutFooter[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list; // dummy
+        layoutFooter[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list; // dummy
         layoutFooter[THEME_MAINPAGE + SUBTHEME_ARTICLE] = R.layout.article_list_mainpage_header; // dummy
         layoutFooter[THEME_MAINPAGE + SUBTHEME_POPULAR] = R.layout.article_list_mainpage_header; // dummy
         layoutFooter[THEME_MAINPAGE + SUBTHEME_ALBUM] = R.layout.article_list_mainpage_header; // dummy
-        layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list_header; // dummy
-        layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list_header; // dummy
-        layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list_header; // dummy
+        layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list; // dummy
+        layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list; // dummy
+        layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list; // dummy
         layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_popular_theme_footer;
         layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme_footer;
         layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_popular_theme_footer;
+        layoutFooter[THEME_PROFILE + SUBTHEME_ARTICLE] = R.layout.article_list; // dummy
+        layoutFooter[THEME_PROFILE + SUBTHEME_POPULAR] = R.layout.article_list; // dummy
+        layoutFooter[THEME_PROFILE + SUBTHEME_ALBUM] = R.layout.article_list; // dummy
+        layoutFooter[THEME_PROFILE + SUBTHEME_PROFILE_COMMENT] = R.layout.article_list; // dummy
     }
 
     /**
@@ -391,8 +412,10 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         }
 
         // title
-        itemViewHolder.title.setText(article.getTitle());
-        if (TYPE_THEME == THEME_BOARD) {
+        if (!(TYPE_THEME == THEME_PROFILE
+                && TYPE_SUBTHEME == SUBTHEME_PROFILE_COMMENT))
+            itemViewHolder.title.setText(article.getTitle());
+        if (TYPE_THEME == THEME_BOARD || TYPE_THEME == THEME_PROFILE) {
             if (TYPE_SUBTHEME == SUBTHEME_ARTICLE) {
                 if (article.isReadArticle())
                     itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorTextSecondary, null));
@@ -405,7 +428,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                     itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorPopularListTextPrimary, null));
             }
         }
-        if (TYPE_THEME != THEME_MAINPAGE)
+        if (TYPE_THEME != THEME_MAINPAGE && TYPE_SUBTHEME != SUBTHEME_PROFILE_COMMENT)
             itemViewHolder.author.setText(article.getAuthor());
 
         //TODO: 회원등급 표시기능 추가 가능성 있음
@@ -430,7 +453,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             itemViewHolder.levelIcon.setVisibility(View.GONE);
         */
 
-        if ((TYPE_THEME == THEME_BOARD || TYPE_THEME == THEME_ARTICLE_VIEWER)
+        if ((TYPE_THEME == THEME_BOARD || TYPE_THEME == THEME_ARTICLE_VIEWER || TYPE_THEME == THEME_PROFILE)
                 && TYPE_SUBTHEME == SUBTHEME_ARTICLE) {
             if (article.isNewArticle() && !article.isReadArticle())
                 itemViewHolder.newIcon.setVisibility(View.VISIBLE);
@@ -452,7 +475,8 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
 
         // thumbnail
         if (TYPE_THEME == THEME_BOARD
-                || TYPE_THEME == THEME_ARTICLE_VIEWER) {
+                || TYPE_THEME == THEME_ARTICLE_VIEWER
+                || TYPE_THEME == THEME_PROFILE) {
             String thumbnailUrl = article.getThumbnailUrl();
             if (thumbnailUrl != null) {
                 Glide.with(act.getApplicationContext()).load(thumbnailUrl).into(itemViewHolder.thumbnail);
@@ -466,9 +490,18 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 }
 
                 itemViewHolder.thumbnail.setVisibility(View.VISIBLE);
-            } else {
+            } else if (TYPE_SUBTHEME != SUBTHEME_PROFILE_COMMENT) {
                 itemViewHolder.thumbnail.setVisibility(View.GONE);
             }
+        }
+
+        // 프로필 작성댓글 리스트
+        if (TYPE_THEME == THEME_PROFILE
+                && TYPE_SUBTHEME == SUBTHEME_PROFILE_COMMENT) {
+            itemViewHolder.content.setText(article.getContent());
+            itemViewHolder.time.setText(article.getTime());
+            itemViewHolder.articleTitle.setText(article.getArticleTitle());
+            itemViewHolder.numComment.setText(article.getComment());
         }
 
         // click event

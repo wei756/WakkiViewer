@@ -16,6 +16,10 @@ public class Article extends Item {
     private String thumbnailUrl;
     private String href;
 
+    // profile comment list
+    private String content;
+    private String articleTitle;
+
     private boolean newArticle = true, readArticle = false, newComment = false;
 
     private Element body;
@@ -185,6 +189,24 @@ public class Article extends Item {
 
     public Article setNewComment(boolean newComment) {
         this.newComment = newComment;
+        return this;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public Article setContent(String content) {
+        this.content = content;
+        return this;
+    }
+
+    public String getArticleTitle() {
+        return articleTitle;
+    }
+
+    public Article setArticleTitle(String articleTitle) {
+        this.articleTitle = articleTitle;
         return this;
     }
 }

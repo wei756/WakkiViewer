@@ -101,7 +101,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         tvAuthor = findViewById(R.id.tv_article_viewer_author);
         tvTime = findViewById(R.id.tv_article_viewer_time);
         tvView = findViewById(R.id.tv_article_viewer_view);
-        tvVote = findViewById(R.id.tv_article_viewer_vote);
+        //tvVote = findViewById(R.id.tv_article_viewer_vote);
 
         // read_body
         webBody = findViewById(R.id.web_article_viewer_body);
@@ -191,7 +191,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     webBody.loadDataWithBaseURL("", articleBody, "text/html", "UTF-8", "");
                     //Log.i("ArticleViewerActivity", articleBody);
 
-                    tvVote.setText(article.getLikeIt());
+                    //tvVote.setText(article.getLikeIt());
                     /*
                     // profile box
                     Element footer = article.getFooter();

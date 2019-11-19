@@ -2,6 +2,13 @@
     <string name="app_name">우리왁굳끼리</string>
     <string name="title_activity_main">MainActivity</string>
 
+    <string name="dialog_yes">예</string>
+    <string name="dialog_no">아니오</string>
+
+    <string name="real_logout">정말로 로그아웃하겠습니까?</string>
+
+    <!-- ImageView ContentDescription -->
+
     <!-- Navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -19,22 +26,14 @@
     <string name="action_off_darkmode">다크모드 오프</string>
     <string name="menu_search">검색</string>
 
-    <!-- ImageView ContentDescription -->
-    <string name="content_description_mainpage_streamer_banner_bg">스트리머 개인 페이지 배너 배경</string>
-    <string name="content_description_mainpage_streamer_banner">스트리머 개인 페이지 배너</string>
-
-    <string name="content_description_streamerpage_streamer_icon">스트리머 페이지 아이콘</string>
-    <string name="content_description_streamerpage_twitch">스트리머 페이지 트위치 버튼</string>
-    <string name="content_description_streamerpage_youtube">스트리머 페이지 유튜브 버튼</string>
-
-    <string name="content_description_article_list_header_img">카테고리 헤더 이미지</string>
-    <string name="content_description_article_list_header_icon">카테고리 아이콘 이미지</string>
-    <string name="content_description_article_list_header_twitch">카테고리 헤더 트위치 버튼</string>
-    <string name="content_description_article_list_header_youtube">카테고리 헤더 유튜브 버튼</string>
-    <string name="content_description_article_list_header_favorite">카테고리 헤더 즐겨찾기 버튼</string>
-
-    <!-- Footer -->
-    <string name="pixel_license">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</string>
+    <!-- Profile activity -->
+    <string name="profile_options">프로필 설정</string>
+    <string name="profile_member_grade_info">멤버등급 안내</string>
+    <string name="profile_article">작성글</string>
+    <string name="profile_comment">작성댓글</string>
+    <string name="profile_comment_article">댓글단 글</string>
+    <string name="profile_likeit">좋아요한 글</string>
+    <string name="profile_ward">와딩한 글</string>
 
     <!-- Article viewer -->
     <string name="action_copy_url">URL 복사</string>
@@ -44,46 +43,8 @@
 
     <string name="article_viewer_comment_header">댓글</string>
 
-    <!-- Category -->
-    <string name="menu_category_home">메인페이지</string>
-
-    <string name="menu_category_notice">공지사항</string>
-
-    <string name="menu_category_pixel_main">Pixel</string>
-    <string name="menu_category_pixel">모아보기</string>
-
-    <string name="menu_category_streamer">스트리머</string>
-    <string name="menu_category_jinu">지누</string>
-    <string name="menu_category_temtem">탬탬버린</string>
-    <string name="menu_category_dduddi">김뚜띠</string>
-    <string name="menu_category_nanayang">나나양</string>
-    <string name="menu_category_collet">코렛트</string>
-    <string name="menu_category_gambler">감블러</string>
-    <string name="menu_category_silph">실프</string>
-
-    <string name="menu_category_community">커뮤니티</string>
-    <string name="menu_category_free">자유게시판</string>
-    <string name="menu_category_humor">유머게시판</string>
-    <string name="menu_category_humor_best">추천 유머</string>
-    <string name="menu_category_clip">클립</string>
-
-    <string name="menu_category_creative">창작마당</string>
-    <string name="menu_category_point">포인트</string>
-    <string name="menu_category_commawang">컴마왕 인증</string>
-
-    <string name="menu_category_servicecenter">고객센터</string>
-    <string name="menu_category_contact">1:1 문의</string>
-    <string name="title_activity_article_viewer">게시글보기</string>
-
-    <!-- xe_icon -->
-    <string name="xi_user">&#xe68a;</string>
-    <string name="xi_time">&#xe790;</string>
-    <string name="xi_eye">&#xe64a;</string>
-    <string name="xi_thumbs_up">&#xe6fc;</string>
-
-    <string name="xi_heart">&#xe6ff;</string>
-    <string name="xi_close">&#xe616;</string>
-
-    <string name="xi_comment">&#xe6eb;</string>
-    <string name="xi_reply">&#xe6d7;</string>
+    <!-- 댓글 리스트 -->
+    <string name="comment_list_first_comment">첫 댓글을 남겨보세요</string>
+    <string name="comment_list_new_comment">댓글을 남겨보세요</string>
+    <string name="title_activity_profile">ProfileActivity</string>
 </resources>

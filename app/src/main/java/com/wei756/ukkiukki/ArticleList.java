@@ -58,16 +58,18 @@ public class ArticleList implements LoadedListner {
     }
 
     private void setRefreshing(boolean refreshing) {
-        if (act instanceof MainActivity)
-            ((MainActivity) act).onRefreshed(this, refreshing);
+        if (act instanceof RefreshListner)
+            ((RefreshListner) act).onRefreshed(this, refreshing);
     }
 
     @Override
     public void onLoadedArticleList(int mid, ArrayList arrayList, boolean reset) {
         setVisibility(View.VISIBLE); // 로딩 완료 후 표시
         setMidTheme(mid, reset);
-        if (theme == ArticleListAdapter.THEME_HEADER_POPULAR)
+
+        if (theme == ArticleListAdapter.THEME_HEADER_POPULAR) // 앱바헤더 인기글 리스트 셔플
             Collections.shuffle(arrayList);
+
         if (reset == true)
             mAdapter.setListWith(arrayList, act);
         else
