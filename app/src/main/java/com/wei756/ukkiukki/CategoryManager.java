@@ -1,5 +1,6 @@
 package com.wei756.ukkiukki;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.SubMenu;
 
@@ -19,7 +20,7 @@ public class CategoryManager {
     private static CategoryManager instance;
     private static ArrayList<Map> category = new ArrayList<>();
 
-    private boolean loaded = false;
+    private long lastLoadedTime = 0;
 
     /**
      * category 속성 값
@@ -106,54 +107,65 @@ public class CategoryManager {
 
     }
 
-    public void updateCategoryList() {
+    public void updateCategoryListAsync() {
         new Thread() {
             public void run() {
-                // 카테고리 로드
-                category.clear();
-                ArrayList<Map> categoryList = web.loadCategoryList();
-                category.add(new CategoryBuilder()
-                        .setName("메인페이지")
-                        .setType(TYPE_MAINPAGE)
-                        .setMenuId(CATEGORY_MAINPAGE)
-                        .build());
-                category.add(new CategoryBuilder()
-                        .setName("전체글보기")
-                        .setType(TYPE_BOARD)
-                        .setMenuId(CATEGORY_ALLLIST)
-                        .build());
-                for (Map cat : categoryList)
-                    category.add(cat);
-
-                category.add(new CategoryBuilder()
-                        .setName("작성글")
-                        .setType(TYPE_PROFILE)
-                        .setMenuId(CATEGORY_PROFILE_ARTICLE)
-                        .build());
-                category.add(new CategoryBuilder()
-                        .setName("작성댓글")
-                        .setType(TYPE_PROFILE)
-                        .setMenuId(CATEGORY_PROFILE_COMMENT)
-                        .build());
-                category.add(new CategoryBuilder()
-                        .setName("댓글단 글")
-                        .setType(TYPE_PROFILE)
-                        .setMenuId(CATEGORY_PROFILE_COMMENT_ARTICLE)
-                        .build());
-                category.add(new CategoryBuilder()
-                        .setName("좋아요한 글")
-                        .setType(TYPE_PROFILE)
-                        .setMenuId(CATEGORY_PROFILE_LIKEIT)
-                        .build());
-                category.add(new CategoryBuilder()
-                        .setName("와딩한 글")
-                        .setType(TYPE_PROFILE)
-                        .setMenuId(CATEGORY_PROFILE_WARDING)
-                        .build());
-
+                updateCategoryList();
             }
         }.start();
     }
+
+    public void updateCategoryList() {
+        long currentTime = System.currentTimeMillis();
+        Log.v("CategoryManager", "시간 차이: " + (currentTime - lastLoadedTime) + "ms");
+        if (!isLoadedCategory() && currentTime - lastLoadedTime > 2 * 1000) {
+            lastLoadedTime = currentTime;
+            Log.v("CategoryManager", "Loading.");
+            ArrayList<Map> categoryList = web.loadCategoryList(); // 카테고리 로드
+            category.clear();
+            category.add(new CategoryBuilder()
+                    .setName("메인페이지")
+                    .setType(TYPE_MAINPAGE)
+                    .setMenuId(CATEGORY_MAINPAGE)
+                    .build());
+            category.add(new CategoryBuilder()
+                    .setName("전체글보기")
+                    .setType(TYPE_BOARD)
+                    .setMenuId(CATEGORY_ALLLIST)
+                    .build());
+            if (categoryList != null)
+                for (Map cat : categoryList)
+                    category.add(cat);
+            else { // 카테고리 로딩 에러났을 때
+            }
+            category.add(new CategoryBuilder()
+                    .setName("작성글")
+                    .setType(TYPE_PROFILE)
+                    .setMenuId(CATEGORY_PROFILE_ARTICLE)
+                    .build());
+            category.add(new CategoryBuilder()
+                    .setName("작성댓글")
+                    .setType(TYPE_PROFILE)
+                    .setMenuId(CATEGORY_PROFILE_COMMENT)
+                    .build());
+            category.add(new CategoryBuilder()
+                    .setName("댓글단 글")
+                    .setType(TYPE_PROFILE)
+                    .setMenuId(CATEGORY_PROFILE_COMMENT_ARTICLE)
+                    .build());
+            category.add(new CategoryBuilder()
+                    .setName("좋아요한 글")
+                    .setType(TYPE_PROFILE)
+                    .setMenuId(CATEGORY_PROFILE_LIKEIT)
+                    .build());
+            category.add(new CategoryBuilder()
+                    .setName("와딩한 글")
+                    .setType(TYPE_PROFILE)
+                    .setMenuId(CATEGORY_PROFILE_WARDING)
+                    .build());
+        }
+    }
+
 
     public void updateCategoryMenu(MainActivity act, final Menu menu) {
         act.runOnUiThread(new Runnable() {
@@ -172,7 +184,7 @@ public class CategoryManager {
                         subMenu = menu.addSubMenu(name);
                     } else if (type == CategoryManager.TYPE_CONTOUR) {
                         subMenu = menu.addSubMenu("");
-                    } else if (type != CategoryManager.TYPE_PROFILE){
+                    } else if (type != CategoryManager.TYPE_PROFILE) {
                         if (grouped)
                             subMenu.add(name);
                         else
@@ -181,6 +193,13 @@ public class CategoryManager {
                 }
             }
         });
+    }
+
+    /**
+     * 카테고리가 정상적으로 로딩되어있는지 여부를 반환합니다
+     */
+    public static boolean isLoadedCategory() {
+        return (category.size() > 10);
     }
 
     public Object getParam(int mid, int type) throws InvalidCategoryException {
@@ -199,6 +218,9 @@ public class CategoryManager {
         throw new InvalidCategoryException(name);
     }
 
+    /**
+     * singleton
+     */
     public static CategoryManager getInstance() {
         if (instance == null)
             instance = new CategoryManager();

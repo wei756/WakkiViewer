@@ -36,7 +36,7 @@ public class Web extends Thread {
             profileCommentListUrl = "https://m.cafe.naver.com/CafeMemberCommentList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentArticleListUrl = "https://m.cafe.naver.com/CafeMemberReplyList.nhn?search.clubid={0}&search.query={1}&search.page={2}&search.perPage={3}";
     private final String cafeId = "27842958";
-    private final int timeout = 5000;
+    private final int timeout = 15000;
 
     private final WebClientManager webClientManager = WebClientManager.getInstance();
 
@@ -240,8 +240,8 @@ public class Web extends Thread {
             Log.w("Web.err", "Error occurred. (" + url + ")" + " on Web.loadCategoryList");
             e.printStackTrace();
         }
-
-        Log.i("Web", "" + arrayList.size() + " category(s) found. (" + url + ")" + " on Web.loadCategoryList");
+        if (arrayList != null)
+            Log.i("Web", "" + arrayList.size() + " category(s) found. (" + url + ")" + " on Web.loadCategoryList");
         return arrayList;
     }
 
@@ -523,8 +523,8 @@ public class Web extends Thread {
                                     }
                                 }
                         }
-                        Log.e("Web", "authorid: " + authorId + "\n" +
-                                "authorProfile: " + authorProfile);
+                        //Log.e("Web", "authorid: " + authorId + "\n" +
+                        //        "authorProfile: " + authorProfile);
 
                         // 데이터 입력
                         data.setTitle(title)

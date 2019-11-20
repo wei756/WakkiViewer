@@ -66,6 +66,9 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
 
     String articleTitle, articleHref, articleBoard;
 
+    ConstraintLayout bottomBarLayout;
+    TextView btnLikeIt, btnComment, btnShare, btnReturnToList;
+
     @SuppressLint("ResourceAsColor")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +132,14 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         mAdapter = new CommentAdapter(new ArrayList<Item>(), ArticleViewerActivity.this);
         mRecyclerView.setAdapter(mAdapter);
 
+        // Bottom bar
+        bottomBarLayout = (ConstraintLayout) findViewById(R.id.layout_article_viewer_bottom_bar);
+        btnComment = (TextView) findViewById(R.id.btn_article_viewer_bottom_bar_comment);
+        btnLikeIt = (TextView) findViewById(R.id.btn_article_viewer_bottom_bar_likeit);
+        btnShare = (TextView) findViewById(R.id.btn_article_viewer_bottom_bar_share);
+        btnReturnToList = (TextView) findViewById(R.id.btn_article_viewer_bottom_bar_returntolist);
+
+        // Load article
         try {
             web.getArticle(this, articleHref);
         } catch (Exception e) {
@@ -277,10 +288,15 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                             if (comment.classNames().contains("re")) // 대댓글이면
                                 indent = 1;
                             comment1.setIndentLevel(indent);
-                            Log.e("ArticleViewerActivity", comment.className() + " " + indent);
                             Element targetName = comment.selectFirst("a[class=u_cbox_target_name]");// 대상 닉네임
                             if (targetName != null)
                                 comment1.setParentAuthor(targetName.text());
+
+                            Log.e("ArticleViewerActivity", comment.className() + " " + indent);
+                            // 본인댓글 여부
+                            boolean mine = false;
+                            mine = comment.className().contains("mine");
+                            comment1.setMine(mine);
 
                             // 데이터 입력
                             arrayList.add(comment1);
@@ -288,6 +304,11 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     }
                     Log.v("ArticleViewerActivity", "Comment count: " + arrayList.size());
                     mAdapter.setListWith(arrayList, ArticleViewerActivity.this);
+
+                    // Bottom bar
+                    btnComment.setText("1");//article.getComment());
+                    btnLikeIt.setText("12");//article.getLikeIt());
+
 
                     // 로딩 완료
                     layoutArticle.setVisibility(View.VISIBLE);

@@ -31,6 +31,10 @@
     <color name="colorArticleListFooterBackground">#252525</color>
     <color name="colorArticleListFooterLicenseText">#888</color>
 
+    <!-- Comment list -->ㅏ
+    <color name="colorCommentListMineBackground">#141c14</color>
+    <color name="colorCommentListBorder">#333</color>
+
     <!-- Article viewer -->
     <color name="colorArticleTitleText">#444</color>
     <color name="colorArticleHeaderText">#666</color>

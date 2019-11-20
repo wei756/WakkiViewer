@@ -228,6 +228,9 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
     public void setMidTheme(int mid) {
         CategoryManager category = CategoryManager.getInstance();
         try {
+            if (!CategoryManager.isLoadedCategory()) // 로딩되어있는지 먼저 체크
+                category.updateCategoryList();
+
             int type = (int) category.getParam(mid, CategoryManager.TYPE);
 
             if (type == CategoryManager.TYPE_BEST) { // 인기글

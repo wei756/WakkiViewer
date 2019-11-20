@@ -119,7 +119,7 @@
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout_profile"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="44dp"
             android:layout_gravity="bottom"
             app:layout_collapseMode="pin"
             app:tabIndicatorColor="@color/colorTextPrimary"

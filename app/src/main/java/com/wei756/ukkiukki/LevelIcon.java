@@ -9,11 +9,13 @@ public class LevelIcon {
     private static LevelIcon instance;
 
     private LevelIcon() {
+        /*
         icon.put("1", R.drawable.icon_green);
         icon.put("2", R.drawable.icon_green);
         icon.put("3", R.drawable.icon_green);
         icon.put("4", R.drawable.icon_green);
         icon.put("5", R.drawable.icon_green);
+        */
     }
 
     public int getIcon(String iconName) throws Exception {

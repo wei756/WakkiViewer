@@ -13,6 +13,7 @@ public class Comment extends Item {
     private String href;
     private boolean iconNew;
     private boolean iconArticleAuthor;
+    private boolean mine;
 
     public Comment() {
 
@@ -123,6 +124,15 @@ public class Comment extends Item {
 
     public Comment setIconArticleAuthor(boolean iconArticleAuthor) {
         this.iconArticleAuthor = iconArticleAuthor;
+        return this;
+    }
+
+    public boolean isMine() {
+        return mine;
+    }
+
+    public Comment setMine(boolean mine) {
+        this.mine = mine;
         return this;
     }
 }

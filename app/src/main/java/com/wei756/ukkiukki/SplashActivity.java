@@ -12,7 +12,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // load category
-        CategoryManager.getInstance().updateCategoryList();
+        CategoryManager.getInstance().updateCategoryListAsync();
 
         // Start MainActivity
         Intent intent = new Intent(this, MainActivity.class);

@@ -158,6 +158,10 @@ public class ProfileManager {
         this.comment = comment;
     }
 
+    public boolean isLogined() {
+        return logined;
+    }
+
     public void setLogined(boolean logined) {
         this.logined = logined;
     }

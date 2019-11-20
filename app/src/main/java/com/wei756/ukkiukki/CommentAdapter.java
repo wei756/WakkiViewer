@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -26,6 +27,7 @@ import static android.graphics.Typeface.BOLD;
 public class CommentAdapter extends RecyclerViewCustomAdapter {
 
     public class ItemViewHolder extends RecyclerView.ViewHolder {
+        protected ConstraintLayout layout;
         protected ImageView profile;
         protected TextView author;
         protected TextView time;
@@ -39,6 +41,8 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
 
         public ItemViewHolder(View view) {
             super(view);
+            this.layout = (ConstraintLayout) view.findViewById(R.id.layout_article_comment);
+
             this.profile = (ImageView) view.findViewById(R.id.iv_article_comment_profile);
             this.author = (TextView) view.findViewById(R.id.tv_article_comment_author);
             this.time = (TextView) view.findViewById(R.id.tv_article_comment_time);
@@ -146,6 +150,12 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
     protected void bindItemViewHolder(@NonNull RecyclerView.ViewHolder viewholder, final int pos) {
         ItemViewHolder itemViewHolder = (ItemViewHolder) viewholder;
         Comment comment = (Comment) mList.get(pos);
+
+        // 댓글 배경
+        if (comment.isMine()) // 본인댓글 여부
+            itemViewHolder.layout.setBackgroundResource(R.color.colorCommentListMineBackground);
+        else
+            itemViewHolder.layout.setBackgroundResource(R.color.colorBackground);
 
         // profile image
         String imgProfile = comment.getImgProfile();
