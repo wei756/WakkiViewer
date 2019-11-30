@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.wei756.ukkiukki.Network.Web;
@@ -18,7 +19,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,10 +32,12 @@ import android.print.PrintDocumentAdapter;
 import android.print.PrintJob;
 import android.print.PrintManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,12 +46,15 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class ArticleViewerActivity extends AppCompatActivity implements LoadArticleListner {
     private Web web = Web.getInstance();
 
     ActionBarManager actBarManager = ActionBarManager.getInstance();
+    FragmentManager fragmentManager = getSupportFragmentManager();
 
+    AppBarLayout appbar;
     Toolbar toolbar;
 
     ConstraintLayout layoutArticle;
@@ -69,11 +79,18 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
     ConstraintLayout bottomBarLayout;
     TextView btnLikeIt, btnComment, btnShare, btnReturnToList;
 
+    ArticleViewerCommentListFragment fragmentCommentList;
+    FrameLayout layoutCommentPage;
+    boolean isOpenedCommentPage = false;
+
+    Map likeLiMap = null;
+
     @SuppressLint("ResourceAsColor")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_viewer);
+        appbar = findViewById(R.id.appbar_article_viewer);
         toolbar = findViewById(R.id.toolbar_article_viewer);
         toolbar.setTitle("");
         toolbar.setOverflowIcon(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_overflow_24dp));
@@ -129,7 +146,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
 
-        mAdapter = new CommentAdapter(new ArrayList<Item>(), ArticleViewerActivity.this);
+        mAdapter = new CommentAdapter(new ArrayList<Item>(), ArticleViewerActivity.this, CommentAdapter.THEME_PREVIEW);
         mRecyclerView.setAdapter(mAdapter);
 
         // Bottom bar
@@ -139,6 +156,12 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         btnShare = (TextView) findViewById(R.id.btn_article_viewer_bottom_bar_share);
         btnReturnToList = (TextView) findViewById(R.id.btn_article_viewer_bottom_bar_returntolist);
 
+        // Comment page
+        fragmentCommentList = (ArticleViewerCommentListFragment) fragmentManager.findFragmentById(R.id.fragment_comment_list);
+        fragmentCommentList.setParentActivity(ArticleViewerActivity.this);
+        fragmentCommentList.setVisibility(View.GONE);
+        hideCommentPage();
+
         // Load article
         try {
             web.getArticle(this, articleHref);
@@ -146,6 +169,9 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
             e.printStackTrace();
             Log.e("ArticleViewerActivity", "Article load error(" + articleHref + ") on getArticle");
         }
+        if (intent.getBooleanExtra("commentpage", false))
+            showCommentPage();
+
     }
 
     /**
@@ -238,7 +264,8 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
 
                     // commnet box
                     Element feedback = article.getFeedback();
-                    tvCommentCount.setText(feedback.selectFirst("h3[class=tit]").selectFirst("em").text()); // comment table
+                    article.setComment(feedback.selectFirst("h3[class=tit]").selectFirst("em").text());
+                    tvCommentCount.setText(article.getComment()); // comment num
 
                     Elements comments = feedback.select("li");
 
@@ -306,12 +333,45 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     mAdapter.setListWith(arrayList, ArticleViewerActivity.this);
 
                     // Bottom bar
-                    btnComment.setText("1");//article.getComment());
-                    btnLikeIt.setText("12");//article.getLikeIt());
+                    btnComment.setText(article.getComment());
+
+                    btnComment.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            showCommentPage();
+                        }
+                    });
+
+                    // 좋아요 로딩
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            likeLiMap = web.getArticleLikeItList(articleHref);
+                            if (likeLiMap != null) {
+                                final String totalCount = "" + (int) likeLiMap.get("totalCount");
+
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        btnLikeIt.setText(totalCount);
+                                    }
+                                });
+                            }
+                        }
+                    }).start();
 
 
                     // 로딩 완료
                     layoutArticle.setVisibility(View.VISIBLE);
+
+                    // 댓글 리스트 로딩
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            fragmentCommentList.initCommentPage(articleHref, null);
+                        }
+                    }).start();
                 }
             });
         } else {
@@ -336,7 +396,10 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home: {
-                finish();
+                if (isOpenedCommentPage)
+                    hideCommentPage();
+                else
+                    finish();
                 return true;
             }
             case R.id.action_copy_url: {
@@ -355,6 +418,15 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
             }
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isOpenedCommentPage) {
+            hideCommentPage();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     /**
@@ -376,6 +448,40 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         // Create a print job with name and adapter instance
         PrintJob printJob = printManager.print(jobName, printAdapter,
                 new PrintAttributes.Builder().build());
+    }
+
+    private void showCommentPage() {
+        isOpenedCommentPage = true;
+        fragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.commentlist_slide_up, R.anim.commentlist_slide_down)
+                .show(fragmentCommentList)
+                .commit();
+        bottomBarLayout.setVisibility(View.GONE);
+
+        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
+        CoordinatorLayout.LayoutParams appBarLayoutParams = (CoordinatorLayout.LayoutParams) appbar.getLayoutParams();
+
+        params.setScrollFlags(0);
+        appBarLayoutParams.setBehavior(null);
+        appbar.setLayoutParams(appBarLayoutParams);
+
+    }
+
+    private void hideCommentPage() {
+        isOpenedCommentPage = false;
+        fragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.commentlist_slide_up, R.anim.commentlist_slide_down)
+                .hide(fragmentCommentList)
+                .commit();
+        bottomBarLayout.setVisibility(View.VISIBLE);
+
+        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
+        CoordinatorLayout.LayoutParams appBarLayoutParams = (CoordinatorLayout.LayoutParams) appbar.getLayoutParams();
+
+        params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
+        appBarLayoutParams.setBehavior(new AppBarLayout.Behavior());
+        appbar.setLayoutParams(appBarLayoutParams);
+
     }
 }
 

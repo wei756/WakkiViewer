@@ -1,12 +1,14 @@
 package com.wei756.ukkiukki;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -49,7 +51,7 @@ public abstract class RecyclerViewCustomAdapter extends RecyclerView.Adapter<Rec
     /**
      * RecyclerView 가 배치되는 액티비티의 정보
      */
-    protected Activity act;
+    protected Context context;
     protected ArrayList<Item> mList;
     protected EndlessRecyclerViewScrollListener mListener;
 

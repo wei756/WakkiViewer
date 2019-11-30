@@ -1,17 +1,19 @@
 package com.wei756.ukkiukki;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -25,6 +27,12 @@ import java.util.ArrayList;
 import static android.graphics.Typeface.BOLD;
 
 public class CommentAdapter extends RecyclerViewCustomAdapter {
+
+    public final static int THEME_PREVIEW = 0;
+    public final static int THEME_COMMENTPAGE = 1;
+
+    public static String ORDERBY_UPLOAD = "asc";
+    public static String ORDERBY_NEW = "desc";
 
     public class ItemViewHolder extends RecyclerView.ViewHolder {
         protected ConstraintLayout layout;
@@ -67,19 +75,84 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
         }
     }
 
-    public CommentAdapter(ArrayList<Item> list, ArticleViewerActivity act) {
+    public class HeaderViewHolder extends RecyclerView.ViewHolder {
+        protected TextView btnLikeIt;
+        protected ConstraintLayout likeItMore;
+        protected ImageView profile1, profile2, profile3;
+
+        protected TextView btnOrderByUpload,btnOrderByNew;
+        protected Switch switchFollowComment;
+
+        public HeaderViewHolder(View view) {
+            super(view);
+            this.btnLikeIt = (TextView) view.findViewById(R.id.btn_commentpage_likeit);
+            this.likeItMore = (ConstraintLayout) view.findViewById(R.id.layout_commentpage_likeit_more);
+            this.profile1 = (ImageView) view.findViewById(R.id.iv_commentpage_likeit_member1);
+            this.profile2 = (ImageView) view.findViewById(R.id.iv_commentpage_likeit_member2);
+            this.profile3 = (ImageView) view.findViewById(R.id.iv_commentpage_likeit_member3);
+
+            this.btnOrderByUpload = (TextView) view.findViewById(R.id.btn_commentpage_orderby_upload);
+            this.btnOrderByNew = (TextView) view.findViewById(R.id.btn_commentpage_orderby_new);
+            this.switchFollowComment = (Switch) view.findViewById(R.id.switch_commentpage_follow_comment);
+        }
+    }
+
+    public CommentAdapter(ArrayList<Item> list, Context context, int theme) {
         this.mList = list;
-        this.act = act;
+        this.context = context;
 
         hasHeader = false;
         hasFooter = true;
         headerHasItem = false;
 
-        THEME_NUMBER = 0;
+        THEME_NUMBER = 2;
         SUBTHEME_NUMBER = 0;
 
         scrollable = false;
         maxItemCount = 0;
+
+        setTheme(theme);
+        setItemLayout();
+    }
+
+    public void setTheme(int theme) {
+        this.TYPE_THEME = theme;
+
+        switch (theme) {
+            case THEME_PREVIEW:
+                maxItemCount = 0;
+                headerHasItem = false;
+                scrollable = false;
+                hasHeader = false;
+                hasFooter = true;
+                break;
+
+            case THEME_COMMENTPAGE:
+                maxItemCount = 0;
+                headerHasItem = false;
+                scrollable = true;
+                hasHeader = true;
+                hasFooter = false;
+                break;
+        }
+    }
+
+    /**
+     * layout 정의
+     */
+    protected void setItemLayout() {
+        layoutHeader = new int[THEME_NUMBER];
+        layoutItem = new int[THEME_NUMBER];
+        layoutFooter = new int[THEME_NUMBER];
+
+        layoutHeader[THEME_PREVIEW] = R.layout.article_list; // dummy
+        layoutHeader[THEME_COMMENTPAGE] = R.layout.comment_list_header;
+
+        layoutItem[THEME_PREVIEW] = R.layout.comment_list;
+        layoutItem[THEME_COMMENTPAGE] = R.layout.comment_list_commentpage_theme;
+
+        layoutFooter[THEME_PREVIEW] = R.layout.comment_list_footer;
+        layoutFooter[THEME_COMMENTPAGE] = R.layout.comment_list_footer; // dummy
     }
 
     /**
@@ -87,7 +160,11 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
      */
     @Override
     protected RecyclerView.ViewHolder createHeaderViewHolder(ViewGroup viewGroup) {
-        return null;
+        View view = LayoutInflater.from(viewGroup.getContext())
+                .inflate(layoutHeader[TYPE_THEME + TYPE_SUBTHEME], viewGroup, false);
+        HeaderViewHolder viewHolder = new HeaderViewHolder(view);
+
+        return viewHolder;
     }
 
     /**
@@ -96,7 +173,7 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
     @Override
     protected RecyclerView.ViewHolder createItemViewHolder(ViewGroup viewGroup) {
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.comment_list, viewGroup, false);
+                .inflate(layoutItem[TYPE_THEME], viewGroup, false);
         ItemViewHolder viewHolder = new ItemViewHolder(view);
 
         return viewHolder;
@@ -108,7 +185,7 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
     @Override
     protected RecyclerView.ViewHolder createFooterViewHolder(ViewGroup viewGroup) {
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.comment_list_footer, viewGroup, false);
+                .inflate(layoutFooter[TYPE_THEME], viewGroup, false);
         FooterViewHolder viewHolder = new FooterViewHolder(view);
 
         return viewHolder;
@@ -119,6 +196,10 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
      */
     @Override
     protected void bindHeaderViewHolder(@NonNull RecyclerView.ViewHolder viewholder) {
+        HeaderViewHolder itemViewHolder = (HeaderViewHolder) viewholder;
+        if (TYPE_THEME == THEME_COMMENTPAGE) {
+
+        }
     }
 
     /**
@@ -127,20 +208,21 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
     @Override
     protected void bindFooterViewHolder(@NonNull RecyclerView.ViewHolder viewholder) {
         FooterViewHolder itemViewHolder = (FooterViewHolder) viewholder;
+        if (TYPE_THEME == THEME_PREVIEW) {
+            // profile image
+            String imgProfile = ProfileManager.getInstance().getProfile();
+            if (imgProfile == null || imgProfile.equals(""))
+                imgProfile = "https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_profile_77.png"; // default image
+            Glide.with(context).load(imgProfile).into(itemViewHolder.profile); // load image
+            // rounded corners
+            itemViewHolder.profile.setBackground(new ShapeDrawable(new OvalShape()));
+            itemViewHolder.profile.setClipToOutline(true);
 
-        // profile image
-        String imgProfile = ProfileManager.getInstance().getProfile();
-        if (imgProfile == null || imgProfile.equals(""))
-            imgProfile = "https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_profile_77.png"; // default image
-        Glide.with(act.getApplicationContext()).load(imgProfile).into(itemViewHolder.profile); // load image
-        // rounded corners
-        itemViewHolder.profile.setBackground(new ShapeDrawable(new OvalShape()));
-        itemViewHolder.profile.setClipToOutline(true);
-
-        if (mList.size() > 0) // 댓글이 있을 경우
-            itemViewHolder.content.setText(R.string.comment_list_new_comment);
-        else // 댓글이 없을 경우
-            itemViewHolder.content.setText(R.string.comment_list_first_comment);
+            if (mList.size() > 0) // 댓글이 있을 경우
+                itemViewHolder.content.setText(R.string.comment_list_new_comment);
+            else // 댓글이 없을 경우
+                itemViewHolder.content.setText(R.string.comment_list_first_comment);
+        }
     }
 
     /**
@@ -161,7 +243,7 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
         String imgProfile = comment.getImgProfile();
         if (imgProfile.equals(""))
             imgProfile = "https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_profile_77.png"; // default image
-        Glide.with(act.getApplicationContext()).load(imgProfile).into(itemViewHolder.profile); // load image
+        Glide.with(context.getApplicationContext()).load(imgProfile).into(itemViewHolder.profile); // load image
         // rounded corners
         //itemViewHolder.profile.setBackground(new ShapeDrawable(new OvalShape()));
         //itemViewHolder.profile.setClipToOutline(true);
@@ -190,16 +272,16 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
         String image = comment.getContentImage(),
                 sticker = comment.getSticker();
         if (!image.equals("")) {
-            int maxSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 180, act.getApplicationContext().getResources().getDisplayMetrics());
+            int maxSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 180, context.getApplicationContext().getResources().getDisplayMetrics());
             itemViewHolder.contentImage.setMaxHeight(maxSize);
             itemViewHolder.contentImage.setMaxWidth(maxSize);
-            Glide.with(act.getApplicationContext()).load(image).into(itemViewHolder.contentImage); // load image
+            Glide.with(context.getApplicationContext()).load(image).into(itemViewHolder.contentImage); // load image
             itemViewHolder.contentImage.setVisibility(View.VISIBLE);
         } else if (!sticker.equals("")) {
-            int maxSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, act.getApplicationContext().getResources().getDisplayMetrics());
+            int maxSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, context.getApplicationContext().getResources().getDisplayMetrics());
             itemViewHolder.contentImage.setMaxHeight(maxSize);
             itemViewHolder.contentImage.setMaxWidth(maxSize);
-            Glide.with(act.getApplicationContext()).load(sticker).into(itemViewHolder.contentImage); // load image
+            Glide.with(context.getApplicationContext()).load(sticker).into(itemViewHolder.contentImage); // load image
             itemViewHolder.contentImage.setVisibility(View.VISIBLE);
         } else
             itemViewHolder.contentImage.setVisibility(View.GONE);

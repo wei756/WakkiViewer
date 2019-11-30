@@ -25,6 +25,14 @@
 
     <include layout="@layout/content_article_viewer" />
 
+    <fragment
+        android:id="@+id/fragment_comment_list"
+        android:name="com.wei756.ukkiukki.ArticleViewerCommentListFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:layout="@layout/fragment_article_viewer_comment_list" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_article_viewer_comment"
         android:layout_width="wrap_content"
@@ -38,7 +46,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_article_viewer_bottom_bar"
         android:layout_width="match_parent"
-        android:layout_height="44sp"
+        android:layout_height="52sp"
         android:layout_gravity="bottom"
         android:background="@color/colorBackground">
 
@@ -61,7 +69,7 @@
             android:drawableTint="@color/colorTextSecondary"
             android:focusable="true"
             android:gravity="center_vertical"
-            android:padding="8sp"
+            android:padding="12sp"
             android:text="목록으로"
             android:textColor="@color/colorTextSecondary"
             android:textSize="14sp"

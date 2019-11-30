@@ -6,9 +6,16 @@ import com.wei756.ukkiukki.Article;
 import com.wei756.ukkiukki.ArticleList;
 import com.wei756.ukkiukki.ArticleListAdapter;
 import com.wei756.ukkiukki.ArticleViewerActivity;
+import com.wei756.ukkiukki.ArticleViewerCommentListFragment;
 import com.wei756.ukkiukki.CategoryManager;
+import com.wei756.ukkiukki.Comment;
+import com.wei756.ukkiukki.JsonUtil;
 import com.wei756.ukkiukki.MainActivity;
 import com.wei756.ukkiukki.ProfileManager;
+
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -23,6 +30,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 public class Web extends Thread {
     private static Web instance = null;
 
@@ -31,6 +39,8 @@ public class Web extends Thread {
             popularArticleListUrl = "https://m.cafe.naver.com/PopularArticleList.nhn?cafeId={0}",
             menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?search.clubid={0}&search.perPage=9999",
             articleReadUrl = "https://m.cafe.naver.com/ArticleRead.nhn?clubid={0}&articleid={1}",
+            articleCommentListUrl = "https://m.cafe.naver.com/CommentViewAjax.nhn?search.clubid={0}&search.articleid={1}&search.page={2}&search.orderby={3}",
+            articleLikeItListUrl = "https://m.cafe.naver.com/LikeItMemberAjax.nhn?search.clubid={0}&search.articleid={1}",
             myActivityUrl = "https://cafe.naver.com/MyCafeMyActivityAjax.nhn?clubid={0}",
             profileArticleListUrl = "https://m.cafe.naver.com/CafeMemberArticleList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentListUrl = "https://m.cafe.naver.com/CafeMemberCommentList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
@@ -58,6 +68,7 @@ public class Web extends Thread {
         Connection connection = Jsoup.connect(url)
                 .userAgent(connectByPC ? WebClientManager.userAgentPC : WebClientManager.userAgentMobile)
                 .timeout(timeout)
+                .ignoreContentType(true)
                 .method(method);
         if (usingCookie)
             connection = webClientManager.putHeader(connection);
@@ -416,16 +427,16 @@ public class Web extends Thread {
     }
 
     /**
-     * Map 의 데이터를 모두 디버그 메세지로 표시합니다.
+     * Map 의 데이터를 모두 로그캣으로 표시합니다.
      *
      * @param map 표시할 Map
      */
-    private void printMap(Map<String, String> map) {
+    public void printMap(Map<String, String> map) {
         if (map != null)
-            for (Map.Entry<String, String> elem : map.entrySet()) {
+            for (Map.Entry elem : map.entrySet()) {
 
-                String key = elem.getKey();
-                String value = elem.getValue();
+                String key = "" + elem.getKey();
+                String value = "" + elem.getValue();
 
                 Log.d("Web", key + " : " + value);
             }
@@ -466,7 +477,6 @@ public class Web extends Thread {
         new Thread() {
             public void run() {
                 String articleUrl = MessageFormat.format(articleReadUrl, cafeId, articleId);
-                //String _mid = articleId.substring(begin + 4, end);
 
                 // get html
                 Document document = null;
@@ -559,6 +569,139 @@ public class Web extends Thread {
                 }
             }
         }.start();
+    }
+
+    /**
+     * 좋아요 리스트를 불러옵니다.
+     *
+     * @param articleId 불러올 좋아요 리스트의 게시글 id
+     * @see ArticleViewerActivity
+     */
+    public Map getArticleLikeItList(final String articleId) {
+
+        String articleUrl = MessageFormat.format(articleLikeItListUrl, cafeId, articleId);
+
+        // get html
+        Document document = null;
+        Map likeItMap;
+        try {
+            document = httpRequest(articleUrl, Connection.Method.GET, false, true).parse();
+
+            // String to JSON
+            JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+            JSONObject jsonObj = (JSONObject) parser.parse(document.text());
+
+            likeItMap = JsonUtil.getMapFromJsonObject(jsonObj);
+
+            // callback
+            return likeItMap;
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error. (" + articleUrl + ")" + " on Web.getArticleLikeItList");
+            e.printStackTrace();
+
+            // callback
+            return null;
+        } catch (ParseException e) {
+            Log.w("Web.err", "JSON Parse error. (" + articleUrl + ")" + " on Web.getArticleLikeItList");
+            e.printStackTrace();
+
+            // callback
+            return null;
+        }
+    }
+
+    /**
+     * 댓글 리스트를 불러옵니다.
+     *
+     * @param articleId 불러올 댓글 리스트의 게시글 id
+     * @see ArticleViewerActivity
+     */
+    public ArrayList<Comment> getArticleCommentList(final String articleId, final int page, final String orderby) {
+
+        String articleUrl = MessageFormat.format(articleCommentListUrl, cafeId, articleId, page, orderby);
+        Log.e("Web.eeeeeeeeeeee", articleUrl);
+
+        // get html
+        Document document = null;
+        ArrayList<Comment> arrayList = null;
+        try {
+            document = httpRequest(articleUrl, Connection.Method.GET, false, true).parse();
+
+            arrayList = new ArrayList<>();
+
+            Elements comments = document.select("li");
+            for (Element comment : comments) {
+                String author = "", time = "", imgProfile = "",
+                        contentText = "", contentImage = "", sticker = "";
+                boolean iconNew = false, iconArticleAuthor = false;
+                if (comment.classNames().contains("u_cbox_comment")) { // 댓글인 경우에만
+                    Comment comment1 = new Comment();
+
+                    imgProfile = comment.selectFirst("span[class=u_cbox_thumb]").selectFirst("img").attr("src");
+                    author = comment.selectFirst("span[class=u_cbox_info_main]").selectFirst("a").text();
+                    time = comment.selectFirst("span[class=u_cbox_date]").text();
+
+                    // 댓글 내용
+                    Element elementContentText = comment.selectFirst("div[class=u_cbox_text_wrap]");
+
+                    contentText = elementContentText.text();
+                    // 댓글 이미지/스티커
+                    Element elementSticker = comment.selectFirst("div[class=u_cbox_sticker_section]"),
+                            elementImage = comment.selectFirst("div[class=u_cbox_image_section]");
+                    if (elementSticker != null) // 스티커
+                        sticker = elementSticker.selectFirst("img").attr("src");
+                    if (elementImage != null) // 이미지
+                        contentImage = elementImage.selectFirst("img").attr("src");
+
+                    iconNew = comment.selectFirst("span[class=u_cbox_ico_new]") != null;
+                    iconArticleAuthor = comment.selectFirst("span[class=u_cbox_ico_author]") != null;
+
+                    // 데이터 입력
+                    comment1.setAuthor(author)
+                            .setTime(time)
+                            .setContent(contentText)
+                            .setContentImage(contentImage)
+                            .setSticker(sticker)
+                            .setImgProfile(imgProfile)
+                            .setIconNew(iconNew)
+                            .setIconArticleAuthor(iconArticleAuthor);
+
+                    // 대댓글 관련
+                    int indent = 0;
+                    if (comment.classNames().contains("re")) // 대댓글이면
+                        indent = 1;
+                    comment1.setIndentLevel(indent);
+                    Element targetName = comment.selectFirst("span[class=u_cbox_target_name]");// 대상 닉네임
+                    if (targetName != null)
+                        comment1.setParentAuthor(targetName.text());
+
+                    Log.e("Web", comment.className() + " " + indent);
+                    // 본인댓글 여부
+                    boolean mine = false;
+                    mine = comment.child(0).className().contains("u_cbox_mine");
+                    comment1.setMine(mine);
+
+                    // 데이터 입력
+                    arrayList.add(comment1);
+                }
+            }
+
+            // 마지막 페이지인지 확인
+            if (document.selectFirst("div[class=inner]") == null) {
+                Log.e("Web", "마지막 페이지");
+                arrayList.add(new Comment()
+                        .setImgProfile(ArticleViewerCommentListFragment.LAST_PAGE));
+            }
+
+            // callback
+            return arrayList;
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error. (" + articleUrl + ")" + " on Web.getArticleLikeItList");
+            e.printStackTrace();
+
+            // callback
+            return null;
+        }
     }
 
     /**

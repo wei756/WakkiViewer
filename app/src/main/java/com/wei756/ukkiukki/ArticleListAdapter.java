@@ -9,16 +9,13 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.bumptech.glide.Glide;
 
@@ -157,7 +154,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
      */
     public ArticleListAdapter(ArrayList<Item> list, Activity act, int theme, RecyclerView mRecyclerView) {
         this.mList = list;
-        this.act = act;
+        this.context = act;
         this.mRecyclerView = mRecyclerView;
 
         hasHeader = true;
@@ -357,12 +354,12 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         HeaderViewHolder headerViewHolder = (HeaderViewHolder) viewholder;
         // size
         if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, act.getResources().getDisplayMetrics());
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, context.getResources().getDisplayMetrics());
             headerViewHolder.layout.setPadding(padding, padding, padding, padding);
             headerViewHolder.layout.setBackgroundResource(R.color.colorTransparent);
             ViewGroup.LayoutParams params = headerViewHolder.layout.getLayoutParams();
             params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
-            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, act.getResources().getDisplayMetrics());
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, context.getResources().getDisplayMetrics());
             headerViewHolder.layout.setLayoutParams(params);
 
             params = headerViewHolder.article.getLayoutParams();
@@ -377,7 +374,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             headerViewHolder.more.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ((MainActivity) act).setCategory(mid, true);
+                    ((MainActivity) context).setCategory(mid, true);
                 }
             });
         }
@@ -385,7 +382,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             headerViewHolder.article.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ((MainActivity) act).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true);
+                    ((MainActivity) context).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true);
                 }
             });
         }
@@ -401,12 +398,12 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
 
         // size
         if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, act.getResources().getDisplayMetrics());
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, context.getResources().getDisplayMetrics());
             itemViewHolder.layout.setPadding(padding, padding, padding, padding);
             itemViewHolder.layout.setBackgroundResource(R.color.colorTransparent);
             ViewGroup.LayoutParams params = itemViewHolder.layout.getLayoutParams();
             params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
-            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, act.getResources().getDisplayMetrics());
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, context.getResources().getDisplayMetrics());
             itemViewHolder.layout.setLayoutParams(params);
 
             params = itemViewHolder.article.getLayoutParams();
@@ -421,14 +418,14 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         if (TYPE_THEME == THEME_BOARD || TYPE_THEME == THEME_PROFILE) {
             if (TYPE_SUBTHEME == SUBTHEME_ARTICLE) {
                 if (article.isReadArticle())
-                    itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorTextSecondary, null));
+                    itemViewHolder.title.setTextColor(context.getResources().getColor(R.color.colorTextSecondary, null));
                 else
-                    itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorTextPrimary, null));
+                    itemViewHolder.title.setTextColor(context.getResources().getColor(R.color.colorTextPrimary, null));
             } else if (TYPE_SUBTHEME == SUBTHEME_POPULAR) {
                 if (article.isReadArticle())
-                    itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorPopularListTextSecondary, null));
+                    itemViewHolder.title.setTextColor(context.getResources().getColor(R.color.colorPopularListTextSecondary, null));
                 else
-                    itemViewHolder.title.setTextColor(act.getResources().getColor(R.color.colorPopularListTextPrimary, null));
+                    itemViewHolder.title.setTextColor(context.getResources().getColor(R.color.colorPopularListTextPrimary, null));
             }
         }
         if (TYPE_THEME != THEME_MAINPAGE && TYPE_SUBTHEME != SUBTHEME_PROFILE_COMMENT)
@@ -482,12 +479,12 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 || TYPE_THEME == THEME_PROFILE) {
             String thumbnailUrl = article.getThumbnailUrl();
             if (thumbnailUrl != null) {
-                Glide.with(act.getApplicationContext()).load(thumbnailUrl).into(itemViewHolder.thumbnail);
+                Glide.with(context.getApplicationContext()).load(thumbnailUrl).into(itemViewHolder.thumbnail);
 
                 if (TYPE_SUBTHEME == SUBTHEME_ARTICLE) { // 인기글 리스트 적용 제외
                     // rounded corners
                     GradientDrawable drawable =
-                            (GradientDrawable) act.getApplicationContext().getDrawable(R.drawable.article_list_bg_thumbnail);
+                            (GradientDrawable) context.getApplicationContext().getDrawable(R.drawable.article_list_bg_thumbnail);
                     itemViewHolder.thumbnail.setBackground(drawable);
                     itemViewHolder.thumbnail.setClipToOutline(true);
                 }
@@ -508,23 +505,47 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         }
 
         // click event
-        View.OnClickListener click = new View.OnClickListener() {
+        View.OnClickListener clickArticle = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 article.setReadArticle(true);
-                act.runOnUiThread(new Runnable() {
+                ((Activity) context).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         notifyDataSetChanged();
                     }
                 });
-                Intent intent = new Intent(act, ArticleViewerActivity.class);
+                Intent intent = new Intent(context, ArticleViewerActivity.class);
                 intent.putExtra("article_title", article.getTitle());
                 intent.putExtra("article_href", article.getHref());
-                act.startActivity(intent);
+                intent.putExtra("commentpage", false);
+                context.startActivity(intent);
             }
         };
-        itemViewHolder.article.setOnClickListener(click);
+        itemViewHolder.article.setOnClickListener(clickArticle);
+
+        if (TYPE_THEME == THEME_BOARD ||
+                (TYPE_THEME == THEME_PROFILE &&
+                        TYPE_SUBTHEME == SUBTHEME_ARTICLE)) {
+            View.OnClickListener clickComment = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    article.setReadArticle(true);
+                    ((Activity) context).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyDataSetChanged();
+                        }
+                    });
+                    Intent intent = new Intent(context, ArticleViewerActivity.class);
+                    intent.putExtra("article_title", article.getTitle());
+                    intent.putExtra("article_href", article.getHref());
+                    intent.putExtra("commentpage", true);
+                    context.startActivity(intent);
+                }
+            };
+            itemViewHolder.btnComment.setOnClickListener(clickComment);
+        }
         //Log.v("ArticleListAdapter", (pos + 1) + "번째 게시글 표시됨 \"" + article.getTitle() + "\"(" + article.getHref() + ") on ArticleListAdapter.onBindViewHolder");
 
 
@@ -539,12 +560,12 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
 
         // size
         if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, act.getResources().getDisplayMetrics());
+            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, context.getResources().getDisplayMetrics());
             footerViewHolder.layout.setPadding(padding, padding, padding, padding);
             footerViewHolder.layout.setBackgroundResource(R.color.colorTransparent);
             ViewGroup.LayoutParams params = footerViewHolder.layout.getLayoutParams();
             params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
-            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, act.getResources().getDisplayMetrics());
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, context.getResources().getDisplayMetrics());
             footerViewHolder.layout.setLayoutParams(params);
 
             params = footerViewHolder.article.getLayoutParams();
@@ -556,7 +577,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             footerViewHolder.article.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ((MainActivity) act).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true);
+                    ((MainActivity) context).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true);
                 }
             });
         }
