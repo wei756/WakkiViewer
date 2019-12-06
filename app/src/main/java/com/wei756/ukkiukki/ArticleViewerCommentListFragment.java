@@ -1,18 +1,30 @@
 package com.wei756.ukkiukki;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.wei756.ukkiukki.Network.Web;
 
@@ -21,6 +33,10 @@ import java.util.Map;
 
 
 public class ArticleViewerCommentListFragment extends Fragment {
+
+    public final static int GALLERY_REQUEST_CODE = 0;
+    public final static int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 100;
+
     ArticleViewerActivity act;
     SwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -31,10 +47,16 @@ public class ArticleViewerCommentListFragment extends Fragment {
 
     Web web = Web.getInstance();
 
+    EditText etContent;
+    TextView btnSubmitComment;
+    ImageView btnEmoticon, btnPhoto;
+
     private String articleId;
     private int page = 1;
 
     Map likeItMap;
+
+    Map<String, String> commentPhotoMap = null;
 
     public static String LAST_PAGE = "마지막 페이지";
 
@@ -80,12 +102,143 @@ public class ArticleViewerCommentListFragment extends Fragment {
             }
         });
 
+        // Bottom bar
+        etContent = (EditText) view.findViewById(R.id.et_commentpage_content);
+        btnSubmitComment = (TextView) view.findViewById(R.id.btn_commentpage_submit);
+        btnSubmitComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                postComment();
+            }
+        });
+        btnEmoticon = (ImageView) view.findViewById(R.id.btn_commentpage_emoticon);
+        btnPhoto = (ImageView) view.findViewById(R.id.btn_commentpage_photo);
+        btnPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 권한 체크
+                if (ContextCompat.checkSelfPermission(act,
+                        Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    // Permission is not granted
+                    // Should we show an explanation?
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(act,
+                            Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                        // Show an explanation to the user *asynchronously* -- don't block
+                        // this thread waiting for the user's response! After the user
+                        // sees the explanation, try again to request the permission.
+                    } else {
+                        // No explanation needed; request the permission
+                        ActivityCompat.requestPermissions(act,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+
+                    }
+                } else { // 권한 있을 시
+                    postCommentPhoto();
+                }
+
+
+            }
+        });
+
         return view;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // 권한 부여됨
+                } else {
+                    // 권한 부여 거부
+                }
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Result code is RESULT_OK only if the user selects an Image
+        if (resultCode == AppCompatActivity.RESULT_OK) {
+            switch (requestCode) {
+                case GALLERY_REQUEST_CODE: // 사진 선택 창
+                    //data.getData returns the content URI for the selected Image
+                    final Uri selectedImage = data.getData();
+                    Log.e("ArticleViewerCommentLis", "Raw uri: " + selectedImage.toString());
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Map<String, String> map = web.postCommentPhoto(act, selectedImage);
+                            String returncode = map.get("returncode");
+                            if (returncode.equals("" + Web.RETURNCODE_SUCCESS)) { // success
+                                commentPhotoMap = map;
+
+                            } else {
+                                //TODO: 에러코드 처리
+                            }
+                        }
+                    }).start();
+                    break;
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    /**
+     * 댓글을 업로드합니다.
+     */
+    private void postComment() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final int returncode = web.postComment(articleId, "", etContent.getText().toString(), commentPhotoMap);
+                act.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (returncode == Web.RETURNCODE_SUCCESS) {
+                            Toast.makeText(act, "댓글을 작성하였습니다.", Toast.LENGTH_SHORT).show();
+                            Log.e("dddddddddd", etContent.getText().toString());
+
+                            etContent.setText("");
+                            commentPhotoMap = null;
+                        } else if (returncode == Web.RETURNCODE_ERROR_COMMENT_SPAM) {
+                            Toast.makeText(act, "스팸으로 감지된 댓글입니다.", Toast.LENGTH_SHORT).show();
+                        } else if (returncode == Web.RETURNCODE_ERROR_COMMENT_BLANK) {
+                            Toast.makeText(act, "내용이 없는 댓글 작성 시도입니다.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
+
+    /**
+     * 댓글에 사진을 첨부하기 위해 사진 선택 창을 불러옵니다.
+     *
+     * @see ArticleViewerCommentListFragment#onActivityResult(int, int, Intent)
+     */
+    private void postCommentPhoto() {
+        //Create an Intent with action as ACTION_PICK
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        // Sets the type as image/*. This ensures only components of type image are selected
+        intent.setType("image/*");
+        //We pass an extra array with the accepted mime types. This will ensure only components with these MIME types as targeted.
+        String[] mimeTypes = {"image/jpeg", "image/png"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+        // Launching the Intent
+        startActivityForResult(intent, GALLERY_REQUEST_CODE);
     }
 
     public void initCommentPage(final String articleId, final Map likeItMap) {
         this.articleId = articleId;
         this.loadedLastPage = false;
+        commentPhotoMap = null;
 
         loadCommentList(1, true);
         this.likeItMap = likeItMap;

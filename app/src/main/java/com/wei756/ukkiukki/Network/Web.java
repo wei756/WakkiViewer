@@ -1,6 +1,17 @@
 package com.wei756.ukkiukki.Network;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.MediaStore;
+import android.text.Html;
+import android.text.Spanned;
+import android.text.SpannedString;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import com.wei756.ukkiukki.Article;
 import com.wei756.ukkiukki.ArticleList;
@@ -23,16 +34,51 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.HeaderElement;
+import cz.msebera.android.httpclient.HttpResponse;
+import cz.msebera.android.httpclient.client.HttpClient;
+import cz.msebera.android.httpclient.client.entity.EntityBuilder;
+import cz.msebera.android.httpclient.client.methods.HttpGet;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
+import cz.msebera.android.httpclient.client.methods.HttpRequestBase;
+import cz.msebera.android.httpclient.entity.ContentType;
+import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder;
+import cz.msebera.android.httpclient.entity.mime.content.InputStreamBody;
+import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
+import cz.msebera.android.httpclient.impl.client.HttpClients;
+import cz.msebera.android.httpclient.message.BasicHeader;
+import cz.msebera.android.httpclient.util.EntityUtils;
 
 
 public class Web extends Thread {
     private static Web instance = null;
+
+    public static final int RETURNCODE_SUCCESS = 0; // 성공
+    public static final int RETURNCODE_ERROR_CONNECTION = -1; // 연결 에러
+    public static final int RETURNCODE_ERROR_COMMENT_SPAM = -2; // 댓글 스팸 감지 에러
+    public static final int RETURNCODE_ERROR_COMMENT_ENCODING = -3; // 댓글 인코딩 에러
+    public static final int RETURNCODE_ERROR_LOGIN_REQUIRED = -4; // 로그인 요청 에러
+    public static final int RETURNCODE_ERROR_COMMENT_BLANK = -5; // 내용 없는 댓글 에러
+
+    private static final int METHOD_POST = 100;
+    private static final int METHOD_GET = 101;
+
+    private final String photoSessionKeyUrl = "https://m.cafe.naver.com/PhotoInfraSessionKey.nhn";
 
     private final String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
             articleListUrl = "https://m.cafe.naver.com/ArticleListAjax.nhn?search.clubid={0}&search.menuid={1}&search.page={2}",
@@ -45,6 +91,10 @@ public class Web extends Thread {
             profileArticleListUrl = "https://m.cafe.naver.com/CafeMemberArticleList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentListUrl = "https://m.cafe.naver.com/CafeMemberCommentList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentArticleListUrl = "https://m.cafe.naver.com/CafeMemberReplyList.nhn?search.clubid={0}&search.query={1}&search.page={2}&search.perPage={3}";
+
+    private final String postCommentUrl = "https://m.cafe.naver.com/CommentPost.nhn?m=write",
+            postCommentData = "clubid={0}&articleid={1}&content={2}&stickerId={3}&imagePath={4}&imageFileName={5}&imageWidth={6}&imageHeight={7}&showCafeHome=false",
+            postCommentPhotoUrl = "https://cafe.upphoto.naver.com/{0}/simpleUpload/0?userId={1}&extractExif=false&extractAnimatedCnt=false&autorotate=true";
     private final String cafeId = "27842958";
     private final int timeout = 15000;
 
@@ -60,28 +110,118 @@ public class Web extends Thread {
      *
      * @param url
      * @param method
+     * @param connectByPC
+     * @param usingCookie
      * @return Response
      * @throws IOException
      */
-    private Connection.Response httpRequest(String url, Connection.Method method, boolean connectByPC, boolean usingCookie) throws IOException {
-        Connection.Response response = null;
-        Connection connection = Jsoup.connect(url)
-                .userAgent(connectByPC ? WebClientManager.userAgentPC : WebClientManager.userAgentMobile)
-                .timeout(timeout)
-                .ignoreContentType(true)
-                .method(method);
-        if (usingCookie)
-            connection = webClientManager.putHeader(connection);
-        response = connection.execute();
+    private Document httpRequest(String url, int method, boolean connectByPC, boolean usingCookie, @Nullable String formData) throws IOException {
+        HttpClient client = HttpClients.createDefault();
 
-        if (usingCookie) {
-            webClientManager.getCookies(response);
+        HttpRequestBase request = null;
+        if (method == METHOD_POST)
+            request = new HttpPost(url);
+        else if (method == METHOD_GET)
+            request = new HttpGet(url);
+
+        // headers
+        request.addHeader("User-Agent", connectByPC ? WebClientManager.userAgentPC : WebClientManager.userAgentMobile);
+
+        // form-data
+        if (method == METHOD_POST && formData != null) {
+            EntityBuilder entityBuilder = EntityBuilder.create();
+            entityBuilder.setContentType(ContentType.APPLICATION_FORM_URLENCODED);
+            entityBuilder.setText(formData);
+            ((HttpPost) request).setEntity(entityBuilder.build());
+            request.addHeader("Upgrade-Insecure-Requests", "1");
+            request.addHeader("Sec-Fetch-Site", "same-origin");
+            request.addHeader("Sec-Fetch-Mode", "navigate");
+        }
+        //method.addHeader("Connection", "keep-alive");
+        //method.addHeader("Accept", "*/*");
+        //method.addHeader("Sec-Fetch-Site", "same-site");
+        //method.addHeader("Sec-Fetch-Mode", "cors");
+        //method.addHeader("Accept-Encoding", "gzip, deflate, br");
+        //method.addHeader("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7");
+        //method.addHeader("Referer", "https://m.cafe.naver.com/CommentView.nhn?search.clubid=27842958&search.articleid=1171068&page=&commentCursorOn=true");
+
+        if (usingCookie) // put cookies into request
+            webClientManager.putHeader(request);
+        HttpResponse response = client.execute(request);
+
+        String html = EntityUtils.toString(response.getEntity()); // response
+
+        if (usingCookie) { // get cookies from response
+            webClientManager.getCookies(response.getHeaders("Set-Cookie"));
             Log.v("Web", "JSESSIONID is " + webClientManager.getCookiesMap().get("JSESSIONID") + " now.");
         }
 
-        //Log.e("Web", response.parse().text()); // for debug: view loaded page with text
+        Document document = Jsoup.parse(html, url);
+        //Log.e("Web", document.html()); // for debug: view loaded page with text
+        return document;
+    }
 
-        return response;
+    /**
+     * 사진을 네이버 서버로 전송합니다.
+     *
+     * @param context
+     * @param url
+     * @param uri
+     * @return Response
+     * @throws IOException
+     */
+    private Document postPhotoToNaver(Context context, String url, Uri uri) throws IOException {
+        // image
+        String imgPath = getImagePathToUri(context, uri); // uri로부터 실제 경로 추출
+        String imgName = imgPath.substring(imgPath.lastIndexOf("/") + 1); // 파일 이름 추출
+        String imgType = imgName.substring(imgName.lastIndexOf(".") + 1); // 파일 종류 추출
+        Log.e("Web.debug", "imgPath: " + imgPath +
+                "\nimgName: " + imgName +
+                "\nimgType: " + imgType +
+                "\non Web.httpRequest");
+        File file = new File(imgPath);
+        FileInputStream fileInputStream = new FileInputStream(file);
+
+        MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+        entity.addPart("image", new InputStreamBody(new FileInputStream(file), file.getName()));
+
+        HttpPost post = new HttpPost(url);
+        post.setEntity(entity.build());
+
+        // headers
+        post.addHeader("Connection", "keep-alive");
+        post.addHeader("Accept", "*/*");
+        post.addHeader("Sec-Fetch-Site", "same-site");
+        post.addHeader("Sec-Fetch-Mode", "cors");
+        post.addHeader("Accept-Encoding", "gzip, deflate, br");
+        post.addHeader("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7");
+        post.addHeader("Referer", "https://m.cafe.naver.com/CommentView.nhn?search.clubid=27842958&search.articleid=1171068&page=&commentCursorOn=true");
+
+        HttpClient client = HttpClients.createDefault();
+        HttpResponse response = client.execute(post);
+        fileInputStream.close();
+
+        String html = EntityUtils.toString(response.getEntity()); // response
+
+        Document document = Jsoup.parse(html, url);
+
+
+        //Log.e("Web", document.html()); // for debug: view loaded page with text
+        return document;
+    }
+
+    public String getImagePathToUri(Context context, Uri data) {
+        //사용자가 선택한 이미지의 정보를 받아옴
+        String[] proj = {MediaStore.Images.Media.DATA};
+        Cursor cursor = context.getContentResolver().query(data, proj, null, null, null);
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+
+        //이미지의 경로 값
+        String imgPath = cursor.getString(column_index);
+        Log.d("test", imgPath);
+
+        return imgPath;
     }
 
     /**
@@ -95,7 +235,7 @@ public class Web extends Thread {
                 ProfileManager profileManager = ProfileManager.getInstance();
                 if (webClientManager.getLogined()) {
                     try {
-                        document = httpRequest(url, Connection.Method.GET, true, true).parse();
+                        document = httpRequest(url, METHOD_GET, true, true, null);
 
                         String id, nickname, profile;
                         String date, grade;
@@ -152,7 +292,7 @@ public class Web extends Thread {
             Elements categories = null;
 
             Document document;
-            document = httpRequest(url, Connection.Method.GET, true, true).parse();
+            document = httpRequest(url, METHOD_GET, true, true, null);
 
             categories = document.selectFirst("ul[id=allMenuList]").select("li"); // 카테고리 추출
             Log.i("Web", "" + categories.size() + " category block(s) found. on Web.loadCategoryList");
@@ -310,8 +450,12 @@ public class Web extends Thread {
                                 String content;
                                 if (contentElement == null)
                                     content = "";
-                                else
-                                    content = article.selectFirst("strong[class=txt]").text();
+                                else {
+                                    if (Build.VERSION.SDK_INT < 24)
+                                        content = Html.fromHtml(contentElement.html()).toString();
+                                    else
+                                        content = Html.fromHtml(contentElement.html(), Html.FROM_HTML_MODE_COMPACT).toString();
+                                }
 
                                 article1.setContent(content)
                                         .setTime(time)
@@ -399,7 +543,7 @@ public class Web extends Thread {
         else
             url = MessageFormat.format(articleListUrl, cafeId, mid != 0 ? mid : "", page);
 
-        document = httpRequest(url, Connection.Method.GET, false, true).parse();
+        document = httpRequest(url, METHOD_GET, false, true, null);
 
         //parse article list
         /*CategoryManager category = CategoryManager.getInstance();
@@ -453,7 +597,7 @@ public class Web extends Thread {
         CategoryManager category = CategoryManager.getInstance();
         try {
             twitchChannel = "woowakgood";
-            Document twitchLive = httpRequest("https://twitch.tv/" + twitchChannel, Connection.Method.GET, false, false).parse();
+            Document twitchLive = httpRequest("https://twitch.tv/" + twitchChannel, METHOD_GET, false, false, null);
             Log.v("Twitch Live test", "" + twitchLive.text());
 
             live = twitchLive.text().contains(" Playing ") && !twitchLive.text().contains(" hosting ");
@@ -481,15 +625,16 @@ public class Web extends Thread {
                 // get html
                 Document document = null;
                 try {
-                    document = httpRequest(articleUrl, Connection.Method.GET, false, true).parse();
+                    document = httpRequest(articleUrl, METHOD_GET, false, true, null);
                     Element error = document.selectFirst("div[class=error_content_body]");
                     boolean noerror = true;
                     if (error != null) {
                         String errorCode = error.selectFirst("h2").text();
+                        Log.w("Web.err", "게시글을 불러오는 중 에러가 발생했습니다.(errorcode:" + errorCode + ")");
 
                         if (errorCode.equals("카페 멤버만 볼 수 있습니다.")) // 로그인 필요
                             throw new RequiresLoginException();
-                        if (!errorCode.equals("게시글이 존재하지 않거나 삭제되었습니다.")) // 존재하지 않는 게시글
+                        if (errorCode.equals("게시글이 존재하지 않거나 삭제되었습니다.")) // 존재하지 않는 게시글
                             noerror = false;
                     }
 
@@ -551,7 +696,8 @@ public class Web extends Thread {
 
                         Log.i("Web", " article(s) found from page. (" + articleId + ")" + " on Web.getArticle");
 
-                    }
+                    } else
+                        data = null; // null 처리
                     // callback
                     articleViewerActivity.onLoadArticle(data);
                 } catch (IOException e) {
@@ -585,7 +731,7 @@ public class Web extends Thread {
         Document document = null;
         Map likeItMap;
         try {
-            document = httpRequest(articleUrl, Connection.Method.GET, false, true).parse();
+            document = httpRequest(articleUrl, METHOD_GET, false, true, null);
 
             // String to JSON
             JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
@@ -616,6 +762,7 @@ public class Web extends Thread {
      * @param articleId 불러올 댓글 리스트의 게시글 id
      * @see ArticleViewerActivity
      */
+    @SuppressWarnings("deprecation")
     public ArrayList<Comment> getArticleCommentList(final String articleId, final int page, final String orderby) {
 
         String articleUrl = MessageFormat.format(articleCommentListUrl, cafeId, articleId, page, orderby);
@@ -625,7 +772,7 @@ public class Web extends Thread {
         Document document = null;
         ArrayList<Comment> arrayList = null;
         try {
-            document = httpRequest(articleUrl, Connection.Method.GET, false, true).parse();
+            document = httpRequest(articleUrl, METHOD_GET, false, true, null);
 
             arrayList = new ArrayList<>();
 
@@ -643,8 +790,11 @@ public class Web extends Thread {
 
                     // 댓글 내용
                     Element elementContentText = comment.selectFirst("div[class=u_cbox_text_wrap]");
+                    if (Build.VERSION.SDK_INT < 24)
+                        contentText = Html.fromHtml(elementContentText.html()).toString();
+                    else
+                        contentText = Html.fromHtml(elementContentText.html(), Html.FROM_HTML_MODE_COMPACT).toString();
 
-                    contentText = elementContentText.text();
                     // 댓글 이미지/스티커
                     Element elementSticker = comment.selectFirst("div[class=u_cbox_sticker_section]"),
                             elementImage = comment.selectFirst("div[class=u_cbox_image_section]");
@@ -696,13 +846,174 @@ public class Web extends Thread {
             // callback
             return arrayList;
         } catch (IOException e) {
-            Log.w("Web.err", "Connection error. (" + articleUrl + ")" + " on Web.getArticleLikeItList");
+            Log.w("Web.err", "Connection error. (" + articleUrl + ")" + " on Web.getArticleCommentList");
             e.printStackTrace();
 
             // callback
             return null;
         }
     }
+
+    /**
+     * 댓글을 작성합니다.
+     *
+     * @param articleId 댓글 달 게시글 id
+     * @param commentId 대댓글 달 댓글 id
+     * @param content   댓글 내용
+     * @see ArticleViewerActivity
+     */
+    public int postComment(final String articleId, final String commentId, final String content, @Nullable Map<String, String> photo) {
+        String commentData = "";
+        try {
+            String strContent = URLEncoder.encode(content, "UTF-8");
+
+            String imagePath = "", imageFileName = "", imageWidth = "", imageHeight = "";
+            if (photo != null) { // 사진댓글
+                imagePath = URLEncoder.encode(photo.get("path") + "/", "UTF-8");
+                imageFileName = URLEncoder.encode(photo.get("fileName"), "UTF-8");
+                imageWidth = photo.get("width");
+                imageHeight = photo.get("height");
+            }
+            commentData = MessageFormat.format(postCommentData, cafeId, articleId, strContent, "", imagePath, imageFileName, imageWidth, imageHeight);
+            Log.e("Web.eeeeeeeeeeee", commentData);
+
+            // get html
+            Document document = null;
+            document = httpRequest(postCommentUrl, METHOD_POST, false, true, commentData);
+            Log.e("Web.debug", document.html());
+
+            Element elementError = document.selectFirst("div[class=error_content_body]");
+            if (elementError != null) { // 에러 발생
+                if (elementError.selectFirst("h2").text().contains("해당 댓글은 도배글로 판단되어 등록되지 않습니다.")) { // 도배 감지
+                    Log.w("Web.err", "댓글 작성 중 에러 발생.(errorcode: 해당 댓글은 도배글로 판단되어 등록되지 않습니다.)");
+                    return RETURNCODE_ERROR_COMMENT_SPAM;
+                }
+                if (elementError.selectFirst("h2").text().contains("내용이 없는 댓글 작성 시도입니다.")) { // 도배 감지
+                    Log.w("Web.err", "댓글 작성 중 에러 발생.(errorcode: 내용이 없는 댓글 작성 시도입니다.)");
+                    return RETURNCODE_ERROR_COMMENT_BLANK;
+                }
+            }
+
+            // callback
+            Log.i("Web", "댓글을 작성하였습니다.");
+            return RETURNCODE_SUCCESS;
+        } catch (UnsupportedEncodingException e) {
+            Log.w("Web.err", "Encoding error on Web.postComment.");
+            e.printStackTrace();
+
+            // callback
+            return RETURNCODE_ERROR_COMMENT_ENCODING;
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error. (" + commentData + ")" + " on Web.postComment");
+            e.printStackTrace();
+
+            // callback
+            return RETURNCODE_ERROR_CONNECTION;
+        }
+    }
+
+    /**
+     * 사진 업로드에 필요한 세션키를 받아옵니다.
+     *
+     * @return 세션키
+     * @see Web#postCommentPhoto(Context, Uri)
+     */
+    public String getPhotoSessionKey() {
+        try {
+            Log.e("Web.eeeeeeeeeeee", photoSessionKeyUrl);
+
+            // get html
+            Document document = null;
+            document = httpRequest(photoSessionKeyUrl, METHOD_POST, false, true, null);
+
+            // String to JSON
+            JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+            JSONObject jsonObj = (JSONObject) parser.parse(document.text());
+            Map sessionMap = JsonUtil.getMapFromJsonObject(jsonObj);
+
+            String sessionKey = null;
+            if (sessionMap.containsKey("message"))
+                return (String) ((Map) sessionMap.get("message")).get("result");
+            else
+                return "" + RETURNCODE_ERROR_CONNECTION;
+
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error on Web.getPhotoSessionKey.");
+            e.printStackTrace();
+
+            // callback
+            return "" + RETURNCODE_ERROR_CONNECTION;
+        } catch (ParseException e) {
+            Log.w("Web.err", "JSON Parse error on Web.getPhotoSessionKey.");
+            e.printStackTrace();
+
+            // callback
+            return "" + RETURNCODE_ERROR_CONNECTION;
+        }
+    }
+
+    /**
+     * 사진을 네이버 카페 서버에 업로드합니다.
+     *
+     * @return returncode
+     */
+    public Map<String, String> postCommentPhoto(Context context, Uri uri) {
+        Map<String, String> map = new HashMap<>();
+        try {
+            if (!webClientManager.getLogined()) { // 로그인이 안 되어 있을 시
+                map.put("returncode", "" + RETURNCODE_ERROR_LOGIN_REQUIRED);
+                return map;
+            }
+
+            String sessionKey = getPhotoSessionKey();
+            Log.e("Web.debug", "SessionKey: " + sessionKey);
+            String userId = ProfileManager.getInstance().getId();
+
+            if (!sessionKey.equals("" + RETURNCODE_ERROR_CONNECTION)) { // 세션 키를 불러오는 데 성공했다면
+
+                String postPhotoUrl = MessageFormat.format(postCommentPhotoUrl, sessionKey, userId);
+                Log.e("Web.debug", "Request URL: " + postPhotoUrl);
+
+                // get html
+                Document document = null;
+                document = postPhotoToNaver(context, postPhotoUrl, uri);
+                Log.e("Web.debug", "Response: " + document.html());
+
+                map.put("returncode", "" + RETURNCODE_SUCCESS);
+                // put response
+                if (document.selectFirst("item") != null) { // success
+                    map.put("isSuccess", "true");
+                    map.put("url", document.selectFirst("url").text());
+                    map.put("path", document.selectFirst("path").text());
+                    map.put("fileName", document.selectFirst("fileName").text());
+                    map.put("width", document.selectFirst("width").text());
+                    map.put("height", document.selectFirst("height").text());
+                    map.put("fileSize", document.selectFirst("fileSize").text());
+                    map.put("thumbnail", document.selectFirst("thumbnail").text());
+
+
+                }
+                if (document.selectFirst("result") != null) { // fail
+                    map.put("isSuccess", "false");
+                    map.put("code", document.selectFirst("code").text());
+                    map.put("cause", document.selectFirst("cause").text());
+
+                }
+            } else {
+                map.put("returncode", "" + RETURNCODE_ERROR_CONNECTION);
+            }
+
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error on Web.postCommentPhoto.");
+            e.printStackTrace();
+
+            map.put("returncode", "" + RETURNCODE_ERROR_CONNECTION);
+        } finally {
+            // callback
+            return map;
+        }
+    }
+
 
     /**
      * 로그인 세션을 cookie에 저장합니다
@@ -718,15 +1029,15 @@ public class Web extends Thread {
      */
     public int logoutLoginSession() {
         try {
-            Document document = httpRequest("https://nid.naver.com/nidlogin.logout", Connection.Method.GET, false, true).parse();
+            Document document = httpRequest("https://nid.naver.com/nidlogin.logout", METHOD_GET, false, true, null);
             webClientManager.setLogined(false);
             ProfileManager.getInstance().setLogined(false);
-            return 0;
+            return RETURNCODE_SUCCESS;
 
         } catch (IOException e) {
             Log.w("Web.err", "Connection error. (logout)" + " on Web.logoutLoginSession");
             e.printStackTrace();
-            return -1;
+            return RETURNCODE_ERROR_CONNECTION;
         }
     }
 

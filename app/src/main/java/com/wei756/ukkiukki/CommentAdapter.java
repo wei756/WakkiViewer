@@ -67,11 +67,13 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
     public class FooterViewHolder extends RecyclerView.ViewHolder {
         protected ImageView profile;
         protected TextView content;
+        protected ConstraintLayout layout;
 
         public FooterViewHolder(View view) {
             super(view);
             this.profile = (ImageView) view.findViewById(R.id.iv_article_comment_profile);
             this.content = (TextView) view.findViewById(R.id.tv_article_comment_content);
+            this.layout = (ConstraintLayout) view.findViewById(R.id.layout_article_comment);
         }
     }
 
@@ -222,6 +224,14 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
                 itemViewHolder.content.setText(R.string.comment_list_new_comment);
             else // 댓글이 없을 경우
                 itemViewHolder.content.setText(R.string.comment_list_first_comment);
+
+            // Open commentpage
+            itemViewHolder.layout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ((ArticleViewerActivity) context).showCommentPage(true);
+                }
+            });
         }
     }
 

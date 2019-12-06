@@ -8,6 +8,9 @@ import org.jsoup.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.client.methods.HttpRequestBase;
+
 public class WebClientManager {
     private static WebClientManager instance = null;
 
@@ -22,6 +25,7 @@ public class WebClientManager {
      *
      * @return Connection
      */
+    @Deprecated
     public Connection putHeader(Connection connection) {
         if (!cookie.containsKey("JSESSIONID")) // 최초 접속인지 확인
             resetCookies();
@@ -30,10 +34,58 @@ public class WebClientManager {
     }
 
     /**
+     * http request로 전송할 cookie를 설정합니다.
+     */
+    public void putHeader(HttpRequestBase connection) {
+        if (!cookie.containsKey("JSESSIONID")) // 최초 접속인지 확인
+            resetCookies();
+
+        String cookieString = "";
+        for (Map.Entry header : cookie.entrySet()) {
+
+            String key = "" + header.getKey();
+            String value = "" + header.getValue();
+
+            Log.d("Web", key + ": " + value);
+            cookieString += key + "=" + value + ";";
+        }
+        connection.addHeader("Cookie", cookieString);
+        for (Map.Entry header : getHeader().entrySet()) {
+
+            String key = "" + header.getKey();
+            String value = "" + header.getValue();
+
+            Log.d("Web", key + ": " + value);
+            connection.addHeader(key, value);
+        }
+        //return connection.cookies(cookie).headers(getHeader());
+    }
+
+    /**
      * http response로부터 전달받은 cookie를 저장합니다.
      */
-   public void getCookies(Connection.Response response) {
+    @Deprecated
+    public void getCookies(Connection.Response response) {
         setCookiesMap(response.cookies());
+        Log.i("Web", "Get cookies.");
+        //printMap(cookie); // for debug
+    }
+
+    /**
+     * http response로부터 전달받은 cookie를 저장합니다.
+     */
+    public void getCookies(Header[] cookies) {
+        Map<String, String> cookiesMap = new HashMap<>();
+
+        for (Header cookieHeader : cookies) {
+            String cookieStr = cookieHeader.getValue();
+            int point = cookieStr.indexOf("=");
+            String name = cookieStr.substring(0, point);
+            String value = cookieStr.substring(point + 1, cookieStr.indexOf(";"));
+
+            cookiesMap.put(name, value);
+        }
+        setCookiesMap(cookiesMap);
         Log.i("Web", "Get cookies.");
         //printMap(cookie); // for debug
     }
@@ -64,7 +116,7 @@ public class WebClientManager {
      *
      * @return header
      */
-    private Map getHeader() {
+    private Map<String, String> getHeader() {
         if (!header.containsKey("user-agent")) {
             header.put("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3");
             header.put("accept-encoding", "gzip, deflate, br");

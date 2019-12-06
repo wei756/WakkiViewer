@@ -36,5 +36,10 @@ dependencies {
     implementation 'net.minidev:json-smart:2.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.1'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.10.1'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.29'
+
+    implementation group: 'cz.msebera.android', name: 'httpclient', version: '4.5.3'
+
 
 }

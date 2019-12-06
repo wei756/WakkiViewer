@@ -5,6 +5,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.bumptech.glide.Glide;
@@ -31,11 +33,13 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintJob;
 import android.print.PrintManager;
+import android.text.Html;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -170,7 +174,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
             Log.e("ArticleViewerActivity", "Article load error(" + articleHref + ") on getArticle");
         }
         if (intent.getBooleanExtra("commentpage", false))
-            showCommentPage();
+            showCommentPage(false);
 
     }
 
@@ -284,11 +288,11 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
 
                             // 댓글 내용
                             Element elementContentText = comment.selectFirst("p[class=txt]");
-                            /*
-                            if (elementContentText.selectFirst("a[class=u_cbox_target_name]") != null) // 대댓글이면
-                                elementContentText.removeClass("u_cbox_target_name"); // 닉네임 중복 방지
-                            */
-                            contentText = elementContentText.text();
+                            if (Build.VERSION.SDK_INT < 24)
+                                contentText = Html.fromHtml(elementContentText.html()).toString();
+                            else
+                                contentText = Html.fromHtml(elementContentText.html(), Html.FROM_HTML_MODE_COMPACT).toString();
+
                             // 댓글 이미지/스티커
                             Element elementSticker = comment.selectFirst("div[class=u_cbox_sticker_section]"),
                                     elementImage = comment.selectFirst("div[class=image_section]");
@@ -338,7 +342,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     btnComment.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            showCommentPage();
+                            showCommentPage(false);
                         }
                     });
 
@@ -429,6 +433,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         }
     }
 
+
     /**
      * 출력중인 게시글을 프린트합니다.
      *
@@ -450,31 +455,49 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                 new PrintAttributes.Builder().build());
     }
 
-    private void showCommentPage() {
+    public void showCommentPage(boolean openCommentEdit) {
         isOpenedCommentPage = true;
         fragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.commentlist_slide_up, R.anim.commentlist_slide_down)
                 .show(fragmentCommentList)
                 .commit();
+        // Hide bottom bar
         bottomBarLayout.setVisibility(View.GONE);
 
+        // Open comment EditText
+        if (openCommentEdit)
+            fragmentCommentList.etContent.post(new Runnable() {
+                @Override
+                public void run() {
+                    fragmentCommentList.etContent.setFocusableInTouchMode(true);
+                    fragmentCommentList.etContent.requestFocus();
+
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                    imm.showSoftInput(fragmentCommentList.etContent, 0);
+
+                }
+            });
+
+        // Change scrollflag
         AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
         CoordinatorLayout.LayoutParams appBarLayoutParams = (CoordinatorLayout.LayoutParams) appbar.getLayoutParams();
 
         params.setScrollFlags(0);
         appBarLayoutParams.setBehavior(null);
         appbar.setLayoutParams(appBarLayoutParams);
-
     }
 
-    private void hideCommentPage() {
+    public void hideCommentPage() {
         isOpenedCommentPage = false;
         fragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.commentlist_slide_up, R.anim.commentlist_slide_down)
                 .hide(fragmentCommentList)
                 .commit();
+        // Show bottom bar
         bottomBarLayout.setVisibility(View.VISIBLE);
 
+        // Change scrollflag
         AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
         CoordinatorLayout.LayoutParams appBarLayoutParams = (CoordinatorLayout.LayoutParams) appbar.getLayoutParams();
 
