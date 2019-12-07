@@ -75,9 +75,6 @@ public class Web extends Thread {
     public static final int RETURNCODE_ERROR_LOGIN_REQUIRED = -4; // 로그인 요청 에러
     public static final int RETURNCODE_ERROR_COMMENT_BLANK = -5; // 내용 없는 댓글 에러
 
-    private static final int METHOD_POST = 100;
-    private static final int METHOD_GET = 101;
-
     private final String photoSessionKeyUrl = "https://m.cafe.naver.com/PhotoInfraSessionKey.nhn";
 
     private final String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
@@ -87,6 +84,7 @@ public class Web extends Thread {
             articleReadUrl = "https://m.cafe.naver.com/ArticleRead.nhn?clubid={0}&articleid={1}",
             articleCommentListUrl = "https://m.cafe.naver.com/CommentViewAjax.nhn?search.clubid={0}&search.articleid={1}&search.page={2}&search.orderby={3}",
             articleLikeItListUrl = "https://m.cafe.naver.com/LikeItMemberAjax.nhn?search.clubid={0}&search.articleid={1}",
+            articleLikeItTokenUrl = "https://cafe.like.naver.com/v1/search/contents?suppress_response_codes=true&callback=&q=CAFE%5B{0}_steamindiegame_{1}%5D&isDuplication=true&_={2}",
             myActivityUrl = "https://cafe.naver.com/MyCafeMyActivityAjax.nhn?clubid={0}",
             profileArticleListUrl = "https://m.cafe.naver.com/CafeMemberArticleList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentListUrl = "https://m.cafe.naver.com/CafeMemberCommentList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
@@ -106,125 +104,6 @@ public class Web extends Thread {
     }
 
     /**
-     * 해당 URL로 http request을 합니다.
-     *
-     * @param url
-     * @param method
-     * @param connectByPC
-     * @param usingCookie
-     * @return Response
-     * @throws IOException
-     */
-    private Document httpRequest(String url, int method, boolean connectByPC, boolean usingCookie, @Nullable String formData) throws IOException {
-        HttpClient client = HttpClients.createDefault();
-
-        HttpRequestBase request = null;
-        if (method == METHOD_POST)
-            request = new HttpPost(url);
-        else if (method == METHOD_GET)
-            request = new HttpGet(url);
-
-        // headers
-        request.addHeader("User-Agent", connectByPC ? WebClientManager.userAgentPC : WebClientManager.userAgentMobile);
-
-        // form-data
-        if (method == METHOD_POST && formData != null) {
-            EntityBuilder entityBuilder = EntityBuilder.create();
-            entityBuilder.setContentType(ContentType.APPLICATION_FORM_URLENCODED);
-            entityBuilder.setText(formData);
-            ((HttpPost) request).setEntity(entityBuilder.build());
-            request.addHeader("Upgrade-Insecure-Requests", "1");
-            request.addHeader("Sec-Fetch-Site", "same-origin");
-            request.addHeader("Sec-Fetch-Mode", "navigate");
-        }
-        //method.addHeader("Connection", "keep-alive");
-        //method.addHeader("Accept", "*/*");
-        //method.addHeader("Sec-Fetch-Site", "same-site");
-        //method.addHeader("Sec-Fetch-Mode", "cors");
-        //method.addHeader("Accept-Encoding", "gzip, deflate, br");
-        //method.addHeader("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7");
-        //method.addHeader("Referer", "https://m.cafe.naver.com/CommentView.nhn?search.clubid=27842958&search.articleid=1171068&page=&commentCursorOn=true");
-
-        if (usingCookie) // put cookies into request
-            webClientManager.putHeader(request);
-        HttpResponse response = client.execute(request);
-
-        String html = EntityUtils.toString(response.getEntity()); // response
-
-        if (usingCookie) { // get cookies from response
-            webClientManager.getCookies(response.getHeaders("Set-Cookie"));
-            Log.v("Web", "JSESSIONID is " + webClientManager.getCookiesMap().get("JSESSIONID") + " now.");
-        }
-
-        Document document = Jsoup.parse(html, url);
-        //Log.e("Web", document.html()); // for debug: view loaded page with text
-        return document;
-    }
-
-    /**
-     * 사진을 네이버 서버로 전송합니다.
-     *
-     * @param context
-     * @param url
-     * @param uri
-     * @return Response
-     * @throws IOException
-     */
-    private Document postPhotoToNaver(Context context, String url, Uri uri) throws IOException {
-        // image
-        String imgPath = getImagePathToUri(context, uri); // uri로부터 실제 경로 추출
-        String imgName = imgPath.substring(imgPath.lastIndexOf("/") + 1); // 파일 이름 추출
-        String imgType = imgName.substring(imgName.lastIndexOf(".") + 1); // 파일 종류 추출
-        Log.e("Web.debug", "imgPath: " + imgPath +
-                "\nimgName: " + imgName +
-                "\nimgType: " + imgType +
-                "\non Web.httpRequest");
-        File file = new File(imgPath);
-        FileInputStream fileInputStream = new FileInputStream(file);
-
-        MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-        entity.addPart("image", new InputStreamBody(new FileInputStream(file), file.getName()));
-
-        HttpPost post = new HttpPost(url);
-        post.setEntity(entity.build());
-
-        // headers
-        post.addHeader("Connection", "keep-alive");
-        post.addHeader("Accept", "*/*");
-        post.addHeader("Sec-Fetch-Site", "same-site");
-        post.addHeader("Sec-Fetch-Mode", "cors");
-        post.addHeader("Accept-Encoding", "gzip, deflate, br");
-        post.addHeader("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7");
-        post.addHeader("Referer", "https://m.cafe.naver.com/CommentView.nhn?search.clubid=27842958&search.articleid=1171068&page=&commentCursorOn=true");
-
-        HttpClient client = HttpClients.createDefault();
-        HttpResponse response = client.execute(post);
-        fileInputStream.close();
-
-        String html = EntityUtils.toString(response.getEntity()); // response
-
-        Document document = Jsoup.parse(html, url);
-
-
-        //Log.e("Web", document.html()); // for debug: view loaded page with text
-        return document;
-    }
-
-    public String getImagePathToUri(Context context, Uri data) {
-        //사용자가 선택한 이미지의 정보를 받아옴
-        String[] proj = {MediaStore.Images.Media.DATA};
-        Cursor cursor = context.getContentResolver().query(data, proj, null, null, null);
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-
-        //이미지의 경로 값
-        String imgPath = cursor.getString(column_index);
-        Log.d("test", imgPath);
-
-        return imgPath;
-    }
-
-    /**
      * 프로필 정보를 불러옵니다.
      */
     public void loadMyInfomation() {
@@ -235,7 +114,12 @@ public class Web extends Thread {
                 ProfileManager profileManager = ProfileManager.getInstance();
                 if (webClientManager.getLogined()) {
                     try {
-                        document = httpRequest(url, METHOD_GET, true, true, null);
+                        document = WebRequestBuilder.create()
+                                .url(url)
+                                .method(WebRequestBuilder.METHOD_GET)
+                                .userAgent(WebRequestBuilder.USER_AGENT_PC)
+                                .useCookie(true)
+                                .build();//httpRequest(url, METHOD_GET, true, true, null);
 
                         String id, nickname, profile;
                         String date, grade;
@@ -292,7 +176,12 @@ public class Web extends Thread {
             Elements categories = null;
 
             Document document;
-            document = httpRequest(url, METHOD_GET, true, true, null);
+            document = WebRequestBuilder.create()
+                    .url(url)
+                    .method(WebRequestBuilder.METHOD_GET)
+                    .userAgent(WebRequestBuilder.USER_AGENT_PC)
+                    .useCookie(true)
+                    .build();//httpRequest(url, METHOD_GET, true, true, null);
 
             categories = document.selectFirst("ul[id=allMenuList]").select("li"); // 카테고리 추출
             Log.i("Web", "" + categories.size() + " category block(s) found. on Web.loadCategoryList");
@@ -543,7 +432,12 @@ public class Web extends Thread {
         else
             url = MessageFormat.format(articleListUrl, cafeId, mid != 0 ? mid : "", page);
 
-        document = httpRequest(url, METHOD_GET, false, true, null);
+        document = WebRequestBuilder.create()
+                .url(url)
+                .method(WebRequestBuilder.METHOD_GET)
+                .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                .useCookie(true)
+                .build();//httpRequest(url, METHOD_GET, false, true, null);
 
         //parse article list
         /*CategoryManager category = CategoryManager.getInstance();
@@ -597,7 +491,12 @@ public class Web extends Thread {
         CategoryManager category = CategoryManager.getInstance();
         try {
             twitchChannel = "woowakgood";
-            Document twitchLive = httpRequest("https://twitch.tv/" + twitchChannel, METHOD_GET, false, false, null);
+            Document twitchLive = WebRequestBuilder.create()
+                    .url("https://twitch.tv/" + twitchChannel)
+                    .method(WebRequestBuilder.METHOD_GET)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(false)
+                    .build();//httpRequest("https://twitch.tv/" + twitchChannel, METHOD_GET, false, false, null);
             Log.v("Twitch Live test", "" + twitchLive.text());
 
             live = twitchLive.text().contains(" Playing ") && !twitchLive.text().contains(" hosting ");
@@ -625,7 +524,12 @@ public class Web extends Thread {
                 // get html
                 Document document = null;
                 try {
-                    document = httpRequest(articleUrl, METHOD_GET, false, true, null);
+                    document = WebRequestBuilder.create()
+                            .url(articleUrl)
+                            .method(WebRequestBuilder.METHOD_GET)
+                            .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                            .useCookie(true)
+                            .build();//httpRequest(articleUrl, METHOD_GET, false, true, null);
                     Element error = document.selectFirst("div[class=error_content_body]");
                     boolean noerror = true;
                     if (error != null) {
@@ -731,7 +635,12 @@ public class Web extends Thread {
         Document document = null;
         Map likeItMap;
         try {
-            document = httpRequest(articleUrl, METHOD_GET, false, true, null);
+            document = WebRequestBuilder.create()
+                    .url(articleUrl)
+                    .method(WebRequestBuilder.METHOD_GET)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(true)
+                    .build();//httpRequest(articleUrl, METHOD_GET, false, true, null);
 
             // String to JSON
             JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
@@ -772,7 +681,12 @@ public class Web extends Thread {
         Document document = null;
         ArrayList<Comment> arrayList = null;
         try {
-            document = httpRequest(articleUrl, METHOD_GET, false, true, null);
+            document = WebRequestBuilder.create()
+                    .url(articleUrl)
+                    .method(WebRequestBuilder.METHOD_GET)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(true)
+                    .build();//httpRequest(articleUrl, METHOD_GET, false, true, null);
 
             arrayList = new ArrayList<>();
 
@@ -879,7 +793,13 @@ public class Web extends Thread {
 
             // get html
             Document document = null;
-            document = httpRequest(postCommentUrl, METHOD_POST, false, true, commentData);
+            document = WebRequestBuilder.create()
+                    .url(postCommentUrl)
+                    .method(WebRequestBuilder.METHOD_POST)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(true)
+                    .dataFormUrlencoded(commentData)
+                    .build();//httpRequest(postCommentUrl, METHOD_POST, false, true, commentData);
             Log.e("Web.debug", document.html());
 
             Element elementError = document.selectFirst("div[class=error_content_body]");
@@ -924,7 +844,12 @@ public class Web extends Thread {
 
             // get html
             Document document = null;
-            document = httpRequest(photoSessionKeyUrl, METHOD_POST, false, true, null);
+            document = WebRequestBuilder.create()
+                    .url(photoSessionKeyUrl)
+                    .method(WebRequestBuilder.METHOD_POST)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(true)
+                    .build();//httpRequest(photoSessionKeyUrl, METHOD_POST, false, true, null);
 
             // String to JSON
             JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
@@ -976,7 +901,13 @@ public class Web extends Thread {
 
                 // get html
                 Document document = null;
-                document = postPhotoToNaver(context, postPhotoUrl, uri);
+                document = WebRequestBuilder.create()
+                        .url(postPhotoUrl)
+                        .method(WebRequestBuilder.METHOD_POST)
+                        .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                        .useCookie(true)
+                        .dataMultipartUri(context, uri)
+                        .build();//postPhotoToNaver(context, postPhotoUrl, uri);
                 Log.e("Web.debug", "Response: " + document.html());
 
                 map.put("returncode", "" + RETURNCODE_SUCCESS);
@@ -1029,7 +960,12 @@ public class Web extends Thread {
      */
     public int logoutLoginSession() {
         try {
-            Document document = httpRequest("https://nid.naver.com/nidlogin.logout", METHOD_GET, false, true, null);
+            Document document = WebRequestBuilder.create()
+                    .url("https://nid.naver.com/nidlogin.logout")
+                    .method(WebRequestBuilder.METHOD_GET)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(true)
+                    .build();//httpRequest("https://nid.naver.com/nidlogin.logout", METHOD_GET, false, true, null);
             webClientManager.setLogined(false);
             ProfileManager.getInstance().setLogined(false);
             return RETURNCODE_SUCCESS;

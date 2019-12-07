@@ -524,7 +524,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         };
         itemViewHolder.article.setOnClickListener(clickArticle);
 
-        if (TYPE_THEME == THEME_BOARD ||
+        if ((TYPE_THEME == THEME_BOARD && TYPE_SUBTHEME != SUBTHEME_POPULAR) ||
                 (TYPE_THEME == THEME_PROFILE &&
                         TYPE_SUBTHEME == SUBTHEME_ARTICLE)) {
             View.OnClickListener clickComment = new View.OnClickListener() {
