@@ -14,6 +14,7 @@ import org.jsoup.nodes.Document;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import cz.msebera.android.httpclient.entity.ContentType;
 import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder;
 import cz.msebera.android.httpclient.entity.mime.content.InputStreamBody;
 import cz.msebera.android.httpclient.impl.client.HttpClients;
+import cz.msebera.android.httpclient.message.BasicHeader;
 import cz.msebera.android.httpclient.util.EntityUtils;
 
 public class WebClientManager {
@@ -183,6 +185,7 @@ class WebRequestBuilder {
     private String formData = null;
     private Uri uri = null;
     private Context context;
+    private ArrayList<Header> headers = new ArrayList<>();
 
     private WebRequestBuilder() {
     }
@@ -222,6 +225,11 @@ class WebRequestBuilder {
     public WebRequestBuilder dataMultipartUri(Context context, Uri uri) {
         this.context = context;
         this.uri = uri;
+        return this;
+    }
+
+    public WebRequestBuilder addHeader(String name, String value) {
+        headers.add(new BasicHeader(name, value));
         return this;
     }
 
@@ -281,6 +289,9 @@ class WebRequestBuilder {
             request.addHeader("Accept-Encoding", "gzip, deflate, br");
             request.addHeader("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7");
         }
+
+        for (Header header : headers)
+            request.addHeader(header);
 
 
         // execute httpRequest

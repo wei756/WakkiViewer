@@ -1,6 +1,7 @@
 package com.wei756.ukkiukki.Network;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -69,32 +70,38 @@ public class Web extends Thread {
     private static Web instance = null;
 
     public static final int RETURNCODE_SUCCESS = 0; // 성공
+    public static final int RETURNCODE_FAILED = -100; // 실패
+
     public static final int RETURNCODE_ERROR_CONNECTION = -1; // 연결 에러
     public static final int RETURNCODE_ERROR_COMMENT_SPAM = -2; // 댓글 스팸 감지 에러
     public static final int RETURNCODE_ERROR_COMMENT_ENCODING = -3; // 댓글 인코딩 에러
     public static final int RETURNCODE_ERROR_LOGIN_REQUIRED = -4; // 로그인 요청 에러
     public static final int RETURNCODE_ERROR_COMMENT_BLANK = -5; // 내용 없는 댓글 에러
 
-    private final String photoSessionKeyUrl = "https://m.cafe.naver.com/PhotoInfraSessionKey.nhn";
+    public static final int RETURNCODE_ERROR_LIKEIT_TOKEN_EXPIRED = -4012; // 토큰 만료
+    public static final int RETURNCODE_ERROR_ALREADY_LIKED = -4091; // 이미 좋아요 한 게시글
 
-    private final String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
+    public final String photoSessionKeyUrl = "https://m.cafe.naver.com/PhotoInfraSessionKey.nhn";
+
+    public final String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
             articleListUrl = "https://m.cafe.naver.com/ArticleListAjax.nhn?search.clubid={0}&search.menuid={1}&search.page={2}",
             popularArticleListUrl = "https://m.cafe.naver.com/PopularArticleList.nhn?cafeId={0}",
             menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?search.clubid={0}&search.perPage=9999",
             articleReadUrl = "https://m.cafe.naver.com/ArticleRead.nhn?clubid={0}&articleid={1}",
             articleCommentListUrl = "https://m.cafe.naver.com/CommentViewAjax.nhn?search.clubid={0}&search.articleid={1}&search.page={2}&search.orderby={3}",
             articleLikeItListUrl = "https://m.cafe.naver.com/LikeItMemberAjax.nhn?search.clubid={0}&search.articleid={1}",
-            articleLikeItTokenUrl = "https://cafe.like.naver.com/v1/search/contents?suppress_response_codes=true&callback=&q=CAFE%5B{0}_steamindiegame_{1}%5D&isDuplication=true&_={2}",
+            articleLikeItTokenUrl = "https://cafe.like.naver.com/v1/search/contents?suppress_response_codes=true&q=CAFE%5B{0}_steamindiegame_{1}%5D&isDuplication=true&_={2}",
             myActivityUrl = "https://cafe.naver.com/MyCafeMyActivityAjax.nhn?clubid={0}",
             profileArticleListUrl = "https://m.cafe.naver.com/CafeMemberArticleList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentListUrl = "https://m.cafe.naver.com/CafeMemberCommentList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentArticleListUrl = "https://m.cafe.naver.com/CafeMemberReplyList.nhn?search.clubid={0}&search.query={1}&search.page={2}&search.perPage={3}";
 
-    private final String postCommentUrl = "https://m.cafe.naver.com/CommentPost.nhn?m=write",
+    public final String postCommentUrl = "https://m.cafe.naver.com/CommentPost.nhn?m=write",
             postCommentData = "clubid={0}&articleid={1}&content={2}&stickerId={3}&imagePath={4}&imageFileName={5}&imageWidth={6}&imageHeight={7}&showCafeHome=false",
-            postCommentPhotoUrl = "https://cafe.upphoto.naver.com/{0}/simpleUpload/0?userId={1}&extractExif=false&extractAnimatedCnt=false&autorotate=true";
-    private final String cafeId = "27842958";
-    private final int timeout = 15000;
+            postCommentPhotoUrl = "https://cafe.upphoto.naver.com/{0}/simpleUpload/0?userId={1}&extractExif=false&extractAnimatedCnt=false&autorotate=true",
+            likeItUrl = "https://cafe.like.naver.com/v1/services/CAFE/contents/{0}_steamindiegame_{1}?suppress_response_codes=true&_method=POST&displayId=CAFE&reactionType=like&categoryId={0}&guestToken={2}&timestamp={3}&_ch=mbw&isDuplication=true&lang=ko";
+    public final String cafeId = "27842958";
+    public final int timeout = 15000;
 
     private final WebClientManager webClientManager = WebClientManager.getInstance();
 
@@ -529,7 +536,7 @@ public class Web extends Thread {
                             .method(WebRequestBuilder.METHOD_GET)
                             .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
                             .useCookie(true)
-                            .build();//httpRequest(articleUrl, METHOD_GET, false, true, null);
+                            .build();
                     Element error = document.selectFirst("div[class=error_content_body]");
                     boolean noerror = true;
                     if (error != null) {
@@ -658,6 +665,119 @@ public class Web extends Thread {
             return null;
         } catch (ParseException e) {
             Log.w("Web.err", "JSON Parse error. (" + articleUrl + ")" + " on Web.getArticleLikeItList");
+            e.printStackTrace();
+
+            // callback
+            return null;
+        }
+    }
+
+    /**
+     * 좋아요를 누릅니다.
+     *
+     * @param articleId 좋아요 할 게시글 id
+     * @see ArticleViewerActivity
+     */
+    public int likeIt(final String articleId, String guestToken, long timestamp) {
+
+        String url = MessageFormat.format(likeItUrl, cafeId, articleId, guestToken, "" + timestamp);
+        Log.e("Web.deeeebug", url);
+
+        // get html
+        Document document = null;
+        Map response;
+        try {
+            document = WebRequestBuilder.create()
+                    .url(url)
+                    .method(WebRequestBuilder.METHOD_GET)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(true)
+                    .addHeader("sec-fetch-mode", "no-cors")
+                    .addHeader("sec-fetch-site", "same-site")
+                    .addHeader("referer", MessageFormat.format("https://m.cafe.naver.com/CommentView.nhn?search.clubid={0}&search.articleid={1}&page=", cafeId, articleId))
+                    .build();
+
+            // String to JSON
+            String jsonString = document.text();
+
+            JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+            JSONObject jsonObj = (JSONObject) parser.parse(jsonString);
+
+            response = JsonUtil.getMapFromJsonObject(jsonObj);
+            if (response.containsKey("message") && response.get("message").equals("좋아요가 되었습니다.")) // 좋아요 성공
+                return RETURNCODE_SUCCESS;
+            else if (response.containsKey("errorCode")) {
+                switch ((int)response.get("errorCode")) {
+                    case 4012 : // 토큰 만료
+                        return RETURNCODE_ERROR_LIKEIT_TOKEN_EXPIRED;
+                    case 4013 : // 요청 실패
+                        return RETURNCODE_FAILED;
+                    case 4091 : // 이미 좋아요한 게시글
+                        return RETURNCODE_ERROR_ALREADY_LIKED;
+                }
+            }
+            return RETURNCODE_FAILED; // 알 수 없는 오류
+
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error. (" + url + ")" + " on Web.likeIt");
+            e.printStackTrace();
+
+            // callback
+            return RETURNCODE_ERROR_CONNECTION;
+        } catch (ParseException e) {
+            Log.w("Web.err", "JSON Parse error. (" + url + ")" + " on Web.likeIt");
+            e.printStackTrace();
+
+            // callback
+            return RETURNCODE_ERROR_CONNECTION;
+        }
+    }
+
+    /**
+     * 좋아요를 위한 토큰을 생성합니다.
+     *
+     * @param articleId 불러올 좋아요 리스트의 게시글 id
+     * @see ArticleViewerActivity
+     */
+    public Map getGuestToken(final String articleId) {
+
+        String url = MessageFormat.format(articleLikeItTokenUrl, cafeId, articleId, "");
+
+        // get html
+        Document document = null;
+        Map likeItMap;
+        try {
+            document = WebRequestBuilder.create()
+                    .url(url)
+                    .method(WebRequestBuilder.METHOD_GET)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(true)
+                    .addHeader("sec-fetch-mode", "no-cors")
+                    .addHeader("sec-fetch-site", "same-site")
+                    .addHeader("referer", MessageFormat.format("https://m.cafe.naver.com/CommentView.nhn?search.clubid={0}&search.articleid={1}&page=", cafeId, articleId))
+                    .build();
+
+            // String to JSON
+            String jsonString = document.text();
+            //jsonString = jsonString.substring(5, jsonString.length() - 1);
+
+            JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+            JSONObject jsonObj = (JSONObject) parser.parse(jsonString);
+
+            likeItMap = JsonUtil.getMapFromJsonObject(jsonObj);
+            //Log.e("Web.debbbbbbbbbbug", "token");
+            //printMap(likeItMap);
+
+            // callback
+            return likeItMap;
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error. (" + url + ")" + " on Web.getGuestToken");
+            e.printStackTrace();
+
+            // callback
+            return null;
+        } catch (ParseException e) {
+            Log.w("Web.err", "JSON Parse error. (" + url + ")" + " on Web.getGuestToken");
             e.printStackTrace();
 
             // callback
@@ -999,6 +1119,19 @@ public class Web extends Thread {
             return m.group(1);
         }
         return null;
+    }
+
+    /**
+     * 웹브라우저로 링크를 엽니다.
+     *
+     * @param context
+     * @param url
+     */
+    public static void openWebPageWithBrowser(Context context, String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        Uri uri = Uri.parse(url);
+        intent.setData(uri);
+        context.startActivity(intent);
     }
 
     /**

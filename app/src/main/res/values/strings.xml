@@ -36,6 +36,7 @@
     <string name="profile_ward">와딩한 글</string>
 
     <!-- Article viewer -->
+    <string name="action_open_with_web">웹에서 열기</string>
     <string name="action_copy_url">URL 복사</string>
     <string name="action_print_article">게시글 인쇄</string>
 
@@ -53,6 +54,4 @@
     <string name="comment_list_new_comment">댓글을 남겨보세요</string>
     <string name="title_activity_profile">ProfileActivity</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

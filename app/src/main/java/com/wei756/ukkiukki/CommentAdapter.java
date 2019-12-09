@@ -21,6 +21,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.wei756.ukkiukki.Network.Web;
 
 import java.util.ArrayList;
 
@@ -200,7 +201,12 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
     protected void bindHeaderViewHolder(@NonNull RecyclerView.ViewHolder viewholder) {
         HeaderViewHolder itemViewHolder = (HeaderViewHolder) viewholder;
         if (TYPE_THEME == THEME_COMMENTPAGE) {
-
+            itemViewHolder.btnLikeIt.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ((ArticleViewerActivity)context).likeIt();
+                }
+            });
         }
     }
 

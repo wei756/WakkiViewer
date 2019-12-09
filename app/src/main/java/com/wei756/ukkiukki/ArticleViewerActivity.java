@@ -49,6 +49,7 @@ import android.widget.Toast;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -84,10 +85,12 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
     TextView btnLikeIt, btnComment, btnShare, btnReturnToList;
 
     ArticleViewerCommentListFragment fragmentCommentList;
-    FrameLayout layoutCommentPage;
     boolean isOpenedCommentPage = false;
 
     Map likeLiMap = null;
+    String guestToken = null;
+    long timestamp = 0;
+    boolean isReacted = false;
 
     @SuppressLint("ResourceAsColor")
     @Override
@@ -187,6 +190,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
      * @see Article
      */
     @Override
+    @SuppressLint("SetJavaScriptEnabled")
     public void onLoadArticle(final Article article) {
         if (article != null) {
             // Load article
@@ -226,44 +230,44 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                             cssTheme +
                             "</head><body>\n" +
                             article.getBody().outerHtml() +
+                            "<script type=\"text/javascript\">" +
+                            "\n" +
+                            "var g_sUserId = '" + (ProfileManager.getInstance().isLogined() ? ProfileManager.getInstance().getId() : "") + "';\n" +
+                            "var g_sCafeId = '" + web.cafeId + "';\n" +
+                            "var g_sCafeUrl = 'steamindiegame';\n" +
+                            "\n" +
+                            "var g_sCafeMainUrl = 'https://cafe.naver.com';\n" +
+                            "var g_sCafeMobileWebUrl = 'https://m.cafe.naver.com';\n" +
+                            "var g_sNoteSendUrl = 'https://m.note.naver.com/mobile/mobileSendNoteForm.nhn?reply=1&targetUserId=';\n" +
+                            "var g_sUploadDomain = window.location.protocol === 'https:' ? 'https://up.cafe.naver.com' : 'http://up.cafe.naver.com';\n" +
+                            "var g_sCafeFilesDomain = 'http://cafefiles.naver.net';\n" +
+                            "var g_sCafeFilesHttpsDomain = 'https://cafefiles.pstatic.net';\n" +
+                            "var g_sCafeThumbDomain = 'https://cafethumb.pstatic.net';\n" +
+                            "var g_sMCafeThumbDomain = 'https://mcafethumb-phinf.pstatic.net';\n" +
+                            "var g_sGfmarketDomain = 'http://m.gfmarket.naver.com';\n" +
+                            "var g_sGfmarketThumbnailDomain = 'https://storep-phinf.pstatic.net';\n" +
+                            "var g_sPhotoInfraUploadDomain = 'cafe.upphoto.naver.com';\n" +
+                            "var g_sBlogUrl = 'https://m.blog.naver.com';\n" +
+                            "var g_sDThumbUrl = 'https://dthumb-phinf.pstatic.net/?src=';\n" +
+                            "var g_sLikeDomain = 'https://cafe.like.naver.com';\n" +
+                            "var g_sNpayPurchaseDetailUrl = 'https://m.pay.naver.com/o/orderStatus/';\n" +
+                            "var g_sNpaySaleDetaiUrl = 'https://m.pay.naver.com/o/saleStatus/';\n" +
+                            "var g_sBAStatDomain = 'https://scv.band.us';\n" +
+                            "var g_sCafeTalk = 'https://talk.cafe.naver.com';\n" +
+                            "\n" +
+                            "var g_sLoginUrl = 'https://nid.naver.com/nidlogin.login?svctype=262144&url=';\n" +
+                            "var g_sLogoutUrl = 'https://nid.naver.com/nidlogin.logout?svctype=262144&url=';\n" +
+                            "var g_sAutoComplateDomain = 'https://mac.search.naver.com/mobile/ac';\n" +
+                            "var g_sNaverStatMobileUiUrl = 'https://cafe.stat.naver.com/m/cafe';\n" +
+                            "\n" +
+                            "var g_sEncodedRequestUrl = 'http%3A%2F%2Fm.cafe.naver.com%2FArticleRead.nhn%3Fclubid%3D" + web.cafeId + "%26articleid%3D" + articleHref + "';</script>" +
+                            "<script type=\"text/javascript\" src=\"file:///android_asset/js/MyCafeCommonScript.js\" charset=\"UTF-8\"></script>" +
+                            "<script type=\"text/javascript\" src=\"file:///android_asset/js/ugcvideoplayer.js\" charset=\"UTF-8\"></script>" +
                             "</body></html>";
                     webBody.getSettings().setJavaScriptEnabled(true);
+                    webBody.getSettings().setDomStorageEnabled(true);
                     webBody.getSettings().setUserAgentString(WebClientManager.userAgentMobile);
-                    webBody.loadDataWithBaseURL("", articleBody, "text/html", "UTF-8", "");
-                    //Log.i("ArticleViewerActivity", articleBody);
-
-                    //tvVote.setText(article.getLikeIt());
-                    /*
-                    // profile box
-                    Element footer = article.getFooter();
-                    if (footer != null) {
-                        Element votes = footer.selectFirst("div[class=votes]");
-                        Element fileList = footer.selectFirst("div[class=fileList]");
-                        Element tns = footer.selectFirst("div[class=tns]");
-                        Element profile = footer.selectFirst("div[class=sign]");
-
-                        if (votes != null) { // 추천/비추천
-                            //TODO: 추천/비추천 영역
-                            Elements up = votes.select("b");
-
-                            tvVoteUp.setText("  " + up.get(0).text());
-                            tvVoteDown.setText("  " + up.get(1).text());
-                        }
-                        if (fileList != null) { // 첨부파일
-                            //TODO: 첨부파일 영역
-                        }
-                        if (tns != null) { // 태그
-                            //TODO: 태그 및 공유 영역
-                        }
-                        if (profile != null) { // 프로필 창
-                            String url = profile.selectFirst("img[class=pf]").attr("src");
-                            Glide.with(getApplicationContext()).load(url).into(ivProfile);
-                            tvProfile.setText(profile.text());
-
-                            loProfile.setVisibility(View.VISIBLE);
-                        }
-                    }
-                    */
+                    webBody.loadDataWithBaseURL(MessageFormat.format(web.articleReadUrl, web.cafeId, articleHref), articleBody, "text/html", "UTF-8", "");
 
 
                     // commnet box
@@ -346,24 +350,19 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                         }
                     });
 
-                    // 좋아요 로딩
-                    new Thread(new Runnable() {
+                    // 좋아요 버튼
+                    btnLikeIt.setOnClickListener(new View.OnClickListener() {
                         @Override
-                        public void run() {
-
-                            likeLiMap = web.getArticleLikeItList(articleHref);
-                            if (likeLiMap != null) {
-                                final String totalCount = "" + (int) likeLiMap.get("totalCount");
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        btnLikeIt.setText(totalCount);
-                                    }
-                                });
-                            }
+                        public void onClick(View view) {
+                            if (isReacted)
+                                unlikeIt();
+                            else
+                                likeIt();
                         }
-                    }).start();
+                    });
+
+                    // 좋아요 로딩
+                    updateLikeItStatus(true);
 
 
                     // 로딩 완료
@@ -406,10 +405,14 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                     finish();
                 return true;
             }
+            case R.id.action_open_with_web: {
+                Web.openWebPageWithBrowser(this, "https://cafe.naver.com/steamindiegame/" + articleHref);
+                return true;
+            }
             case R.id.action_copy_url: {
                 // 클립보드에 게시글 URL 복사
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Article URL", articleHref);
+                ClipData clip = ClipData.newPlainText("Article URL", "https://cafe.naver.com/steamindiegame/" + articleHref);
                 clipboard.setPrimaryClip(clip);
 
                 Toast toast = Toast.makeText(getApplicationContext(), R.string.toast_text_copy_url, Toast.LENGTH_SHORT);
@@ -433,6 +436,153 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         }
     }
 
+    /**
+     * guestToken과 좋아요 여부를 불러옵니다.
+     */
+    protected void getGuestToken() {
+        Map map = web.getGuestToken(articleHref);
+        guestToken = null;
+        try {
+            // guestToken
+            if (map.containsKey("guestToken"))
+                guestToken = (String) map.get("guestToken");
+            if (map.containsKey("timestamp"))
+                timestamp = (long) map.get("timestamp");
+            Log.e("DEBUG", "guestToken: " + guestToken + "\n" +
+                    "timestamp: " + timestamp);
+
+            // ifLikeIt
+            ArrayList data = (ArrayList) map.get("contents");
+            Map dataMap = (Map) data.get(0);
+            data = (ArrayList) dataMap.get("reactions");
+            dataMap = (Map) data.get(0);
+            if (dataMap.containsKey("isReacted"))
+                isReacted = (boolean) dataMap.get("isReacted");
+
+            Log.e("DEBUG", "좋아요: " + isReacted);
+        } catch (IndexOutOfBoundsException e) {
+            Log.w("ArticleViewerAct.err", "좋아요가 없는 게시글입니다.");
+            e.printStackTrace();
+            isReacted = false;
+        } catch (NullPointerException e) {
+            Log.w("ArticleViewerAct.err", "Error occur at ArticleViewerActivity.getGuestToken()");
+            e.printStackTrace();
+            isReacted = false;
+        }
+    }
+
+    /**
+     * 게시글에 좋아요 표시를 합니다.
+     */
+    void likeIt() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (guestToken == null)
+                    getGuestToken();
+                else {
+                    final int returnCode = web.likeIt(articleHref, guestToken, timestamp);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            switch (returnCode) {
+                                case Web.RETURNCODE_SUCCESS:
+                                    //Toast.makeText(ArticleViewerActivity.this, "좋아요를 성공했습니다.", Toast.LENGTH_SHORT).show();
+                                    updateLikeItStatus(true);
+                                    break;
+                                case Web.RETURNCODE_ERROR_LIKEIT_TOKEN_EXPIRED: // 토큰 만료
+                                    Toast.makeText(ArticleViewerActivity.this, "화면을 오랫동안 열어두어 클릭 가능 시간을 초과했습니다.\n이용을 위해서는 새로고침을 해주세요.", Toast.LENGTH_SHORT).show();
+                                    break;
+                                case Web.RETURNCODE_FAILED: // 요청 실패
+                                    Toast.makeText(ArticleViewerActivity.this, "좋아요 요청이 실패했습니다.\n새로고침하여 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+                                    break;
+                                case Web.RETURNCODE_ERROR_ALREADY_LIKED: // 이미 좋아요한 게시글
+                                    Toast.makeText(ArticleViewerActivity.this, "이미 좋아요한 컨텐츠입니다.", Toast.LENGTH_SHORT).show();
+                                    break;
+                                default:
+                                    Toast.makeText(ArticleViewerActivity.this, "알 수 없는 에러가 발생하였습니다.\n새로고침하여 다시 시도해주세요.(에러코드: " + returnCode + ")", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 게시글에 좋아요 표시를 해제합니다.
+     */
+    void unlikeIt() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (guestToken == null)
+                    getGuestToken();
+                else {
+                    final int returnCode = Web.RETURNCODE_ERROR_ALREADY_LIKED;//web.likeIt(articleHref, guestToken, timestamp);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            switch (returnCode) {
+                                case Web.RETURNCODE_SUCCESS:
+                                    //Toast.makeText(ArticleViewerActivity.this, "좋아요를 성공했습니다.", Toast.LENGTH_SHORT).show();
+                                    updateLikeItStatus(true);
+                                    break;
+                                case Web.RETURNCODE_ERROR_LIKEIT_TOKEN_EXPIRED: // 토큰 만료
+                                    Toast.makeText(ArticleViewerActivity.this, "화면을 오랫동안 열어두어 클릭 가능 시간을 초과했습니다.\n이용을 위해서는 새로고침을 해주세요.", Toast.LENGTH_SHORT).show();
+                                    break;
+                                case Web.RETURNCODE_FAILED: // 요청 실패
+                                    Toast.makeText(ArticleViewerActivity.this, "좋아요 요청이 실패했습니다.\n새로고침하여 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+                                    break;
+                                case Web.RETURNCODE_ERROR_ALREADY_LIKED: // 이미 좋아요한 게시글
+                                    Toast.makeText(ArticleViewerActivity.this, "이미 좋아요한 컨텐츠입니다.", Toast.LENGTH_SHORT).show();
+                                    break;
+                                default:
+                                    Toast.makeText(ArticleViewerActivity.this, "알 수 없는 에러가 발생하였습니다.\n새로고침하여 다시 시도해주세요.(에러코드: " + returnCode + ")", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 좋아요 상태를 업데이트합니다.
+     */
+    void updateLikeItStatus(final boolean resetToken) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // 좋아요 리스트
+                likeLiMap = web.getArticleLikeItList(articleHref);
+                if (likeLiMap != null) {
+                    final String totalCount = "" + (int) likeLiMap.get("totalCount");
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            btnLikeIt.setText(totalCount);
+                        }
+                    });
+                }
+                // 좋아요 토큰
+                if (resetToken)
+                    getGuestToken();
+
+                // 좋아요 상태 반영
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        btnLikeIt.setSelected(isReacted);
+                    }
+                });
+
+            }
+        }).start();
+    }
 
     /**
      * 출력중인 게시글을 프린트합니다.
