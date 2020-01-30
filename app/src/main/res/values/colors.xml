@@ -15,12 +15,16 @@
     <color name="colorTextSecondary">#929292</color>
 
     <!-- Article list-->
+    <color name="colorMainPageHeaderBackground">#8000</color>
+    <color name="colorPopularListBackground">#8000</color>
+    <color name="colorPopularListIconText">#fafafa</color>
+
     <color name="colorPopularListMoreIconBackground">#EB444745</color>
     <color name="colorPopularListBackgroundTransparent">#00565857</color>
-    <color name="colorPopularListBackground">#565857</color>
     <color name="colorPopularListItemBackground">#EB747775</color>
     <color name="colorPopularListTextPrimary">#e0e0e0</color>
     <color name="colorPopularListTextSecondary">#a4a4a4</color>
+
     <color name="colorArticleListItemBackground">#FFFFFF</color>
     <color name="colorArticleListItemLine">#eee</color>
     <color name="colorArticleListThumbnailLine">#eee</color>

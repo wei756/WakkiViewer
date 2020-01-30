@@ -14,6 +14,7 @@ public class Comment extends Item {
     private boolean iconNew;
     private boolean iconArticleAuthor;
     private boolean mine;
+    private boolean deleted;
 
     public Comment() {
 
@@ -133,6 +134,15 @@ public class Comment extends Item {
 
     public Comment setMine(boolean mine) {
         this.mine = mine;
+        return this;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public Comment setDeleted(boolean deleted) {
+        this.deleted = deleted;
         return this;
     }
 }

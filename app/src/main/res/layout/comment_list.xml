@@ -24,6 +24,8 @@
         android:id="@+id/iv_article_comment_profile"
         android:layout_width="34dp"
         android:layout_height="34dp"
+        android:background="@drawable/shape_all_rounded_rectangle_outline"
+        android:backgroundTint="@color/colorArticleListItemLine"
         android:foreground="@drawable/shape_all_rounded_rectangle_outline"
         android:foregroundTint="@color/colorArticleListItemLine"
         app:layout_constraintEnd_toStartOf="@id/tv_article_comment_author"

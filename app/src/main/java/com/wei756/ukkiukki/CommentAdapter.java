@@ -223,7 +223,7 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
                 imgProfile = "https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_profile_77.png"; // default image
             Glide.with(context).load(imgProfile).into(itemViewHolder.profile); // load image
             // rounded corners
-            itemViewHolder.profile.setBackground(new ShapeDrawable(new OvalShape()));
+            //itemViewHolder.profile.setBackground(new ShapeDrawable(new OvalShape()));
             itemViewHolder.profile.setClipToOutline(true);
 
             if (mList.size() > 0) // 댓글이 있을 경우
@@ -249,76 +249,88 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
         ItemViewHolder itemViewHolder = (ItemViewHolder) viewholder;
         Comment comment = (Comment) mList.get(pos);
 
-        // 댓글 배경
-        if (comment.isMine()) // 본인댓글 여부
-            itemViewHolder.layout.setBackgroundResource(R.color.colorCommentListMineBackground);
-        else
-            itemViewHolder.layout.setBackgroundResource(R.color.colorBackground);
+        if (!comment.isDeleted()) { // 삭제된 댓글이 아니면
+            // 댓글 배경
+            if (comment.isMine()) // 본인댓글 여부
+                itemViewHolder.layout.setBackgroundResource(R.color.colorCommentListMineBackground);
+            else
+                itemViewHolder.layout.setBackgroundResource(R.color.colorBackground);
 
-        // profile image
-        String imgProfile = comment.getImgProfile();
-        if (imgProfile.equals(""))
-            imgProfile = "https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_profile_77.png"; // default image
-        Glide.with(context.getApplicationContext()).load(imgProfile).into(itemViewHolder.profile); // load image
-        // rounded corners
-        //itemViewHolder.profile.setBackground(new ShapeDrawable(new OvalShape()));
-        //itemViewHolder.profile.setClipToOutline(true);
+            // profile image
+            String imgProfile = comment.getImgProfile();
+            if (imgProfile.equals(""))
+                imgProfile = "https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_profile_77.png"; // default image
+            Glide.with(context.getApplicationContext()).load(imgProfile).into(itemViewHolder.profile); // load image
+            // rounded corners
+            //itemViewHolder.profile.setBackground(new ShapeDrawable(new OvalShape()));
+            itemViewHolder.profile.setClipToOutline(true);
 
-        itemViewHolder.author.setText(comment.getAuthor());
-        itemViewHolder.time.setText(comment.getTime());
+            itemViewHolder.author.setText(comment.getAuthor());
+            itemViewHolder.time.setText(comment.getTime());
 
-        // 댓글 본문
-        String parentAuthor = comment.getParentAuthor(),
-                content = comment.getContent();
-        if (!content.equals("")) {// 텍스트가 있을 때
-            if (parentAuthor == null)
-                itemViewHolder.content.setText(content);
-            else {
-                SpannableStringBuilder text = new SpannableStringBuilder(content);
-                //int color = act.getResources().getColor(R.color.colorTextPrimary, null);
+            // 댓글 본문
+            String parentAuthor = comment.getParentAuthor(),
+                    content = comment.getContent();
+            if (!content.equals("")) {// 텍스트가 있을 때
+                if (parentAuthor == null)
+                    itemViewHolder.content.setText(content);
+                else {
+                    SpannableStringBuilder text = new SpannableStringBuilder(content);
+                    //int color = act.getResources().getColor(R.color.colorTextPrimary, null);
 
-                text.setSpan(new StyleSpan(BOLD), 0, parentAuthor.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                itemViewHolder.content.setText(text);
-            }
-            itemViewHolder.content.setVisibility(View.VISIBLE);
-        } else
-            itemViewHolder.content.setVisibility(View.GONE);
+                    text.setSpan(new StyleSpan(BOLD), 0, parentAuthor.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE); // 대댓글 수신자 닉네임 볼드 처리
+                    itemViewHolder.content.setText(text);
+                }
+                itemViewHolder.content.setVisibility(View.VISIBLE);
+            } else
+                itemViewHolder.content.setVisibility(View.GONE);
 
-        // 댓글 이미지, 스티커
-        String image = comment.getContentImage(),
-                sticker = comment.getSticker();
-        if (!image.equals("")) {
-            int maxSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 180, context.getApplicationContext().getResources().getDisplayMetrics());
-            itemViewHolder.contentImage.setMaxHeight(maxSize);
-            itemViewHolder.contentImage.setMaxWidth(maxSize);
-            Glide.with(context.getApplicationContext()).load(image).into(itemViewHolder.contentImage); // load image
-            itemViewHolder.contentImage.setVisibility(View.VISIBLE);
-        } else if (!sticker.equals("")) {
-            int maxSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, context.getApplicationContext().getResources().getDisplayMetrics());
-            itemViewHolder.contentImage.setMaxHeight(maxSize);
-            itemViewHolder.contentImage.setMaxWidth(maxSize);
-            Glide.with(context.getApplicationContext()).load(sticker).into(itemViewHolder.contentImage); // load image
-            itemViewHolder.contentImage.setVisibility(View.VISIBLE);
-        } else
-            itemViewHolder.contentImage.setVisibility(View.GONE);
+            // 댓글 이미지, 스티커
+            String image = comment.getContentImage(),
+                    sticker = comment.getSticker();
+            if (!image.equals("")) {
+                int maxSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 180, context.getApplicationContext().getResources().getDisplayMetrics());
+                itemViewHolder.contentImage.setMaxHeight(maxSize);
+                itemViewHolder.contentImage.setMaxWidth(maxSize);
+                Glide.with(context.getApplicationContext()).load(image).into(itemViewHolder.contentImage); // load image
+                itemViewHolder.contentImage.setVisibility(View.VISIBLE);
+            } else if (!sticker.equals("")) {
+                int maxSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, context.getApplicationContext().getResources().getDisplayMetrics());
+                itemViewHolder.contentImage.setMaxHeight(maxSize);
+                itemViewHolder.contentImage.setMaxWidth(maxSize);
+                Glide.with(context.getApplicationContext()).load(sticker).into(itemViewHolder.contentImage); // load image
+                itemViewHolder.contentImage.setVisibility(View.VISIBLE);
+            } else
+                itemViewHolder.contentImage.setVisibility(View.GONE);
 
-        itemViewHolder.replyMargin.setVisibility(comment.getIndentLevel() == 0 ? View.GONE : View.INVISIBLE);
-        itemViewHolder.iconNew.setVisibility(comment.isIconNew() ? View.VISIBLE : View.GONE);
-        itemViewHolder.iconArticleAuthor.setVisibility(comment.isIconArticleAuthor() ? View.VISIBLE : View.GONE);
+            itemViewHolder.replyMargin.setVisibility(comment.getIndentLevel() == 0 ? View.GONE : View.INVISIBLE);
+            itemViewHolder.iconNew.setVisibility(comment.isIconNew() ? View.VISIBLE : View.GONE);
+            itemViewHolder.iconArticleAuthor.setVisibility(comment.isIconArticleAuthor() ? View.VISIBLE : View.GONE);
 
-        itemViewHolder.reply.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //TODO: 대댓글창 열기
-                //Uri uri = Uri.parse(mList.get(position).getHref());
+            itemViewHolder.reply.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //TODO: 대댓글창 열기
+                    //Uri uri = Uri.parse(mList.get(position).getHref());
 
-                //Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                //Intent intent = new Intent(act, ArticleViewerActivity.class);
-                //intent.putExtra("article_title", mList.get(position).getTitle());
-                //intent.putExtra("article_href", mList.get(position).getHref());
-                //act.startActivity(intent);
-            }
-        });
+                    //Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    //Intent intent = new Intent(act, ArticleViewerActivity.class);
+                    //intent.putExtra("article_title", mList.get(position).getTitle());
+                    //intent.putExtra("article_href", mList.get(position).getHref());
+                    //act.startActivity(intent);
+                }
+            });
+        } else { // 삭제된 댓글
+            itemViewHolder.profile.setVisibility(View.GONE);
+            itemViewHolder.author.setVisibility(View.GONE);
+            itemViewHolder.iconArticleAuthor.setVisibility(View.GONE);
+            itemViewHolder.iconNew.setVisibility(View.GONE);
+            itemViewHolder.time.setVisibility(View.GONE);
+            itemViewHolder.reply.setVisibility(View.GONE);
+            itemViewHolder.content.setText(R.string.comment_deleted_comment);
+            itemViewHolder.content.setTextColor(context.getResources().getColor(R.color.colorTextSecondary, null));
+
+        }
 
         // 구분선
         if (pos < mList.size() - 1 &&

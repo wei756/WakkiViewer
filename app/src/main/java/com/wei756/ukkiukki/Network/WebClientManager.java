@@ -233,7 +233,7 @@ class WebRequestBuilder {
         return this;
     }
 
-    public Document build() throws IOException {
+    public String buildWithoutElement() throws IOException {
         // create httpClient
         HttpClient client = HttpClients.createDefault();
 
@@ -309,11 +309,15 @@ class WebRequestBuilder {
             Log.v("Web", "JSESSIONID is " + webClientManager.getCookiesMap().get("JSESSIONID") + " now.");
         }
 
-        // extract Response
-        Document document = Jsoup.parse(html, url);
         //Log.e("Web", document.html()); // for debug: view loaded page with text
-        return document;
+        return html;
     }
+
+    public Document build() throws IOException {
+        // extract Response
+        return Jsoup.parse(buildWithoutElement(), url);
+    }
+
 
     /**
      * Uri로부터 절대 경로를 반환합니다.

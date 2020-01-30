@@ -2,8 +2,12 @@ package com.wei756.ukkiukki;
 
 import org.jsoup.nodes.Element;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 public class Article extends Item {
     private String title;
+    private String head;
     private String mid;
     private String levelIcon;
     private String author;
@@ -22,9 +26,8 @@ public class Article extends Item {
 
     private boolean newArticle = true, readArticle = false, newComment = false;
 
-    private Element body;
-    private Element footer;
-    private Element feedback;
+    private Map article, comments, advert, authority;
+    private ArrayList<Map> attaches;
 
     public Article() {
 
@@ -36,6 +39,15 @@ public class Article extends Item {
 
     public Article setTitle(String title) {
         this.title = title;
+        return this;
+    }
+
+    public String getHead() {
+        return head;
+    }
+
+    public Article setHead(String head) {
+        this.head = head;
         return this;
     }
 
@@ -120,39 +132,12 @@ public class Article extends Item {
         return this;
     }
 
-    public Element getBody() {
-        return body;
-    }
-
-    public Article setBody(Element body) {
-        this.body = body;
-        return this;
-    }
-
-    public Element getFooter() {
-        return footer;
-    }
-
-    public Article setFooter(Element footer) {
-        this.footer = footer;
-        return this;
-    }
-
     public String getMid() {
         return mid;
     }
 
     public Article setMid(String mid) {
         this.mid = mid;
-        return this;
-    }
-
-    public Element getFeedback() {
-        return feedback;
-    }
-
-    public Article setFeedback(Element feedback) {
-        this.feedback = feedback;
         return this;
     }
 
@@ -207,6 +192,51 @@ public class Article extends Item {
 
     public Article setArticleTitle(String articleTitle) {
         this.articleTitle = articleTitle;
+        return this;
+    }
+
+    public Map getArticle() {
+        return article;
+    }
+
+    public Article setArticle(Map article) {
+        this.article = article;
+        return this;
+    }
+
+    public ArrayList<Map> getAttaches() {
+        return attaches;
+    }
+
+    public Article setAttaches(ArrayList attaches) {
+        this.attaches = attaches;
+        return this;
+    }
+
+    public Map getComments() {
+        return comments;
+    }
+
+    public Article setComments(Map comments) {
+        this.comments = comments;
+        return this;
+    }
+
+    public Map getAdvert() {
+        return advert;
+    }
+
+    public Article setAdvert(Map advert) {
+        this.advert = advert;
+        return this;
+    }
+
+    public Map getAuthority() {
+        return authority;
+    }
+
+    public Article setAuthority(Map authority) {
+        this.authority = authority;
         return this;
     }
 }

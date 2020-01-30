@@ -54,7 +54,7 @@ public class ArticleList implements LoadedListner {
         setRefreshing(true);
         this.mid = mid;
         this.page = page;
-        web.loadArticleList(this, mid, page, refresh); // update article list
+        web.getArticleList(this, mid, page, refresh); // update article list
     }
 
     private void setRefreshing(boolean refreshing) {

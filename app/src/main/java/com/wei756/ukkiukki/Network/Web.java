@@ -2,15 +2,10 @@ package com.wei756.ukkiukki.Network;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.MediaStore;
 import android.text.Html;
-import android.text.Spanned;
-import android.text.SpannedString;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -29,41 +24,19 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.HeaderElement;
-import cz.msebera.android.httpclient.HttpResponse;
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.client.entity.EntityBuilder;
-import cz.msebera.android.httpclient.client.methods.HttpGet;
-import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.client.methods.HttpRequestBase;
-import cz.msebera.android.httpclient.entity.ContentType;
-import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder;
-import cz.msebera.android.httpclient.entity.mime.content.InputStreamBody;
-import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
-import cz.msebera.android.httpclient.impl.client.HttpClients;
-import cz.msebera.android.httpclient.message.BasicHeader;
-import cz.msebera.android.httpclient.util.EntityUtils;
 
 
 public class Web extends Thread {
@@ -87,7 +60,7 @@ public class Web extends Thread {
             articleListUrl = "https://m.cafe.naver.com/ArticleListAjax.nhn?search.clubid={0}&search.menuid={1}&search.page={2}",
             popularArticleListUrl = "https://m.cafe.naver.com/PopularArticleList.nhn?cafeId={0}",
             menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?search.clubid={0}&search.perPage=9999",
-            articleReadUrl = "https://m.cafe.naver.com/ArticleRead.nhn?clubid={0}&articleid={1}",
+            articleReadUrl = "https://apis.naver.com/cafe-web/cafe-articleapi/cafes/{0}/articles/{1}",
             articleCommentListUrl = "https://m.cafe.naver.com/CommentViewAjax.nhn?search.clubid={0}&search.articleid={1}&search.page={2}&search.orderby={3}",
             articleLikeItListUrl = "https://m.cafe.naver.com/LikeItMemberAjax.nhn?search.clubid={0}&search.articleid={1}",
             articleLikeItTokenUrl = "https://cafe.like.naver.com/v1/search/contents?suppress_response_codes=true&q=CAFE%5B{0}_steamindiegame_{1}%5D&isDuplication=true&_={2}",
@@ -114,61 +87,59 @@ public class Web extends Thread {
      * 프로필 정보를 불러옵니다.
      */
     public void loadMyInfomation() {
-        new Thread() {
-            public void run() {
-                String url = MessageFormat.format(myActivityUrl, cafeId);
-                Document document;
-                ProfileManager profileManager = ProfileManager.getInstance();
-                if (webClientManager.getLogined()) {
-                    try {
-                        document = WebRequestBuilder.create()
-                                .url(url)
-                                .method(WebRequestBuilder.METHOD_GET)
-                                .userAgent(WebRequestBuilder.USER_AGENT_PC)
-                                .useCookie(true)
-                                .build();//httpRequest(url, METHOD_GET, true, true, null);
+        new Thread(() -> {
+            String url = MessageFormat.format(myActivityUrl, cafeId);
+            Document document;
+            ProfileManager profileManager = ProfileManager.getInstance();
+            if (webClientManager.getLogined()) {
+                try {
+                    document = WebRequestBuilder.create()
+                            .url(url)
+                            .method(WebRequestBuilder.METHOD_GET)
+                            .userAgent(WebRequestBuilder.USER_AGENT_PC)
+                            .useCookie(true)
+                            .build();//httpRequest(url, METHOD_GET, true, true, null);
 
-                        String id, nickname, profile;
-                        String date, grade;
-                        int visit, article, comment;
+                    String id, nickname, profile;
+                    String date, grade;
+                    int visit, article, comment;
 
-                        id = getStringValue(document.selectFirst("li[class=info2]").selectFirst("a[class=gm-tcol-c]").attr("href"), "memberid");
-                        nickname = document.selectFirst("div[class=prfl_info]").text();
-                        profile = document.selectFirst("img").attr("src");
+                    id = getStringValue(document.selectFirst("li[class=info2]").selectFirst("a[class=gm-tcol-c]").attr("href"), "memberid");
+                    nickname = document.selectFirst("div[class=prfl_info]").text();
+                    profile = document.selectFirst("img").attr("src");
 
-                        date = document.selectFirst("li[class=date gm-tcol-c]").selectFirst("em").text();
-                        grade = document.selectFirst("li[class=grade gm-tcol-c]").attr("title");
+                    date = document.selectFirst("li[class=date gm-tcol-c]").selectFirst("em").text();
+                    grade = document.selectFirst("li[class=grade gm-tcol-c]").attr("title");
 
-                        visit = Integer.parseInt(document.selectFirst("li[class=info]").selectFirst("em").text().replaceAll("[,회]", ""));
-                        article = Integer.parseInt(document.selectFirst("li[class=info2]").selectFirst("em").selectFirst("a").text());
-                        comment = Integer.parseInt(document.selectFirst("li[class=info3]").selectFirst("em").selectFirst("a").text());
+                    visit = Integer.parseInt(document.selectFirst("li[class=info]").selectFirst("em").text().replaceAll("[,회]", ""));
+                    article = Integer.parseInt(document.selectFirst("li[class=info2]").selectFirst("em").selectFirst("a").text());
+                    comment = Integer.parseInt(document.selectFirst("li[class=info3]").selectFirst("em").selectFirst("a").text());
 
-                        Log.e("Web", "Profile-------------------");
-                        Log.e("Web", "id: " + id + " 닉네임: " + nickname + " 프로필 사진 url: " + profile +
-                                "\n 가입날짜: " + date + " 등급: " + grade +
-                                "\n 방문수: " + visit + " 글: " + article + " 댓글: " + comment);
+                    Log.e("Web", "Profile-------------------");
+                    Log.e("Web", "id: " + id + " 닉네임: " + nickname + " 프로필 사진 url: " + profile +
+                            "\n 가입날짜: " + date + " 등급: " + grade +
+                            "\n 방문수: " + visit + " 글: " + article + " 댓글: " + comment);
 
 
-                        profileManager.setId(id);
-                        profileManager.setNickname(nickname);
-                        profileManager.setProfile(profile);
-                        profileManager.setDate(date);
-                        profileManager.setGrade(grade);
+                    profileManager.setId(id);
+                    profileManager.setNickname(nickname);
+                    profileManager.setProfile(profile);
+                    profileManager.setDate(date);
+                    profileManager.setGrade(grade);
 
-                        profileManager.setArticle(article);
-                        profileManager.setComment(comment);
-                        profileManager.setVisit(visit);
+                    profileManager.setArticle(article);
+                    profileManager.setComment(comment);
+                    profileManager.setVisit(visit);
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    //TODO: 로그인 안되어있을 시
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                profileManager.setLogined(webClientManager.getLogined());
+            } else {
+                //TODO: 로그인 안되어있을 시
             }
+            profileManager.setLogined(webClientManager.getLogined());
 
-        }.start();
+        }).start();
     }
 
     /**
@@ -176,9 +147,10 @@ public class Web extends Thread {
      *
      * @see CategoryManager
      */
-    public ArrayList<Map> loadCategoryList() {
+    public ArrayList<Map> getCategoryList() {
         ArrayList arrayList = null;
         String url = MessageFormat.format(menuListUrl, cafeId);
+        int i = 0;
         try {
             Elements categories = null;
 
@@ -191,37 +163,37 @@ public class Web extends Thread {
                     .build();//httpRequest(url, METHOD_GET, true, true, null);
 
             categories = document.selectFirst("ul[id=allMenuList]").select("li"); // 카테고리 추출
-            Log.i("Web", "" + categories.size() + " category block(s) found. on Web.loadCategoryList");
+            Log.i("Web", "" + categories.size() + " category block(s) found. on Web.getCategoryList");
 
 
             if (categories != null) { // 카테고리가 있으면
                 arrayList = new ArrayList<>();
 
                 for (Element category : categories) {
-                    CategoryManager.CategoryBuilder category1 = new CategoryManager.CategoryBuilder();
+                    CategoryManager.CategoryBuilder categoryBuilder = new CategoryManager.CategoryBuilder();
                     if (category.selectFirst("h4") != null) { // 그룹
 
                         String name = category.selectFirst("h4").text();
-                        category1.setType(CategoryManager.TYPE_GROUP)
+                        categoryBuilder.setType(CategoryManager.TYPE_GROUP)
                                 .setName(name);
 
                         //Log.v("Web", "카테고리: 그룹: " + name);
 
                     } else if (category.selectFirst("div") != null) { // 카테고리
-                        Element a = category.selectFirst("a[class=tit  ]");
+                        Element a = category.selectFirst("a");
                         String name = a.text();
-                        category1.setName(name);
+                        categoryBuilder.setName(name);
 
                         // 카테고리 타입
                         switch (name) {
                             case "전체글보기":
-                                category1.setType(CategoryManager.TYPE_MAINPAGE);
+                                categoryBuilder.setType(CategoryManager.TYPE_MAINPAGE);
                                 break;
                             case "인기글":
-                                category1.setType(CategoryManager.TYPE_BEST);
+                                categoryBuilder.setType(CategoryManager.TYPE_BEST);
                                 break;
                             case "▩ 표 지 왕 ▩":
-                                category1.setType(CategoryManager.TYPE_THUMBKING);
+                                categoryBuilder.setType(CategoryManager.TYPE_THUMBKING);
                                 break;
                             default:
                                 /*
@@ -237,20 +209,20 @@ public class Web extends Thread {
                                         break;
                                 }
                                 */
-                                category1.setType(CategoryManager.TYPE_BOARD);
+                                categoryBuilder.setType(CategoryManager.TYPE_BOARD);
                                 break;
                         }
 
                         String menuId = a.attr("href");
                         if (menuId.contains("PopularArticleList.nhn")) {
-                            category1.setMenuId(CategoryManager.CATEGORY_POPULAR_ARTICLE);
+                            categoryBuilder.setMenuId(CategoryManager.CATEGORY_POPULAR_ARTICLE);
                         } else if (menuId.contains("PopularMemberList.nhn")) {
-                            category1.setMenuId(CategoryManager.CATEGORY_POPULAR_MEMBER);
+                            categoryBuilder.setMenuId(CategoryManager.CATEGORY_POPULAR_MEMBER);
                         } else if (menuId.contains("WeeklyPopularTagList.nhn")) {
-                            category1.setMenuId(CategoryManager.CATEGORY_TAG);
+                            categoryBuilder.setMenuId(CategoryManager.CATEGORY_TAG);
                         } else {
                             try {
-                                category1.setMenuId(getIntegerValue(menuId, "search.menuid"));
+                                categoryBuilder.setMenuId(getIntegerValue(menuId, "search.menuid"));
                             } catch (NullPointerException e) {
                                 e.printStackTrace();
                             }
@@ -260,17 +232,20 @@ public class Web extends Thread {
 
                     } else if (category.selectFirst("span[class=blind]") != null) { // 구분선
 
-                        category1.setName("구분선");
+                        categoryBuilder.setName("구분선");
 
                         // 카테고리 타입
-                        category1.setType(CategoryManager.TYPE_CONTOUR);
+                        categoryBuilder.setType(CategoryManager.TYPE_CONTOUR);
                         Log.v("Web", "카테고리: 구분선");
                     } else {
                         continue;
                     }
 
                     // 리스트 추가
-                    arrayList.add(category1.build());
+                    arrayList.add(categoryBuilder.build());
+
+                    // 디버그용 index
+                    i++;
                 }
 
             } else {
@@ -279,16 +254,16 @@ public class Web extends Thread {
 
         } catch (IOException e) {
             arrayList = null;
-            Log.w("Web.err", "Connection error. (" + url + ")" + " on Web.loadCategoryList");
+            Log.w("Web.err", "Connection error. (" + url + ")" + " on Web.getCategoryList");
             e.printStackTrace();
 
         } catch (NullPointerException e) {
             arrayList = null;
-            Log.w("Web.err", "Error occurred. (" + url + ")" + " on Web.loadCategoryList");
+            Log.w("Web.err", "Error occurred in " + i + ". (" + url + ")" + " on Web.getCategoryList");
             e.printStackTrace();
         }
         if (arrayList != null)
-            Log.i("Web", "" + arrayList.size() + " category(s) found. (" + url + ")" + " on Web.loadCategoryList");
+            Log.i("Web", "" + arrayList.size() + " category(s) found. (" + url + ")" + " on Web.getCategoryList");
         return arrayList;
     }
 
@@ -303,111 +278,108 @@ public class Web extends Thread {
      * @see ArticleListAdapter
      * @see MainActivity
      */
-    public void loadArticleList(final ArticleList articleList, final int mid, final int page, final boolean reset) {
-        new Thread() {
-            public void run() {
-                ArrayList arrayList = null;
-                Elements articles = null;
-                try {
-                    articles = getArticleElements(mid, page);
+    public void getArticleList(final ArticleList articleList, final int mid, final int page, final boolean reset) {
+        new Thread(() -> {
+            ArrayList arrayList = null;
+            Elements articles = null;
+            try {
+                articles = getArticleElements(mid, page);
 
-                    arrayList = new ArrayList<>();
+                arrayList = new ArrayList<>();
 
-                    if (!articles.isEmpty()) { // 게시글이 있으면
-                        for (Element article : articles) {
+                if (!articles.isEmpty()) { // 게시글이 있으면
+                    for (Element article : articles) {
 
-                            // 리스트 추가
-                            Article article1 = new Article();
-                            if (mid == CategoryManager.CATEGORY_POPULAR_ARTICLE) { // 인기글
-                                // author
-                                String author = article.selectFirst("div[class=user]").text();
+                        // 리스트 추가
+                        Article article1 = new Article();
+                        if (mid == CategoryManager.CATEGORY_POPULAR_ARTICLE) { // 인기글
+                            // author
+                            String author = article.selectFirst("div[class=user]").text();
 
-                                article1.setAuthor(author)
-                                        .setTitle(article.selectFirst("strong[class=tit ellip]").text())
-                                        .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
-                                        .setLikeIt(article.selectFirst("em[class=u_cnt _count]").text())
-                                        .setComment(article.selectFirst("span[class=coment_btn]").text());
+                            article1.setAuthor(author)
+                                    .setTitle(article.selectFirst("strong[class=tit ellip]").text())
+                                    .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
+                                    .setLikeIt(article.selectFirst("em[class=u_cnt _count]").text())
+                                    .setComment(article.selectFirst("span[class=coment_btn]").text());
 
-                                // thumbnail
-                                Element thumbnail = article.selectFirst("img[class=lazy]");
-                                if (thumbnail != null) {
-                                    article1.setThumbnailUrl(thumbnail.attr("data-original"));
-                                }
-                            } else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT) { // 프로필 작성댓글
-                                // content
-                                String time = article.selectFirst("span[class=info_item]").ownText();
-                                String articleTitle = article.selectFirst("span[class=desc]").ownText();
-                                String comment = "";
-                                if (!articleTitle.equals("원글이 삭제된 게시글입니다."))
-                                    comment = article.selectFirst("span[class=num]").text();
+                            // thumbnail
+                            Element thumbnail = article.selectFirst("img[class=lazy]");
+                            if (thumbnail != null) {
+                                article1.setThumbnailUrl(thumbnail.attr("data-original"));
+                            }
+                        } else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT) { // 프로필 작성댓글
+                            // content
+                            String time = article.selectFirst("span[class=info_item]").ownText();
+                            String articleTitle = article.selectFirst("span[class=desc]").ownText();
+                            String comment = "";
+                            if (!articleTitle.equals("원글이 삭제된 게시글입니다."))
+                                comment = article.selectFirst("span[class=num]").text();
 
-                                // content
-                                Element contentElement = article.selectFirst("strong[class=txt]");
-                                String content;
-                                if (contentElement == null)
-                                    content = "";
-                                else {
-                                    if (Build.VERSION.SDK_INT < 24)
-                                        content = Html.fromHtml(contentElement.html()).toString();
-                                    else
-                                        content = Html.fromHtml(contentElement.html(), Html.FROM_HTML_MODE_COMPACT).toString();
-                                }
-
-                                article1.setContent(content)
-                                        .setTime(time)
-                                        .setArticleTitle(articleTitle)
-                                        .setComment(comment)
-                                        .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"));
-
-                            } else { // 전체글보기, 일반게시판
-                                // author
-                                String author = article.selectFirst("span[class=nick]").text();
-
-                                article1.setAuthor(author)
-                                        .setNewArticle(article.selectFirst("span[class=icon_new_txt]") != null)
-                                        .setTitle(article.selectFirst("strong[class=tit]").text())
-                                        .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
-                                        .setTime(article.selectFirst("span[class=time]").text())
-                                        .setView(article.selectFirst("span[class=no]").text())
-                                        .setComment(article.selectFirst("em[class=num]").text());
-
-                                // thumbnail
-                                if (article.selectFirst("div[class=thumb]") != null) {
-                                    article1.setThumbnailUrl(article.selectFirst("div[class=thumb]").selectFirst("img").attr("src"));
-                                }
+                            // content
+                            Element contentElement = article.selectFirst("strong[class=txt]");
+                            String content;
+                            if (contentElement == null)
+                                content = "";
+                            else {
+                                if (Build.VERSION.SDK_INT < 24)
+                                    content = Html.fromHtml(contentElement.html()).toString();
+                                else
+                                    content = Html.fromHtml(contentElement.html(), Html.FROM_HTML_MODE_COMPACT).toString();
                             }
 
-                            // add
-                            arrayList.add(article1);
-                            //Log.e("Web", "제목: " + article1.getTitle());
+                            article1.setContent(content)
+                                    .setTime(time)
+                                    .setArticleTitle(articleTitle)
+                                    .setComment(comment)
+                                    .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"));
+
+                        } else { // 전체글보기, 일반게시판
+                            // author
+                            String author = article.selectFirst("span[class=nick]").text();
+
+                            article1.setAuthor(author)
+                                    .setNewArticle(article.selectFirst("span[class=icon_new_txt]") != null)
+                                    .setTitle(article.selectFirst("strong[class=tit]").text())
+                                    .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
+                                    .setTime(article.selectFirst("span[class=time]").text())
+                                    .setView(article.selectFirst("span[class=no]").text())
+                                    .setComment(article.selectFirst("em[class=num]").text());
+
+                            // thumbnail
+                            if (article.selectFirst("div[class=thumb]") != null) {
+                                article1.setThumbnailUrl(article.selectFirst("div[class=thumb]").selectFirst("img").attr("src"));
+                            }
                         }
 
-                    } else {
-                        throw new NullPointerException();
+                        // add
+                        arrayList.add(article1);
+                        //Log.e("Web", "제목: " + article1.getTitle());
                     }
-                    Log.i("Web", "Article " + page + " page loaded. (mid=" + mid + "&page=" + page + ")" + " on Web.loadArticleList");
 
-                    // callback
-                    articleList.onLoadedArticleList(mid, arrayList, reset);
-
-                } catch (IOException e) {
-                    Log.w("Web.err", "Connection error. (mid=" + mid + "&page=" + page + ")" + " on Web.loadArticleList");
-                    e.printStackTrace();
-
-                    // callback with exception
-                    articleList.onLoadedArticleList(mid, e, reset);
-
-                } catch (NullPointerException e) {
-                    Log.w("Web.err", "Error occurred. (mid=" + mid + "&page=" + page + ")" + " on Web.loadArticleList");
-                    e.printStackTrace();
-
-                    // callback with exception
-                    articleList.onLoadedArticleList(mid, e, reset);
+                } else {
+                    throw new NullPointerException();
                 }
+                Log.i("Web", "Article " + page + " page loaded. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
 
+                // callback
+                articleList.onLoadedArticleList(mid, arrayList, reset);
+
+            } catch (IOException e) {
+                Log.w("Web.err", "Connection error. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
+                e.printStackTrace();
+
+                // callback with exception
+                articleList.onLoadedArticleList(mid, e, reset);
+
+            } catch (NullPointerException e) {
+                Log.w("Web.err", "Error occurred. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
+                e.printStackTrace();
+
+                // callback with exception
+                articleList.onLoadedArticleList(mid, e, reset);
             }
 
-        }.start();
+        }).start();
     }
 
 
@@ -420,7 +392,7 @@ public class Web extends Thread {
      * @return 글목록
      * @throws IOException          통신에 문제가 있는 경우
      * @throws NullPointerException 게시판에 게시글이 없는 경우
-     * @see Web#loadArticleList(ArticleList, int, int, boolean)
+     * @see Web#getArticleList(ArticleList, int, int, boolean)
      */
     public Elements getArticleElements(int mid, int page) throws IOException, NullPointerException {
         Elements articles = null;
@@ -524,108 +496,121 @@ public class Web extends Thread {
      * @see ArticleViewerActivity
      */
     public void getArticle(final ArticleViewerActivity articleViewerActivity, final String articleId) {
-        new Thread() {
-            public void run() {
-                String articleUrl = MessageFormat.format(articleReadUrl, cafeId, articleId);
+        new Thread(() -> {
+            String articleUrl = MessageFormat.format(articleReadUrl, cafeId, articleId);
 
-                // get html
-                Document document = null;
-                try {
-                    document = WebRequestBuilder.create()
-                            .url(articleUrl)
-                            .method(WebRequestBuilder.METHOD_GET)
-                            .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
-                            .useCookie(true)
-                            .build();
-                    Element error = document.selectFirst("div[class=error_content_body]");
-                    boolean noerror = true;
-                    if (error != null) {
-                        String errorCode = error.selectFirst("h2").text();
-                        Log.w("Web.err", "게시글을 불러오는 중 에러가 발생했습니다.(errorcode:" + errorCode + ")");
+            // get html
+            String document;
+            try {
+                document = WebRequestBuilder.create()
+                        .url(articleUrl)
+                        .method(WebRequestBuilder.METHOD_GET)
+                        .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                        .useCookie(true)
+                        .buildWithoutElement();
 
-                        if (errorCode.equals("카페 멤버만 볼 수 있습니다.")) // 로그인 필요
-                            throw new RequiresLoginException();
-                        if (errorCode.equals("게시글이 존재하지 않거나 삭제되었습니다.")) // 존재하지 않는 게시글
-                            noerror = false;
-                    }
+                // parse JSON
+                Map mapArticle;
 
-                    Article data = new Article();
-                    if (noerror) { // 존재하는 게시글
+                // String to JSON
+                JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+                JSONObject jsonObj = (JSONObject) parser.parse(document);
 
-                        // 컴포넌트 로드
-                        Element header = document.selectFirst("div[class=post_title]");
-                        Element body = document.selectFirst("div[id=postContent]");
-                        Element comment = document.selectFirst("div[id=commentArea]");
-                        Element footer = document.selectFirst("div[class=footer_fix]");
+                mapArticle = JsonUtil.getMapFromJsonObject(jsonObj);
 
-                        // mid
-                        String mid = "" + getIntegerValue(header.selectFirst("a[class=border_name]").attr("href"), "search.menuid");
+                // check error
+                String errorCode = String.valueOf(mapArticle.get("reason"));
+                boolean noerror = true;
+                if (!errorCode.equals("null")) { // mapArticle.get("reason")이 null이 아니라면
+                    Log.w("Web.err", "게시글을 불러오는 중 에러가 발생했습니다.(errorcode:" + errorCode + ")");
+                    noerror = false;
 
-
-                        String title = header.selectFirst("h2[class=tit]").text();
-                        String author = header.selectFirst("span[class=end_user_nick]").text();
-                        String time = header.selectFirst("span[class=date font_l]").text();
-                        String view = header.selectFirst("span[class=no font_l]").selectFirst("em").text();
-                        String likeIt = footer.selectFirst("em[class=u_cnt _count]").text();
-
-                        Elements elementsA = header.selectFirst("div[class=user_wrap]").select("a");
-                        Element elementProfile = null;
-                        for (Element a : elementsA) {
-                            for (String className : a.classNames()) {
-                                if (className.equals("thumb"))
-                                    elementProfile = a;
-                            }
-                        }
-                        String authorId = null, authorProfile = null;
-                        if (elementProfile != null) {
-                            authorProfile = elementProfile.selectFirst("img").attr("src");
-
-                            for (String className : elementProfile.classNames())
-                                if (className.contains("_click")) {
-                                    Pattern p = Pattern.compile("MoveMemberProfile\\|([\\w_\\-]*)");
-                                    Matcher m = p.matcher(className);
-                                    while (m.find()) {
-                                        authorId = m.group(1);
-                                    }
-                                }
-                        }
-                        //Log.e("Web", "authorid: " + authorId + "\n" +
-                        //        "authorProfile: " + authorProfile);
-
-                        // 데이터 입력
-                        data.setTitle(title)
-                                .setMid(mid)
-                                .setAuthor(author)
-                                .setAuthorProfile(authorProfile)
-                                .setAuthorId(authorId)
-                                .setTime(time)
-                                .setView(view)
-                                .setLikeIt(likeIt)
-                                .setHref(articleId)
-                                .setBody(body)
-                                .setFeedback(comment);
-
-                        Log.i("Web", " article(s) found from page. (" + articleId + ")" + " on Web.getArticle");
-
-                    } else
-                        data = null; // null 처리
-                    // callback
-                    articleViewerActivity.onLoadArticle(data);
-                } catch (IOException e) {
-                    Log.w("Web.err", "Connection error. (" + articleUrl + ")" + " on Web.getArticle");
-                    e.printStackTrace();
-
-                    // callback
-                    articleViewerActivity.onLoadArticle(null);
-                } catch (RequiresLoginException e) {
-                    Log.w("Web.err", "Require login. (" + articleUrl + ")" + " on Web.getArticle");
-                    e.printStackTrace();
-
-                    // callback
-                    articleViewerActivity.onLoadArticle(null);
+                    if (errorCode.equals("카페 멤버만 읽을 수 있는 게시글입니다.")) // 로그인 필요
+                        throw new RequiresLoginException();
+                    //if (errorCode.equals("게시글이 존재하지 않거나 삭제되었습니다.")) // 존재하지 않는 게시글
                 }
+
+                // start parse
+                Article data = new Article();
+                if (noerror) { // 존재하는 게시글
+
+                    // 주요 컴포넌트 로드
+                    Map article = (Map) mapArticle.get("article");
+                    ArrayList attaches = (ArrayList) mapArticle.get("attaches");
+                    Map comments = (Map) mapArticle.get("comments");
+                    Map advert = (Map) mapArticle.get("advert");
+                    Map authority = (Map) mapArticle.get("authority");
+
+                    // mid
+                    String mid = String.valueOf(((Map) article.get("menu")).get("id"));
+
+
+                    String title = (String) article.get("subject"); // 글 제목 // 제목이 실제로 null인 경우 회피
+                    String head = String.valueOf(article.get("head")); // 말머리
+                    String time = "" + (long) article.get("writeDate");
+                    String view = "" + (int) article.get("readCount");
+                    String likeIt = "0";
+
+                    // 게시글 작성자
+                    Map mapAuthor = (Map) article.get("writer");
+                    String author = String.valueOf(mapAuthor.get("nick")); // 작성자 닉네임
+                    String authorId = String.valueOf(mapAuthor.get("id")); // 작성자 아이디
+                    String authorProfile = String.valueOf(((Map) mapAuthor.get("image")).get("url")); // 작성자 프로필 사진
+
+                    //Log.e("Web", "authorid: " + authorId + "\n" +
+                    //        "authorProfile: " + authorProfile);
+
+                    // 게시글 본문 html태그 복원
+                    /*
+                    int begin = rawDocument.html().indexOf("\"content\":\""),
+                            end = rawDocument.html().indexOf("\",\"contentElements\"", begin);
+                    String htmlBody = rawDocument.html().substring(begin + 11, end);
+                    article.put("content", htmlBody);*/
+
+                    // 데이터 입력
+                    data.setTitle(title)
+                            .setHead(head)
+                            .setMid(mid)
+                            .setAuthor(author)
+                            .setAuthorProfile(authorProfile)
+                            .setAuthorId(authorId)
+                            .setTime(time)
+                            .setView(view)
+                            .setLikeIt(likeIt)
+                            .setHref(articleId)
+                            .setArticle(article)
+                            .setAttaches(attaches)
+                            .setComments(comments)
+                            .setAdvert(advert)
+                            .setAuthority(authority);
+
+                    Log.i("Web", " article(s) found from page. (" + articleId + ")" + " on Web.getArticle");
+
+                } else
+                    data = null; // null 처리
+                // callback
+                articleViewerActivity.onLoadArticle(data);
+            } catch (ParseException e) {
+                Log.w("Web.err", "JSON Parse error. (" + articleUrl + ")" + " on Web.getArticle");
+                e.printStackTrace();
+
+                // callback
+                articleViewerActivity.onLoadArticle(null);
+            } catch (IOException e) {
+                Log.w("Web.err", "Connection error. (" + articleUrl + ")" + " on Web.getArticle");
+                e.printStackTrace();
+
+                // callback
+                articleViewerActivity.onLoadArticle(null);
+            } catch (RequiresLoginException e) {
+                Log.w("Web.err", "Require login. (" + articleUrl + ")" + " on Web.getArticle");
+                e.printStackTrace();
+
+                // callback
+                articleViewerActivity.onLoadArticle(null);
             }
-        }.start();
+        }
+        ).start();
     }
 
     /**
@@ -707,12 +692,12 @@ public class Web extends Thread {
             if (response.containsKey("message") && response.get("message").equals("좋아요가 되었습니다.")) // 좋아요 성공
                 return RETURNCODE_SUCCESS;
             else if (response.containsKey("errorCode")) {
-                switch ((int)response.get("errorCode")) {
-                    case 4012 : // 토큰 만료
+                switch ((int) response.get("errorCode")) {
+                    case 4012: // 토큰 만료
                         return RETURNCODE_ERROR_LIKEIT_TOKEN_EXPIRED;
-                    case 4013 : // 요청 실패
+                    case 4013: // 요청 실패
                         return RETURNCODE_FAILED;
-                    case 4091 : // 이미 좋아요한 게시글
+                    case 4091: // 이미 좋아요한 게시글
                         return RETURNCODE_ERROR_ALREADY_LIKED;
                 }
             }
@@ -795,7 +780,7 @@ public class Web extends Thread {
     public ArrayList<Comment> getArticleCommentList(final String articleId, final int page, final String orderby) {
 
         String articleUrl = MessageFormat.format(articleCommentListUrl, cafeId, articleId, page, orderby);
-        Log.e("Web.eeeeeeeeeeee", articleUrl);
+        //Log.e("Web.eeeeeeeeeeee", articleUrl);
 
         // get html
         Document document = null;
@@ -812,58 +797,63 @@ public class Web extends Thread {
 
             Elements comments = document.select("li");
             for (Element comment : comments) {
-                String author = "", time = "", imgProfile = "",
+                String author, time, imgProfile,
                         contentText = "", contentImage = "", sticker = "";
-                boolean iconNew = false, iconArticleAuthor = false;
+                boolean iconNew, iconArticleAuthor;
                 if (comment.classNames().contains("u_cbox_comment")) { // 댓글인 경우에만
                     Comment comment1 = new Comment();
 
-                    imgProfile = comment.selectFirst("span[class=u_cbox_thumb]").selectFirst("img").attr("src");
-                    author = comment.selectFirst("span[class=u_cbox_info_main]").selectFirst("a").text();
-                    time = comment.selectFirst("span[class=u_cbox_date]").text();
+                    if (comment.selectFirst("span[class=u_cbox_delete_contents]") == null) { // 삭제된 댓글이 아닌 경우
 
-                    // 댓글 내용
-                    Element elementContentText = comment.selectFirst("div[class=u_cbox_text_wrap]");
-                    if (Build.VERSION.SDK_INT < 24)
-                        contentText = Html.fromHtml(elementContentText.html()).toString();
-                    else
-                        contentText = Html.fromHtml(elementContentText.html(), Html.FROM_HTML_MODE_COMPACT).toString();
+                        imgProfile = comment.selectFirst("span[class=u_cbox_thumb]").selectFirst("img").attr("src");
+                        author = comment.selectFirst("span[class=u_cbox_info_main]").selectFirst("a").text();
+                        time = comment.selectFirst("span[class=u_cbox_date]").text();
 
-                    // 댓글 이미지/스티커
-                    Element elementSticker = comment.selectFirst("div[class=u_cbox_sticker_section]"),
-                            elementImage = comment.selectFirst("div[class=u_cbox_image_section]");
-                    if (elementSticker != null) // 스티커
-                        sticker = elementSticker.selectFirst("img").attr("src");
-                    if (elementImage != null) // 이미지
-                        contentImage = elementImage.selectFirst("img").attr("src");
+                        // 댓글 내용
+                        Element elementContentText = comment.selectFirst("div[class=u_cbox_text_wrap]");
+                        if (Build.VERSION.SDK_INT < 24)
+                            contentText = Html.fromHtml(elementContentText.html()).toString();
+                        else
+                            contentText = Html.fromHtml(elementContentText.html(), Html.FROM_HTML_MODE_COMPACT).toString();
 
-                    iconNew = comment.selectFirst("span[class=u_cbox_ico_new]") != null;
-                    iconArticleAuthor = comment.selectFirst("span[class=u_cbox_ico_author]") != null;
+                        // 댓글 이미지/스티커
+                        Element elementSticker = comment.selectFirst("div[class=u_cbox_sticker_section]"),
+                                elementImage = comment.selectFirst("div[class=u_cbox_image_section]");
+                        if (elementSticker != null) // 스티커
+                            sticker = elementSticker.selectFirst("img").attr("src");
+                        if (elementImage != null) // 이미지
+                            contentImage = elementImage.selectFirst("img").attr("src");
 
-                    // 데이터 입력
-                    comment1.setAuthor(author)
-                            .setTime(time)
-                            .setContent(contentText)
-                            .setContentImage(contentImage)
-                            .setSticker(sticker)
-                            .setImgProfile(imgProfile)
-                            .setIconNew(iconNew)
-                            .setIconArticleAuthor(iconArticleAuthor);
+                        iconNew = comment.selectFirst("span[class=u_cbox_ico_new]") != null;
+                        iconArticleAuthor = comment.selectFirst("span[class=u_cbox_ico_author]") != null;
+                        // 데이터 입력
+                        comment1.setAuthor(author)
+                                .setTime(time)
+                                .setContent(contentText)
+                                .setContentImage(contentImage)
+                                .setSticker(sticker)
+                                .setImgProfile(imgProfile)
+                                .setIconNew(iconNew)
+                                .setIconArticleAuthor(iconArticleAuthor)
+                                .setDeleted(false);
 
-                    // 대댓글 관련
-                    int indent = 0;
-                    if (comment.classNames().contains("re")) // 대댓글이면
-                        indent = 1;
-                    comment1.setIndentLevel(indent);
-                    Element targetName = comment.selectFirst("span[class=u_cbox_target_name]");// 대상 닉네임
-                    if (targetName != null)
-                        comment1.setParentAuthor(targetName.text());
+                        // 대댓글 관련
+                        int indent = 0;
+                        if (comment.classNames().contains("re")) // 대댓글이면
+                            indent = 1;
+                        comment1.setIndentLevel(indent);
+                        Element targetName = comment.selectFirst("span[class=u_cbox_target_name]");// 대상 닉네임
+                        if (targetName != null)
+                            comment1.setParentAuthor(targetName.text());
 
-                    Log.e("Web", comment.className() + " " + indent);
-                    // 본인댓글 여부
-                    boolean mine = false;
-                    mine = comment.child(0).className().contains("u_cbox_mine");
-                    comment1.setMine(mine);
+                        Log.e("Web", comment.className() + " " + indent);
+                        // 본인댓글 여부
+                        boolean mine = false;
+                        mine = comment.child(0).className().contains("u_cbox_mine");
+                        comment1.setMine(mine);
+                    } else {
+                        comment1.setDeleted(true);
+                    }
 
                     // 데이터 입력
                     arrayList.add(comment1);

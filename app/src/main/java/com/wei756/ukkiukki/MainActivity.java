@@ -55,10 +55,11 @@ public class MainActivity extends AppCompatActivity
 
     // header popular list
     private CollapsingToolbarLayout collapsingToolbarLayout;
-    private ArticleList popularList;
-    private RecyclerView popularView;
-    private ImageView popularBackground, popularIcon;
-    private LinearLayout popularInfo;
+    //private ArticleList popularList;
+    //private RecyclerView popularView;
+    private TextView popularMore, popularArticle;
+    //private ImageView popularBackground, popularIcon;
+    //private LinearLayout popularInfo;
 
     // article page
     private View articlepageLayout;
@@ -185,23 +186,26 @@ public class MainActivity extends AppCompatActivity
         // appbar header popular list
         collapsingToolbarLayout = findViewById(R.id.layout_article_list_collapsing_appbar);
 
+        /*
         popularView = findViewById(R.id.view_appbar_popular);
         popularBackground = findViewById(R.id.iv_article_list_header_background);
         popularIcon = findViewById(R.id.iv_article_list_header_icon);
         popularInfo = findViewById(R.id.layout_article_list_header_info);
+        */
+        popularMore = findViewById(R.id.tv_popular_article_icon);
+        popularArticle = findViewById(R.id.tv_popular_article_title);
+
+        popularMore.setOnClickListener((view -> setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true)));
 
         appBarLayout = findViewById(R.id.layout_article_list_appbar);
-        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int i) {
-                float percentage = 1 - ((float)Math.abs(i)/appBarLayout.getTotalScrollRange());
-                popularIcon.setAlpha(percentage);
-                popularInfo.setAlpha(percentage);
-                popularView.setAlpha(percentage);
-            }
+        appBarLayout.addOnOffsetChangedListener((appBarLayout, i) -> {
+            float percentage = 1 - ((float)Math.abs(i)/appBarLayout.getTotalScrollRange());
+            popularMore.setAlpha(percentage);
+            popularArticle.setAlpha(percentage);
         });
 
-        popularList = new ArticleList(this, popularView, null, ArticleListAdapter.THEME_HEADER_POPULAR);
+        //TODO: 대표 인기글 설정
+        //popularList = new ArticleList(this, popularView, null, ArticleListAdapter.THEME_HEADER_POPULAR);
 
         // Pages
         // article page
@@ -335,7 +339,7 @@ public class MainActivity extends AppCompatActivity
                     && mid != CategoryManager.CATEGORY_LOGIN) {
                 setPopularList(true);
 
-                popularList.loadArticleList(CategoryManager.CATEGORY_POPULAR_ARTICLE, 1, true);
+                //popularList.loadArticleList(CategoryManager.CATEGORY_POPULAR_ARTICLE, 1, true);
             } else {
                 setPopularList(false);
             }
@@ -381,16 +385,12 @@ public class MainActivity extends AppCompatActivity
      */
     public void setPopularList(boolean open) {
         if (open) {
-            popularBackground.setVisibility(View.VISIBLE);
-            popularIcon.setVisibility(View.VISIBLE);
-            popularInfo.setVisibility(View.VISIBLE);
-            popularView.setVisibility(View.VISIBLE);
+            popularMore.setVisibility(View.VISIBLE);
+            popularArticle.setVisibility(View.VISIBLE);
             collapsingToolbarLayout.setTitleEnabled(true);
         } else {
-            popularBackground.setVisibility(View.GONE);
-            popularIcon.setVisibility(View.GONE);
-            popularInfo.setVisibility(View.GONE);
-            popularView.setVisibility(View.GONE);
+            popularMore.setVisibility(View.GONE);
+            popularArticle.setVisibility(View.GONE);
             collapsingToolbarLayout.setTitleEnabled(false);
         }
     }

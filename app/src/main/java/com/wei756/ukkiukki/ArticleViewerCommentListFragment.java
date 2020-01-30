@@ -250,36 +250,33 @@ public class ArticleViewerCommentListFragment extends Fragment {
     public void loadCommentList(final int page, final boolean reset) {
         setRefreshing(true);
         this.page = page;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (reset)
-                    setVisibility(View.GONE);
+        new Thread(() -> {
+            if (reset)
+                setVisibility(View.GONE);
 
-                ArrayList<Comment> comments = null;
-                if (!loadedLastPage) {
-                    comments = web.getArticleCommentList(articleId, page, CommentAdapter.ORDERBY_UPLOAD); // 마지막 페이지가 아닐 때만 로드
+            ArrayList<Comment> comments = null;
+            if (!loadedLastPage) {
+                comments = web.getArticleCommentList(articleId, page, CommentAdapter.ORDERBY_UPLOAD); // 마지막 페이지가 아닐 때만 로드
 
-                    if (comments != null) { // 댓글목록 로딩 성공시
-                        if (comments.get(comments.size() - 1).getImgProfile() == LAST_PAGE) { // 로드된 게 마지막 페이지일 경우
-                            comments.remove(comments.size() - 1);
-                            loadedLastPage = true;
-                        }
-
-                        // 리스트 추가
-                        if (reset)
-                            mAdapter.setListWith(comments, act);
-                        else
-                            mAdapter.addListWith(comments, act);
-
-                        setVisibility(View.VISIBLE);
-
-                    } else {
-                        mAdapter.clearList(act);
+                if (comments != null) { // 댓글목록 로딩 성공시
+                    if (comments.get(comments.size() - 1).getImgProfile() == LAST_PAGE) { // 로드된 게 마지막 페이지일 경우
+                        comments.remove(comments.size() - 1);
+                        loadedLastPage = true;
                     }
+
+                    // 리스트 추가
+                    if (reset)
+                        mAdapter.setListWith(comments, act);
+                    else
+                        mAdapter.addListWith(comments, act);
+
+                    setVisibility(View.VISIBLE);
+
+                } else {
+                    mAdapter.clearList(act);
                 }
-                setRefreshing(false);
             }
+            setRefreshing(false);
         }).start();
     }
 

@@ -9,6 +9,9 @@
 
     <!-- ImageView ContentDescription -->
 
+    <!-- Popular list -->
+    <string name="popular_article_icon">인기</string>
+
     <!-- Navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -52,6 +55,7 @@
     <!-- 댓글 리스트 -->
     <string name="comment_list_first_comment">첫 댓글을 남겨보세요</string>
     <string name="comment_list_new_comment">댓글을 남겨보세요</string>
+    <string name="comment_deleted_comment">삭제된 댓글입니다.</string>
     <string name="title_activity_profile">ProfileActivity</string>
 
 </resources>

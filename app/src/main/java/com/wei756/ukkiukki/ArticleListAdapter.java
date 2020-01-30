@@ -371,20 +371,10 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         if (TYPE_THEME != THEME_HEADER_POPULAR)
             headerViewHolder.category.setText(category);
         if (TYPE_THEME == THEME_MAINPAGE) {
-            headerViewHolder.more.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ((MainActivity) context).setCategory(mid, true);
-                }
-            });
+            headerViewHolder.more.setOnClickListener(view -> ((MainActivity) context).setCategory(mid, true));
         }
         if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            headerViewHolder.article.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ((MainActivity) context).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true);
-                }
-            });
+            headerViewHolder.article.setOnClickListener(view -> ((MainActivity) context).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true));
         }
     }
 

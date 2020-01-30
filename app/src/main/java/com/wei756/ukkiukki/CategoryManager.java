@@ -121,7 +121,7 @@ public class CategoryManager {
         if (!isLoadedCategory() && currentTime - lastLoadedTime > 2 * 1000) {
             lastLoadedTime = currentTime;
             Log.v("CategoryManager", "Loading.");
-            ArrayList<Map> categoryList = web.loadCategoryList(); // 카테고리 로드
+            ArrayList<Map> categoryList = web.getCategoryList(); // 카테고리 로드
             category.clear();
             category.add(new CategoryBuilder()
                     .setName("메인페이지")

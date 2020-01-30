@@ -8,8 +8,7 @@
     android:background="@color/colorBackground"
     android:nestedScrollingEnabled="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".ArticleViewerActivity"
-    tools:showIn="@layout/activity_article_viewer">
+    tools:context=".ArticleViewerActivity"><!--tools:showIn="@layout/activity_article_viewer"-->
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/id_article_viewer_viewer"
@@ -35,6 +34,23 @@
             app:layout_constraintVertical_bias="0"
             app:layout_constraintVertical_chainStyle="packed">
 
+            <!-- 게시글 말머리 -->
+            <TextView
+                android:id="@+id/tv_article_viewer_head"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="1dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="4dp"
+                android:text="말머리"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toTopOf="@+id/tv_article_viewer_title"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <!-- 게시글 제목 -->
             <TextView
                 android:id="@+id/tv_article_viewer_title"
@@ -49,15 +65,18 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_head" />
 
             <!-- 작성자 프로필 사진 -->
             <ImageView
                 android:id="@+id/iv_article_viewer_profile"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:background="@drawable/shape_all_rounded_rectangle_outline"
+                android:backgroundTint="@color/colorArticleListItemLine"
                 android:foreground="@drawable/shape_all_rounded_rectangle_outline"
                 android:foregroundTint="@color/colorArticleListItemLine"
+                android:scaleType="centerCrop"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_article_viewer_title" />
 
