@@ -4,7 +4,7 @@
 ## License
 [네이버](https://www.navercorp.com/): Copyright ©NAVER Corp.
 
-WakkiViewer App: Apache License 2.0 Copyright 2019, Wei756([@wei756](http://github.com/wei756)) (kjhoon1122@naver.com)
+WakkiViewer App: Apache License 2.0 Copyright 2019 - 2020, Wei756([@wei756](http://github.com/wei756)) (kjhoon1122@naver.com)
 
 Jsoup: The MIT License Copyright © 2009 - 2019 [Jonathan Hedley](https://jhy.io) (jonathan@hedley.net)
 
