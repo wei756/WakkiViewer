@@ -48,7 +48,7 @@
                         android:layout_height="wrap_content"
                         android:paddingTop="2dp"
                         android:paddingBottom="2dp"
-                        android:text="백수맛"
+                        android:text=" "
                         android:textAppearance="@style/ProfileCollapsingToolbarTitleTheme"
                         android:textColor="@color/colorTransparent" />
 
@@ -60,13 +60,33 @@
                         android:textColor="@color/colorTextSecondary"
                         android:textSize="14sp" />
 
-                    <TextView
-                        android:id="@+id/tv_profile_grade"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="노비˙방문 3,924"
-                        android:textColor="@color/colorTextPrimary"
-                        android:textSize="14sp" />
+                        android:orientation="horizontal"
+                        android:paddingTop="4dp">
+
+                        <TextView
+                            android:id="@+id/tv_profile_grade"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="노비"
+                            android:textColor="@color/colorTextPrimary"
+                            android:textSize="14sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="˙방문 "
+                            android:textColor="@color/colorTextPrimary"
+                            android:textSize="14sp" />
+                        <TextView
+                            android:id="@+id/tv_profile_visit"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="3,924"
+                            android:textColor="@color/colorTextPrimary"
+                            android:textSize="14sp" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="wrap_content"

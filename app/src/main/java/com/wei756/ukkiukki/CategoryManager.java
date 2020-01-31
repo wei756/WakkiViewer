@@ -57,6 +57,7 @@ public class CategoryManager {
     public static final int CATEGORY_POPULAR_ARTICLE = -1; // 인기글
     public static final int CATEGORY_POPULAR_MEMBER = -2; // 인기멤버
     public static final int CATEGORY_TAG = -3; // 카페태그
+    public static final int CATEGORY_BOARD = -4; // 일반 게시판
 
     public static final int CATEGORY_PROFILE_ARTICLE = -10; // 프로필 작성글
     public static final int CATEGORY_PROFILE_COMMENT = -11; // 프로필 작성댓글

@@ -130,23 +130,17 @@ public class MainActivity extends AppCompatActivity
         };
 
         ConstraintLayout btnLogin = (ConstraintLayout) navigationView.getHeaderView(0).findViewById(R.id.layout_nav_profile); // 로그인 버튼
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (WebClientManager.getInstance().getLogined()) { // 프로필 페이지
-                    // open profile page
-                    Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-                    intent.putExtra("id", ProfileManager.getInstance().getId());
-                    startActivity(intent);
-                } else { // 로그인 페이지
-                    // open login page
-                    Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
-                    intent.putExtra("login_type", "LOGIN");
-                    startActivity(intent);
-                }
-
-                drawer.closeDrawer(GravityCompat.START);
+        btnLogin.setOnClickListener(view -> {
+            if (WebClientManager.getInstance().getLogined()) { // 프로필 페이지
+                ProfileActivity.startProfileActivity(MainActivity.this, ProfileManager.getInstance().getId());
+            } else { // 로그인 페이지
+                // open login page
+                Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
+                intent.putExtra("login_type", "LOGIN");
+                startActivity(intent);
             }
+
+            drawer.closeDrawer(GravityCompat.START);
         });
         TextView btnLogout = (TextView) navigationView.getHeaderView(0).findViewById(R.id.btn_nav_logout); // 로그아웃 버튼
         btnLogout.setOnClickListener(new View.OnClickListener() {

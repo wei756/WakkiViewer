@@ -46,9 +46,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -210,6 +207,10 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                 Glide.with(getApplicationContext()).load(imgAuthorProfile).into(ivProfile); // load image
                 ivProfile.setClipToOutline(true);
                 tvAuthor.setText(article.getAuthor()); // 글작성자 닉네임
+                ivProfile.setOnClickListener(view ->
+                        ProfileActivity.startProfileActivity(ArticleViewerActivity.this, article.getAuthorId()));
+                tvAuthor.setOnClickListener(view ->
+                        ProfileActivity.startProfileActivity(ArticleViewerActivity.this, article.getAuthorId()));
 
                 Long timestamp = Long.parseLong(article.getTime());
                 tvTime.setText(new SimpleDateFormat("yyyy.MM.dd. HH:mm:ss", Locale.KOREA).format(new Date(timestamp))); // 게시글 시간
@@ -250,7 +251,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                                         "\" nhn_extra_image=\"true\" data-type=\"sticker\"></a>";
                                 break;
                             case "IMAGE": // 사진
-                                Map mapImage = (Map)json.get("image");
+                                Map mapImage = (Map) json.get("image");
                                 url = "" + mapImage.get("url");
                                 url += (url.contains("?") ? "&" : "?");
                                 url += "type=" + mapImage.get("type");

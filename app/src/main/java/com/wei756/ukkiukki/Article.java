@@ -1,11 +1,13 @@
 package com.wei756.ukkiukki;
 
-import org.jsoup.nodes.Element;
+import com.wei756.ukkiukki.Network.Web;
 
 import java.util.ArrayList;
 import java.util.Map;
 
 public class Article extends Item {
+    private int errorcode = Web.RETURNCODE_SUCCESS;
+
     private String title;
     private String head;
     private String mid;
@@ -29,8 +31,15 @@ public class Article extends Item {
     private Map article, comments, advert, authority;
     private ArrayList<Map> attaches;
 
-    public Article() {
+    public Article() { }
 
+    public int getErrorcode() {
+        return errorcode;
+    }
+
+    public Article setErrorcode(int errorcode) {
+        this.errorcode = errorcode;
+        return this;
     }
 
     public String getTitle() {

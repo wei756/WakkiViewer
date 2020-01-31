@@ -65,6 +65,7 @@ public class Web extends Thread {
             articleLikeItListUrl = "https://m.cafe.naver.com/LikeItMemberAjax.nhn?search.clubid={0}&search.articleid={1}",
             articleLikeItTokenUrl = "https://cafe.like.naver.com/v1/search/contents?suppress_response_codes=true&q=CAFE%5B{0}_steamindiegame_{1}%5D&isDuplication=true&_={2}",
             myActivityUrl = "https://cafe.naver.com/MyCafeMyActivityAjax.nhn?clubid={0}",
+            profileUrl = "https://m.cafe.naver.com/CafeMemberProfile.nhn?cafeId={0}&memberId={1}",
             profileArticleListUrl = "https://m.cafe.naver.com/CafeMemberArticleList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentListUrl = "https://m.cafe.naver.com/CafeMemberCommentList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentArticleListUrl = "https://m.cafe.naver.com/CafeMemberReplyList.nhn?search.clubid={0}&search.query={1}&search.page={2}&search.perPage={3}";
@@ -88,9 +89,9 @@ public class Web extends Thread {
      */
     public void loadMyInfomation() {
         new Thread(() -> {
+            ProfileManager profileManager = ProfileManager.getInstance();
             String url = MessageFormat.format(myActivityUrl, cafeId);
             Document document;
-            ProfileManager profileManager = ProfileManager.getInstance();
             if (webClientManager.getLogined()) {
                 try {
                     document = WebRequestBuilder.create()
@@ -137,9 +138,71 @@ public class Web extends Thread {
             } else {
                 //TODO: 로그인 안되어있을 시
             }
+
+
             profileManager.setLogined(webClientManager.getLogined());
 
         }).start();
+    }
+
+    public Map getProfile(String userId) {
+        Map mapUser = new HashMap();
+
+        ProfileManager profileManager = ProfileManager.getInstance();
+        String url = MessageFormat.format(profileUrl, cafeId, userId);
+        Document document;
+        if (profileManager.isLogined()) {
+            try {
+                document = WebRequestBuilder.create()
+                        .url(url)
+                        .method(WebRequestBuilder.METHOD_GET)
+                        .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                        .useCookie(true)
+                        .build();
+
+                String id, nickname, profile;
+                String date, grade;
+                int visit, article, comment;
+                Element elementProfile = document.selectFirst("div[class=profile_head]");
+                if (elementProfile != null) {
+
+                    id = userId;
+                    nickname = elementProfile.selectFirst("strong[class=nick]").selectFirst("span").text();
+                    profile = document.selectFirst("img").attr("src");
+
+                    date = "";
+                    grade = elementProfile.selectFirst("div[class=desc]").textNodes().get(0).text();
+
+                    visit = Integer.parseInt(elementProfile.selectFirst("div[class=desc]").textNodes().get(1).text().replaceAll("[^\\d]", ""));
+                    article = -1;
+                    comment = -1;
+
+                    Log.e("Web", "Profile-------------------");
+                    Log.e("Web", "id: " + id + " 닉네임: " + nickname + " 프로필 사진 url: " + profile +
+                            "\n 가입날짜: " + date + " 등급: " + grade +
+                            "\n 방문수: " + visit + " 글: " + article + " 댓글: " + comment);
+
+
+                    mapUser.put("id", id);
+                    mapUser.put("nickname", nickname);
+                    mapUser.put("profile", profile);
+                    mapUser.put("date", date);
+                    mapUser.put("grade", grade);
+
+                    mapUser.put("article", article);
+                    mapUser.put("comment", comment);
+                    mapUser.put("visit", visit);
+                    mapUser.put("status", RETURNCODE_SUCCESS);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                mapUser.put("status", RETURNCODE_FAILED);
+            }
+        } else {
+            mapUser.put("status", RETURNCODE_ERROR_LOGIN_REQUIRED);
+        }
+        return mapUser;
     }
 
     /**
@@ -273,17 +336,17 @@ public class Web extends Thread {
      * @param articleList 메소드가 호출된 articleList
      * @param mid         게시판
      * @param page        페이지
+     * @param userId      사용자 id (프로필 페이지에서만 사용)
      * @param reset       리사이클뷰 초기화
-     * @see Web#getArticleElements(int, int)
-     * @see ArticleListAdapter
-     * @see MainActivity
+     * @see Web#getArticleElements(int, int, String)
+     * @see ArticleList
+     * @see com.wei756.ukkiukki.ProfileActivity
      */
-    public void getArticleList(final ArticleList articleList, final int mid, final int page, final boolean reset) {
-        new Thread(() -> {
-            ArrayList arrayList = null;
+    public ArrayList<Article> getArticleList(final ArticleList articleList, final int mid, final int page, @Nullable final String userId, final boolean reset) {
+            ArrayList<Article> arrayList = null;
             Elements articles = null;
             try {
-                articles = getArticleElements(mid, page);
+                articles = getArticleElements(mid, page, userId);
 
                 arrayList = new ArrayList<>();
 
@@ -356,30 +419,24 @@ public class Web extends Thread {
                         //Log.e("Web", "제목: " + article1.getTitle());
                     }
 
-                } else {
-                    throw new NullPointerException();
                 }
                 Log.i("Web", "Article " + page + " page loaded. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
-
-                // callback
-                articleList.onLoadedArticleList(mid, arrayList, reset);
 
             } catch (IOException e) {
                 Log.w("Web.err", "Connection error. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
                 e.printStackTrace();
 
-                // callback with exception
-                articleList.onLoadedArticleList(mid, e, reset);
+                arrayList.add(0, new Article().setErrorcode(RETURNCODE_ERROR_CONNECTION));
 
             } catch (NullPointerException e) {
                 Log.w("Web.err", "Error occurred. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
                 e.printStackTrace();
 
-                // callback with exception
-                articleList.onLoadedArticleList(mid, e, reset);
+                arrayList.add(0, new Article().setErrorcode(RETURNCODE_FAILED));
+
             }
 
-        }).start();
+            return arrayList;
     }
 
 
@@ -392,22 +449,22 @@ public class Web extends Thread {
      * @return 글목록
      * @throws IOException          통신에 문제가 있는 경우
      * @throws NullPointerException 게시판에 게시글이 없는 경우
-     * @see Web#getArticleList(ArticleList, int, int, boolean)
+     * @see Web#getArticleList(ArticleList, int, int, String, boolean)
      */
-    public Elements getArticleElements(int mid, int page) throws IOException, NullPointerException {
+    public Elements getArticleElements(int mid, int page, String userId) throws IOException, NullPointerException {
         Elements articles = null;
 
         // connect
         Document document;
         String url;
-        if (mid == CategoryManager.CATEGORY_POPULAR_ARTICLE)
+        if (mid == CategoryManager.CATEGORY_POPULAR_ARTICLE) // 인기글
             url = MessageFormat.format(popularArticleListUrl, cafeId);
-        else if (mid == CategoryManager.CATEGORY_PROFILE_ARTICLE)
-            url = MessageFormat.format(profileArticleListUrl, cafeId, ProfileManager.getInstance().getId(), page, 30);
-        else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT)
-            url = MessageFormat.format(profileCommentListUrl, cafeId, ProfileManager.getInstance().getId(), page, 30);
-        else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT_ARTICLE)
-            url = MessageFormat.format(profileCommentArticleListUrl, cafeId, ProfileManager.getInstance().getId(), page, 30);
+        else if (mid == CategoryManager.CATEGORY_PROFILE_ARTICLE) // 프로필 작성 게시글
+            url = MessageFormat.format(profileArticleListUrl, cafeId, userId, page, 30);
+        else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT) // 프로필 작성 댓글
+            url = MessageFormat.format(profileCommentListUrl, cafeId, userId, page, 30);
+        else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT_ARTICLE) // 프로필 댓글단 글
+            url = MessageFormat.format(profileCommentArticleListUrl, cafeId, userId, page, 30);
         else
             url = MessageFormat.format(articleListUrl, cafeId, mid != 0 ? mid : "", page);
 
