@@ -12,6 +12,10 @@
     <!-- Popular list -->
     <string name="popular_article_icon">인기</string>
 
+    <string name="tab_main_all_article">전체글</string>
+    <string name="tab_main_popular_article">인기글</string>
+    <string name="tab_main_all_notice">전체 공지</string>
+
     <!-- Navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

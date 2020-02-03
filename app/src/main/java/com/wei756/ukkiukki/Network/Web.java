@@ -61,7 +61,7 @@ public class Web extends Thread {
 
     public final String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
             articleListUrl = "https://m.cafe.naver.com/ArticleListAjax.nhn?search.clubid={0}&search.menuid={1}&search.page={2}",
-            popularArticleListUrl = "https://m.cafe.naver.com/PopularArticleList.nhn?cafeId={0}",
+            popularArticleListUrl = "https://apis.naver.com/cafe-web/cafe2/WeeklyPopularArticleList.json?cafeId={0}",
             menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?search.clubid={0}&search.perPage=9999",
             articleReadUrl = "https://apis.naver.com/cafe-web/cafe-articleapi/cafes/{0}/articles/{1}",
             articleCommentListUrl = "https://m.cafe.naver.com/CommentViewAjax.nhn?search.clubid={0}&search.articleid={1}&search.page={2}&search.orderby={3}",
@@ -933,7 +933,7 @@ public class Web extends Thread {
                         if (targetName != null)
                             comment1.setParentAuthor(targetName.text());
 
-                        Log.e("Web", comment.className() + " " + indent);
+                        //Log.e("Web", comment.className() + " " + indent);
                         // 본인댓글 여부
                         boolean mine = false;
                         mine = comment.child(0).className().contains("u_cbox_mine");

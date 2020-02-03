@@ -15,7 +15,7 @@
     <color name="colorTextSecondary">#929292</color>
 
     <!-- Article list-->
-    <color name="colorMainPageHeaderBackground">#7000</color>
+    <color name="colorMainPageHeaderBackground">#4000</color>
     <color name="colorPopularListBackground">#8000</color>
     <color name="colorPopularListIconText">#fafafa</color>
 

@@ -343,7 +343,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                         comment1.setParentAuthor((String) mapReplyMember.get("nick"));
 
                     // 댓글 내용
-                    contentText = (comment1.getParentAuthor() != null ? comment1.getParentAuthor() : "") + " " + mapComment.get("content");
+                    contentText = (comment1.getParentAuthor() != null ? comment1.getParentAuthor() + " " : "") + mapComment.get("content");
 
                     // 댓글 이미지/스티커
                     Map mapSticker = (Map) mapComment.get("sticker"),

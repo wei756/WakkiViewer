@@ -307,18 +307,15 @@ public class CommentAdapter extends RecyclerViewCustomAdapter {
             itemViewHolder.iconNew.setVisibility(comment.isIconNew() ? View.VISIBLE : View.GONE);
             itemViewHolder.iconArticleAuthor.setVisibility(comment.isIconArticleAuthor() ? View.VISIBLE : View.GONE);
 
-            itemViewHolder.reply.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //TODO: 대댓글창 열기
-                    //Uri uri = Uri.parse(mList.get(position).getHref());
+            itemViewHolder.reply.setOnClickListener(view -> {
+                //TODO: 대댓글창 열기
+                //Uri uri = Uri.parse(mList.get(position).getHref());
 
-                    //Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    //Intent intent = new Intent(act, ArticleViewerActivity.class);
-                    //intent.putExtra("article_title", mList.get(position).getTitle());
-                    //intent.putExtra("article_href", mList.get(position).getHref());
-                    //act.startActivity(intent);
-                }
+                //Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                //Intent intent = new Intent(act, ArticleViewerActivity.class);
+                //intent.putExtra("article_title", mList.get(position).getTitle());
+                //intent.putExtra("article_href", mList.get(position).getHref());
+                //act.startActivity(intent);
             });
         } else { // 삭제된 댓글
             itemViewHolder.profile.setVisibility(View.GONE);

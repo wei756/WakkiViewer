@@ -127,12 +127,7 @@ public abstract class RecyclerViewCustomAdapter extends RecyclerView.Adapter<Rec
     public void addListWith(final ArrayList mList, Activity act) {
         final int originalSize = this.mList.size();
         this.mList.addAll(mList);
-        act.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                notifyItemRangeInserted(originalSize, mList.size());
-            }
-        });
+        act.runOnUiThread(() -> notifyItemRangeInserted(originalSize, mList.size()));
         Log.v("RecyclerViewAdapter", mList.size() + "개 추가됨, " + originalSize + " -> " + this.mList.size() + ", " + getItemCount() + ". on RecyclerViewCustomAdapter.addListWith");
     }
 
@@ -143,14 +138,11 @@ public abstract class RecyclerViewCustomAdapter extends RecyclerView.Adapter<Rec
 
         // 리사이클러뷰 버그 때문에 리스트 초기화 후 리스트 업데이트용 변수입니다.
         final RecyclerViewCustomAdapter adapter = this;
-        act.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                adapter.mList.clear();
-                notifyDataSetChanged();
-                if (scrollable)
-                    mListener.resetState();
-            }
+        act.runOnUiThread(() -> {
+            adapter.mList.clear();
+            notifyDataSetChanged();
+            if (scrollable)
+                mListener.resetState();
         });
     }
 

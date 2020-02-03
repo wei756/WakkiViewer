@@ -6,10 +6,13 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.View;
 
 import com.google.android.material.appbar.AppBarLayout;
@@ -34,6 +37,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.Menu;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -43,21 +47,74 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, RefreshListner {
 
+    // Section Top bar
+    /**
+     * NavDrawer, Overflow 버튼 등이 표시되는 툴바
+     */
     private Toolbar toolbar;
+
+    /**
+     * 상단바 전체
+     */
     private AppBarLayout appBarLayout;
 
     private SearchView mSearchView;
 
+    /**
+     * 하단 네비게이션 뷰
+     */
     public NavigationView navigationView;
+
+    /**
+     * NacDrawer 토글 버튼
+     */
     private ActionBarDrawerToggle toggle;
 
+    /**
+     * Mainpage 에 표시중인 게시판 id
+     */
     private int mid = CategoryManager.CATEGORY_MAINPAGE;
 
-    // header popular list
+    // Section Header
+    /**
+     * AppBar 내의 레이아웃 전체(이하 헤더)
+     */
     private CollapsingToolbarLayout collapsingToolbarLayout;
-    //private ArticleList popularList;
-    //private RecyclerView popularView;
-    private TextView popularMore, popularArticle;
+
+    /**
+     * 헤더 배경
+     */
+    private ImageView ivHeaderBackground;
+
+    /**
+     * 앱 로고
+     */
+    private ImageView ivLogo;
+
+    /**
+     * 멤버수, 카페정보 표시되는 레이아웃
+     */
+    private LinearLayout layoutHeader;
+
+    /**
+     * 헤더에 표시되는 인기글 리스트(1개 표시)
+     */
+    private ArticleList popularList;
+
+    /**
+     * popularList가 표시될 뷰
+     */
+    private RecyclerView popularView;
+
+    /**
+     * 헤더 인기글 더보기 버튼
+     */
+    private TextView popularMore;
+
+    /**
+     * 헤더 인기글 레이아웃
+     */
+    private ConstraintLayout popularBackground;
     //private ImageView popularBackground, popularIcon;
     //private LinearLayout popularInfo;
 
@@ -143,30 +200,23 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         });
         TextView btnLogout = (TextView) navigationView.getHeaderView(0).findViewById(R.id.btn_nav_logout); // 로그아웃 버튼
-        btnLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle(R.string.app_name);
-                builder.setMessage(R.string.real_logout);
-                builder.setPositiveButton(R.string.dialog_yes,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                // open logout page
-                                Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
-                                intent.putExtra("login_type", "LOGOUT");
-                                startActivity(intent);
-                            }
-                        });
-                builder.setNegativeButton(R.string.dialog_no,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        });
-                builder.show();
+        btnLogout.setOnClickListener(view -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle(R.string.app_name);
+            builder.setMessage(R.string.real_logout);
+            builder.setPositiveButton(R.string.dialog_yes,
+                    (dialog, which) -> {
+                        // open logout page
+                        Intent intent = new Intent(MainActivity.this, NaverLoginActivity.class);
+                        intent.putExtra("login_type", "LOGOUT");
+                        startActivity(intent);
+                    });
+            builder.setNegativeButton(R.string.dialog_no,
+                    (dialog, which) -> {
+                    });
+            builder.show();
 
-                drawer.closeDrawer(GravityCompat.START);
-            }
+            drawer.closeDrawer(GravityCompat.START);
         });
 
         // menu
@@ -180,26 +230,26 @@ public class MainActivity extends AppCompatActivity
         // appbar header popular list
         collapsingToolbarLayout = findViewById(R.id.layout_article_list_collapsing_appbar);
 
-        /*
-        popularView = findViewById(R.id.view_appbar_popular);
-        popularBackground = findViewById(R.id.iv_article_list_header_background);
-        popularIcon = findViewById(R.id.iv_article_list_header_icon);
-        popularInfo = findViewById(R.id.layout_article_list_header_info);
-        */
+        ivHeaderBackground = findViewById(R.id.iv_article_list_header_background);
+
+        ivLogo = findViewById(R.id.iv_article_list_header_icon);
+        layoutHeader = findViewById(R.id.layout_article_list_header_info);
+
+        popularBackground = findViewById(R.id.layout_header_popular);
         popularMore = findViewById(R.id.tv_popular_article_icon);
-        popularArticle = findViewById(R.id.tv_popular_article_title);
+
+        popularView = (RecyclerView) findViewById(R.id.rv_popular_article_title);
+        popularList = new ArticleList(this, popularView, null, ArticleListAdapter.THEME_HEADER_POPULAR);
 
         popularMore.setOnClickListener((view -> setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true)));
 
         appBarLayout = findViewById(R.id.layout_article_list_appbar);
         appBarLayout.addOnOffsetChangedListener((appBarLayout, i) -> {
-            float percentage = 1 - ((float)Math.abs(i)/appBarLayout.getTotalScrollRange());
+            float percentage = 1 - ((float) Math.abs(i) / appBarLayout.getTotalScrollRange());
             popularMore.setAlpha(percentage);
-            popularArticle.setAlpha(percentage);
+            popularView.setAlpha(percentage);
         });
 
-        //TODO: 대표 인기글 설정
-        //popularList = new ArticleList(this, popularView, null, ArticleListAdapter.THEME_HEADER_POPULAR);
 
         // Pages
         // article page
@@ -329,11 +379,12 @@ public class MainActivity extends AppCompatActivity
             // set actionbar theme
             actBarManager.setActionBar(MainActivity.this, toolbar, mid, toggle);
             Web.getInstance().loadMyInfomation();
-            if (mid != CategoryManager.CATEGORY_POPULAR_ARTICLE
-                    && mid != CategoryManager.CATEGORY_LOGIN) {
+            if (mid != CategoryManager.CATEGORY_POPULAR_ARTICLE &&
+                    mid != CategoryManager.CATEGORY_LOGIN &&
+                    mid == 0) {
                 setPopularList(true);
 
-                //popularList.loadArticleList(CategoryManager.CATEGORY_POPULAR_ARTICLE, 1, true);
+                popularList.loadArticleList(0, 1, true);
             } else {
                 setPopularList(false);
             }
@@ -347,11 +398,8 @@ public class MainActivity extends AppCompatActivity
             freeList.loadArticleList(CategoryManager.CATEGORY_ALLLIST, 1, true);
             creativeList.loadArticleList(59, 1, true);
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //fab.hide();
-                }
+            runOnUiThread(() -> {
+                //fab.hide();
             });
         } else if (mid == CategoryManager.CATEGORY_LOGIN) { // 로그인페이지
             Intent intent = new Intent(this, NaverLoginActivity.class);
@@ -363,11 +411,8 @@ public class MainActivity extends AppCompatActivity
 
             articleList.loadArticleList(mid, 1, true);
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //fab.show();
-                }
+            runOnUiThread(() -> {
+                //fab.show();
             });
         }
     }
@@ -379,24 +424,51 @@ public class MainActivity extends AppCompatActivity
      */
     public void setPopularList(boolean open) {
         if (open) {
-            popularMore.setVisibility(View.VISIBLE);
-            popularArticle.setVisibility(View.VISIBLE);
-            collapsingToolbarLayout.setTitleEnabled(true);
+            popularBackground.setVisibility(View.VISIBLE);
+            collapsingToolbarLayout.setExpandedTitleMarginBottom(dpToPx(this, 82));
+
+            CollapsingToolbarLayout.LayoutParams ivParams = (CollapsingToolbarLayout.LayoutParams) ivLogo.getLayoutParams();
+            CollapsingToolbarLayout.LayoutParams layoutParams = (CollapsingToolbarLayout.LayoutParams) layoutHeader.getLayoutParams();
+            CollapsingToolbarLayout.LayoutParams ivBackgroundParams = (CollapsingToolbarLayout.LayoutParams) ivHeaderBackground.getLayoutParams();
+
+
+            ivParams.bottomMargin = dpToPx(this, 54);
+            layoutParams.bottomMargin = dpToPx(this, 58);
+            ivBackgroundParams.height = dpToPx(this, 180);
+
+            ivLogo.setLayoutParams(ivParams);
+            layoutHeader.setLayoutParams(layoutParams);
+            ivHeaderBackground.setLayoutParams(ivBackgroundParams);
+            //collapsingToolbarLayout.setTitleEnabled(true);
         } else {
-            popularMore.setVisibility(View.GONE);
-            popularArticle.setVisibility(View.GONE);
-            collapsingToolbarLayout.setTitleEnabled(false);
+            int heightPopularArticle = 40;
+
+            popularBackground.setVisibility(View.GONE);
+            collapsingToolbarLayout.setExpandedTitleMarginBottom(dpToPx(this, 82 - heightPopularArticle));
+
+            CollapsingToolbarLayout.LayoutParams ivParams = (CollapsingToolbarLayout.LayoutParams) ivLogo.getLayoutParams();
+            CollapsingToolbarLayout.LayoutParams layoutParams = (CollapsingToolbarLayout.LayoutParams) layoutHeader.getLayoutParams();
+            CollapsingToolbarLayout.LayoutParams ivBackgroundParams = (CollapsingToolbarLayout.LayoutParams) ivHeaderBackground.getLayoutParams();
+
+            ivParams.bottomMargin = dpToPx(this, 54 - heightPopularArticle);
+            layoutParams.bottomMargin = dpToPx(this, 58 - heightPopularArticle);
+            ivBackgroundParams.height = dpToPx(this, 180 - heightPopularArticle);
+
+            ivLogo.setLayoutParams(ivParams);
+            layoutHeader.setLayoutParams(layoutParams);
+            ivHeaderBackground.setLayoutParams(ivBackgroundParams);
+            //collapsingToolbarLayout.setTitleEnabled(true);
         }
+    }
+
+    public int dpToPx(Context context, float dp) {
+        DisplayMetrics dm = context.getResources().getDisplayMetrics();
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, dm);
     }
 
     @Override
     public void onRefreshed(ArticleList articleList, final boolean refreshing) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mSwipeRefreshLayout.setRefreshing(refreshing);
-            }
-        });
+        runOnUiThread(() -> mSwipeRefreshLayout.setRefreshing(refreshing));
     }
 
 }

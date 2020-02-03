@@ -1,9 +1,7 @@
 package com.wei756.ukkiukki;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
-import android.net.Uri;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -175,6 +173,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
 
         switch (theme) {
             case THEME_BOARD:
+            case THEME_PROFILE:
                 maxItemCount = 0;
                 headerHasItem = false;
                 scrollable = true;
@@ -199,17 +198,9 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 break;
 
             case THEME_HEADER_POPULAR:
-                maxItemCount = 5;
+                maxItemCount = 1;
                 headerHasItem = false;
                 scrollable = false;
-                hasHeader = true;
-                hasFooter = true;
-                break;
-
-            case THEME_PROFILE:
-                maxItemCount = 0;
-                headerHasItem = false;
-                scrollable = true;
                 hasHeader = false;
                 hasFooter = false;
                 break;
@@ -265,18 +256,18 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         layoutItem = new int[THEME_NUMBER * SUBTHEME_NUMBER];
         layoutFooter = new int[THEME_NUMBER * SUBTHEME_NUMBER];
 
-        layoutHeader[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list; //TODO: deprecated
-        layoutHeader[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list; //TODO: deprecated
-        layoutHeader[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list; //TODO: deprecated
+        layoutHeader[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list; // dummy
+        layoutHeader[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list; // dummy
+        layoutHeader[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list; // dummy
         layoutHeader[THEME_MAINPAGE + SUBTHEME_ARTICLE] = R.layout.article_list_mainpage_header;
         layoutHeader[THEME_MAINPAGE + SUBTHEME_POPULAR] = R.layout.article_list_mainpage_header;
         layoutHeader[THEME_MAINPAGE + SUBTHEME_ALBUM] = R.layout.article_list_mainpage_header; //TODO: clip album 분리 필요
         layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list; //TODO: deprecated
         layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list; //TODO: deprecated
         layoutHeader[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list; //TODO: deprecated
-        layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_popular_theme_header;
-        layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme_header;
-        layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_popular_theme_header;
+        layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = -1; // dummy
+        layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = -1; // dummy
+        layoutHeader[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = -1; // dummy
         layoutHeader[THEME_PROFILE + SUBTHEME_ARTICLE] = R.layout.article_list; //TODO: 프로필 레이아웃 변경 필요
         layoutHeader[THEME_PROFILE + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme; //TODO: 프로필 레이아웃 변경 필요
         layoutHeader[THEME_PROFILE + SUBTHEME_ALBUM] = R.layout.article_list_clip_theme; //TODO: 프로필 레이아웃 변경 필요
@@ -290,9 +281,9 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         layoutItem[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list;
         layoutItem[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list_clip_theme;
         layoutItem[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list_clip_theme;
-        layoutItem[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_popular_theme;
-        layoutItem[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme;
-        layoutItem[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_popular_theme;
+        layoutItem[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_header_popular_theme;
+        layoutItem[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_header_popular_theme;
+        layoutItem[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_header_popular_theme;
         layoutItem[THEME_PROFILE + SUBTHEME_ARTICLE] = R.layout.article_list; //TODO: 프로필 레이아웃 변경 필요
         layoutItem[THEME_PROFILE + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme; //TODO: 프로필 레이아웃 변경 필요
         layoutItem[THEME_PROFILE + SUBTHEME_ALBUM] = R.layout.article_list_clip_theme; //TODO: 프로필 레이아웃 변경 필요
@@ -301,15 +292,15 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         layoutFooter[THEME_BOARD + SUBTHEME_ARTICLE] = R.layout.article_list; // dummy
         layoutFooter[THEME_BOARD + SUBTHEME_POPULAR] = R.layout.article_list; // dummy
         layoutFooter[THEME_BOARD + SUBTHEME_ALBUM] = R.layout.article_list; // dummy
-        layoutFooter[THEME_MAINPAGE + SUBTHEME_ARTICLE] = R.layout.article_list_mainpage_header; // dummy
-        layoutFooter[THEME_MAINPAGE + SUBTHEME_POPULAR] = R.layout.article_list_mainpage_header; // dummy
-        layoutFooter[THEME_MAINPAGE + SUBTHEME_ALBUM] = R.layout.article_list_mainpage_header; // dummy
+        layoutFooter[THEME_MAINPAGE + SUBTHEME_ARTICLE] = R.layout.article_list; // dummy
+        layoutFooter[THEME_MAINPAGE + SUBTHEME_POPULAR] = R.layout.article_list; // dummy
+        layoutFooter[THEME_MAINPAGE + SUBTHEME_ALBUM] = R.layout.article_list; // dummy
         layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_ARTICLE] = R.layout.article_list; // dummy
         layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_POPULAR] = R.layout.article_list; // dummy
         layoutFooter[THEME_ARTICLE_VIEWER + SUBTHEME_ALBUM] = R.layout.article_list; // dummy
-        layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list_popular_theme_footer;
-        layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list_popular_theme_footer;
-        layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list_popular_theme_footer;
+        layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_ARTICLE] = R.layout.article_list; // dummy
+        layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_POPULAR] = R.layout.article_list; // dummy
+        layoutFooter[THEME_HEADER_POPULAR + SUBTHEME_ALBUM] = R.layout.article_list; // dummy
         layoutFooter[THEME_PROFILE + SUBTHEME_ARTICLE] = R.layout.article_list; // dummy
         layoutFooter[THEME_PROFILE + SUBTHEME_POPULAR] = R.layout.article_list; // dummy
         layoutFooter[THEME_PROFILE + SUBTHEME_ALBUM] = R.layout.article_list; // dummy
@@ -355,20 +346,6 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
     @Override
     protected void bindHeaderViewHolder(@NonNull RecyclerView.ViewHolder viewholder) {
         HeaderViewHolder headerViewHolder = (HeaderViewHolder) viewholder;
-        // size
-        if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, context.getResources().getDisplayMetrics());
-            headerViewHolder.layout.setPadding(padding, padding, padding, padding);
-            headerViewHolder.layout.setBackgroundResource(R.color.colorTransparent);
-            ViewGroup.LayoutParams params = headerViewHolder.layout.getLayoutParams();
-            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
-            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, context.getResources().getDisplayMetrics());
-            headerViewHolder.layout.setLayoutParams(params);
-
-            params = headerViewHolder.article.getLayoutParams();
-            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
-            headerViewHolder.article.setLayoutParams(params);
-        }
 
         // header
         if (TYPE_THEME != THEME_HEADER_POPULAR)
@@ -389,21 +366,6 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         ItemViewHolder itemViewHolder = (ItemViewHolder) viewholder;
         final Article article = (Article) mList.get(pos);
 
-        // size
-        if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, context.getResources().getDisplayMetrics());
-            itemViewHolder.layout.setPadding(padding, padding, padding, padding);
-            itemViewHolder.layout.setBackgroundResource(R.color.colorTransparent);
-            ViewGroup.LayoutParams params = itemViewHolder.layout.getLayoutParams();
-            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
-            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, context.getResources().getDisplayMetrics());
-            itemViewHolder.layout.setLayoutParams(params);
-
-            params = itemViewHolder.article.getLayoutParams();
-            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
-            itemViewHolder.article.setLayoutParams(params);
-        }
-
         // title
         if (!(TYPE_THEME == THEME_PROFILE
                 && TYPE_SUBTHEME == SUBTHEME_PROFILE_COMMENT))
@@ -421,7 +383,7 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                     itemViewHolder.title.setTextColor(context.getResources().getColor(R.color.colorPopularListTextPrimary, null));
             }
         }
-        if (TYPE_THEME != THEME_MAINPAGE && TYPE_SUBTHEME != SUBTHEME_PROFILE_COMMENT)
+        if (TYPE_THEME != THEME_HEADER_POPULAR && TYPE_THEME != THEME_MAINPAGE && TYPE_SUBTHEME != SUBTHEME_PROFILE_COMMENT)
             itemViewHolder.author.setText(article.getAuthor());
 
         //TODO: 회원등급 표시기능 추가 가능성 있음
@@ -464,8 +426,6 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             itemViewHolder.layoutFooter.setVisibility(View.VISIBLE);
             itemViewHolder.numComment.setText(article.getComment());
             itemViewHolder.numLikeIt.setText(article.getLikeIt());
-        } else if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            itemViewHolder.layoutFooter.setVisibility(View.GONE);
         } else if (TYPE_THEME == THEME_MAINPAGE) {
             itemViewHolder.time.setText(article.getTime());
         }
@@ -534,24 +494,6 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
     protected void bindFooterViewHolder(@NonNull RecyclerView.ViewHolder viewholder) {
         FooterViewHolder footerViewHolder = (FooterViewHolder) viewholder;
 
-        // size
-        if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, context.getResources().getDisplayMetrics());
-            footerViewHolder.layout.setPadding(padding, padding, padding, padding);
-            footerViewHolder.layout.setBackgroundResource(R.color.colorTransparent);
-            ViewGroup.LayoutParams params = footerViewHolder.layout.getLayoutParams();
-            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
-            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, context.getResources().getDisplayMetrics());
-            footerViewHolder.layout.setLayoutParams(params);
-
-            params = footerViewHolder.article.getLayoutParams();
-            params.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
-            footerViewHolder.article.setLayoutParams(params);
-        }
-
-        if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            footerViewHolder.article.setOnClickListener(view -> ((MainActivity) context).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true));
-        }
     }
 
     private void setReadArticle(Article article) {
