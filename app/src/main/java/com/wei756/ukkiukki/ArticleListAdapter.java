@@ -18,6 +18,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.wei756.ukkiukki.Preference.DBHandler;
 
 import java.util.ArrayList;
 
@@ -65,7 +66,8 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         protected TextView author;
         protected TextView time;
         protected TextView view;
-        protected LinearLayout btnComment;
+        protected ImageView newIconComment;
+        protected ConstraintLayout btnComment;
         protected LinearLayout layoutFooter;
         protected TextView numComment;
         protected TextView numLikeIt;
@@ -90,7 +92,8 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
             this.author = (TextView) view.findViewById(R.id.tv_author);
             this.time = (TextView) view.findViewById(R.id.tv_time);
             this.view = (TextView) view.findViewById(R.id.tv_view);
-            this.btnComment = (LinearLayout) view.findViewById(R.id.btn_comment);
+            this.newIconComment = (ImageView) view.findViewById(R.id.iv_icon_new_comment);
+            this.btnComment = (ConstraintLayout) view.findViewById(R.id.btn_comment);
             this.layoutFooter = (LinearLayout) view.findViewById(R.id.layout_footer);
             this.numComment = (TextView) view.findViewById(R.id.tv_comment);
             this.numLikeIt = (TextView) view.findViewById(R.id.tv_likeit);
@@ -451,6 +454,10 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
                 itemViewHolder.newIcon.setVisibility(View.GONE);
             itemViewHolder.time.setText(article.getTime());
             itemViewHolder.view.setText(article.getView());
+            if (article.isNewComment())
+                itemViewHolder.newIconComment.setVisibility(View.VISIBLE);
+            else
+                itemViewHolder.newIconComment.setVisibility(View.GONE);
             itemViewHolder.numComment.setText(article.getComment());
         } else if (TYPE_THEME == THEME_BOARD
                 && TYPE_SUBTHEME == SUBTHEME_POPULAR) {
@@ -495,44 +502,23 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         }
 
         // click event
-        View.OnClickListener clickArticle = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                article.setReadArticle(true);
-                ((Activity) context).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyDataSetChanged();
-                    }
-                });
-                Intent intent = new Intent(context, ArticleViewerActivity.class);
-                intent.putExtra("article_title", article.getTitle());
-                intent.putExtra("article_href", article.getHref());
-                intent.putExtra("commentpage", false);
-                context.startActivity(intent);
-            }
+        View.OnClickListener clickArticle = view -> {
+            article.setReadArticle(true);
+            article.setNewComment(false);
+            setReadArticle(article);
+            ((Activity) context).runOnUiThread(() -> notifyDataSetChanged());
+            ArticleViewerActivity.startArticleViewerActivity(context, article.getTitle(), article.getHref(), false);
         };
         itemViewHolder.article.setOnClickListener(clickArticle);
 
         if ((TYPE_THEME == THEME_BOARD && TYPE_SUBTHEME != SUBTHEME_POPULAR) ||
                 (TYPE_THEME == THEME_PROFILE &&
                         TYPE_SUBTHEME == SUBTHEME_ARTICLE)) {
-            View.OnClickListener clickComment = new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    article.setReadArticle(true);
-                    ((Activity) context).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            notifyDataSetChanged();
-                        }
-                    });
-                    Intent intent = new Intent(context, ArticleViewerActivity.class);
-                    intent.putExtra("article_title", article.getTitle());
-                    intent.putExtra("article_href", article.getHref());
-                    intent.putExtra("commentpage", true);
-                    context.startActivity(intent);
-                }
+            View.OnClickListener clickComment = view -> {
+                article.setReadArticle(true);
+                setReadArticle(article);
+                ((Activity) context).runOnUiThread(() -> notifyDataSetChanged());
+                ArticleViewerActivity.startArticleViewerActivity(context, article.getTitle(), article.getHref(), true);
             };
             itemViewHolder.btnComment.setOnClickListener(clickComment);
         }
@@ -564,12 +550,12 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         }
 
         if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            footerViewHolder.article.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ((MainActivity) context).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true);
-                }
-            });
+            footerViewHolder.article.setOnClickListener(view -> ((MainActivity) context).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true));
         }
+    }
+
+    private void setReadArticle(Article article) {
+        DBHandler dbHandler = DBHandler.open(context, DBHandler.DB_ARTICLE); // for set already article
+        dbHandler.insert(article);
     }
 }

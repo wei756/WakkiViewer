@@ -28,7 +28,7 @@
     <color name="colorArticleListItemBackground">#FFFFFF</color>
     <color name="colorArticleListItemLine">#eee</color>
     <color name="colorArticleListThumbnailLine">#eee</color>
-    <color name="colorArticleListBtnCommentBackground">#fafafa</color>
+    <color name="colorArticleListBtnCommentBackground">#f5f6f8</color>
     <color name="colorArticleListHeaderTitle">#5f6a60</color>
     <color name="colorArticleListHeaderMore">#9faaa0</color>
 

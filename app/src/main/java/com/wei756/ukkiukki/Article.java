@@ -16,6 +16,7 @@ public class Article extends Item {
     private String authorId;
     private String authorProfile;
     private String time;
+    private String timestamp;
     private String view;
     private String comment;
     private String likeIt;
@@ -93,6 +94,15 @@ public class Article extends Item {
 
     public Article setTime(String time) {
         this.time = time;
+        return this;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public Article setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
         return this;
     }
 

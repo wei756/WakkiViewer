@@ -2,6 +2,7 @@ package com.wei756.ukkiukki.Network;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.text.Html;
@@ -18,6 +19,7 @@ import com.wei756.ukkiukki.CategoryManager;
 import com.wei756.ukkiukki.Comment;
 import com.wei756.ukkiukki.JsonUtil;
 import com.wei756.ukkiukki.MainActivity;
+import com.wei756.ukkiukki.Preference.DBHandler;
 import com.wei756.ukkiukki.ProfileManager;
 
 import net.minidev.json.JSONObject;
@@ -53,6 +55,7 @@ public class Web extends Thread {
 
     public static final int RETURNCODE_ERROR_LIKEIT_TOKEN_EXPIRED = -4012; // 토큰 만료
     public static final int RETURNCODE_ERROR_ALREADY_LIKED = -4091; // 이미 좋아요 한 게시글
+    public static final int RETURNCODE_ERROR_NOT_LIKED = -4091; // 좋아요하지 않은= 게시글
 
     public final String photoSessionKeyUrl = "https://m.cafe.naver.com/PhotoInfraSessionKey.nhn";
 
@@ -68,12 +71,15 @@ public class Web extends Thread {
             profileUrl = "https://m.cafe.naver.com/CafeMemberProfile.nhn?cafeId={0}&memberId={1}",
             profileArticleListUrl = "https://m.cafe.naver.com/CafeMemberArticleList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
             profileCommentListUrl = "https://m.cafe.naver.com/CafeMemberCommentList.nhn?search.clubid={0}&search.writerid={1}&search.page={2}&search.perPage={3}",
-            profileCommentArticleListUrl = "https://m.cafe.naver.com/CafeMemberReplyList.nhn?search.clubid={0}&search.query={1}&search.page={2}&search.perPage={3}";
+            profileCommentArticleListUrl = "https://m.cafe.naver.com/CafeMemberReplyList.nhn?search.clubid={0}&search.query={1}&search.page={2}&search.perPage={3}",
+            profileLikeItArticleListUrl = "https://m.cafe.naver.com/CafeMemberLikeItList.nhn?search.cafeId={0}&search.memberId={1}&search.likeItTimestamp={2}&search.count={3}";
 
     public final String postCommentUrl = "https://m.cafe.naver.com/CommentPost.nhn?m=write",
             postCommentData = "clubid={0}&articleid={1}&content={2}&stickerId={3}&imagePath={4}&imageFileName={5}&imageWidth={6}&imageHeight={7}&showCafeHome=false",
             postCommentPhotoUrl = "https://cafe.upphoto.naver.com/{0}/simpleUpload/0?userId={1}&extractExif=false&extractAnimatedCnt=false&autorotate=true",
-            likeItUrl = "https://cafe.like.naver.com/v1/services/CAFE/contents/{0}_steamindiegame_{1}?suppress_response_codes=true&_method=POST&displayId=CAFE&reactionType=like&categoryId={0}&guestToken={2}&timestamp={3}&_ch=mbw&isDuplication=true&lang=ko";
+            likeItUrl = "https://cafe.like.naver.com/v1/services/CAFE/contents/{1}_steamindiegame_{2}?suppress_response_codes=true&_method={0}&displayId=CAFE&reactionType=like&categoryId={1}&guestToken={3}&timestamp={4}&_ch=mbw&isDuplication=true&lang=ko";
+    public final static String LIKE = "POST",
+            UNLIKE = "DELETE";
     public final String cafeId = "27842958";
     public final int timeout = 15000;
 
@@ -333,110 +339,125 @@ public class Web extends Thread {
     /**
      * 게시판의 글목록을 불러옵니다.
      *
-     * @param articleList 메소드가 호출된 articleList
-     * @param mid         게시판
-     * @param page        페이지
-     * @param userId      사용자 id (프로필 페이지에서만 사용)
-     * @param reset       리사이클뷰 초기화
+     * @param context Context
+     * @param mid     게시판
+     * @param page    페이지
+     * @param userId  사용자 id (프로필 페이지에서만 사용)
      * @see Web#getArticleElements(int, int, String)
      * @see ArticleList
      * @see com.wei756.ukkiukki.ProfileActivity
      */
-    public ArrayList<Article> getArticleList(final ArticleList articleList, final int mid, final int page, @Nullable final String userId, final boolean reset) {
-            ArrayList<Article> arrayList = null;
-            Elements articles = null;
-            try {
-                articles = getArticleElements(mid, page, userId);
+    public ArrayList<Article> getArticleList(Context context, int mid, int page, @Nullable String userId) {
+        ArrayList<Article> arrayList = null;
+        Elements articles = null;
+        try {
+            articles = getArticleElements(mid, page, userId);
 
-                arrayList = new ArrayList<>();
+            arrayList = new ArrayList<>();
+            DBHandler dbHandler = DBHandler.open(context, DBHandler.DB_ARTICLE); // for check already article
 
-                if (!articles.isEmpty()) { // 게시글이 있으면
-                    for (Element article : articles) {
+            if (!articles.isEmpty()) { // 게시글이 있으면
+                for (Element article : articles) {
 
-                        // 리스트 추가
-                        Article article1 = new Article();
-                        if (mid == CategoryManager.CATEGORY_POPULAR_ARTICLE) { // 인기글
-                            // author
-                            String author = article.selectFirst("div[class=user]").text();
+                    // 리스트 추가
+                    Article article1 = new Article();
+                    if (mid == CategoryManager.CATEGORY_POPULAR_ARTICLE) { // 인기글
+                        // author
+                        String author = article.selectFirst("div[class=user]").text();
 
-                            article1.setAuthor(author)
-                                    .setTitle(article.selectFirst("strong[class=tit ellip]").text())
-                                    .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
-                                    .setLikeIt(article.selectFirst("em[class=u_cnt _count]").text())
-                                    .setComment(article.selectFirst("span[class=coment_btn]").text());
+                        article1.setAuthor(author)
+                                .setTitle(article.selectFirst("strong[class=tit ellip]").text())
+                                .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
+                                .setLikeIt(article.selectFirst("em[class=u_cnt _count]").text())
+                                .setComment(article.selectFirst("span[class=coment_btn]").text());
 
-                            // thumbnail
-                            Element thumbnail = article.selectFirst("img[class=lazy]");
-                            if (thumbnail != null) {
-                                article1.setThumbnailUrl(thumbnail.attr("data-original"));
-                            }
-                        } else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT) { // 프로필 작성댓글
-                            // content
-                            String time = article.selectFirst("span[class=info_item]").ownText();
-                            String articleTitle = article.selectFirst("span[class=desc]").ownText();
-                            String comment = "";
-                            if (!articleTitle.equals("원글이 삭제된 게시글입니다."))
-                                comment = article.selectFirst("span[class=num]").text();
+                        // thumbnail
+                        Element thumbnail = article.selectFirst("img[class=lazy]");
+                        if (thumbnail != null) {
+                            article1.setThumbnailUrl(thumbnail.attr("data-original"));
+                        }
+                    } else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT) { // 프로필 작성댓글
+                        // content
+                        String time = article.selectFirst("span[class=info_item]").ownText();
+                        String articleTitle = article.selectFirst("span[class=desc]").ownText();
+                        String comment = "";
+                        if (!articleTitle.equals("원글이 삭제된 게시글입니다."))
+                            comment = article.selectFirst("span[class=num]").text();
 
-                            // content
-                            Element contentElement = article.selectFirst("strong[class=txt]");
-                            String content;
-                            if (contentElement == null)
-                                content = "";
-                            else {
-                                if (Build.VERSION.SDK_INT < 24)
-                                    content = Html.fromHtml(contentElement.html()).toString();
-                                else
-                                    content = Html.fromHtml(contentElement.html(), Html.FROM_HTML_MODE_COMPACT).toString();
-                            }
-
-                            article1.setContent(content)
-                                    .setTime(time)
-                                    .setArticleTitle(articleTitle)
-                                    .setComment(comment)
-                                    .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"));
-
-                        } else { // 전체글보기, 일반게시판
-                            // author
-                            String author = article.selectFirst("span[class=nick]").text();
-
-                            article1.setAuthor(author)
-                                    .setNewArticle(article.selectFirst("span[class=icon_new_txt]") != null)
-                                    .setTitle(article.selectFirst("strong[class=tit]").text())
-                                    .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
-                                    .setTime(article.selectFirst("span[class=time]").text())
-                                    .setView(article.selectFirst("span[class=no]").text())
-                                    .setComment(article.selectFirst("em[class=num]").text());
-
-                            // thumbnail
-                            if (article.selectFirst("div[class=thumb]") != null) {
-                                article1.setThumbnailUrl(article.selectFirst("div[class=thumb]").selectFirst("img").attr("src"));
-                            }
+                        // content
+                        Element contentElement = article.selectFirst("strong[class=txt]");
+                        String content;
+                        if (contentElement == null)
+                            content = "";
+                        else {
+                            if (Build.VERSION.SDK_INT < 24)
+                                content = Html.fromHtml(contentElement.html()).toString();
+                            else
+                                content = Html.fromHtml(contentElement.html(), Html.FROM_HTML_MODE_COMPACT).toString();
                         }
 
-                        // add
-                        arrayList.add(article1);
-                        //Log.e("Web", "제목: " + article1.getTitle());
+                        article1.setContent(content)
+                                .setTime(time)
+                                .setArticleTitle(articleTitle)
+                                .setComment(comment)
+                                .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"));
+
+                    } else { // 전체글보기, 일반게시판
+                        // author
+                        String author = article.selectFirst("span[class=nick]").text();
+
+                        article1.setAuthor(author)
+                                .setNewArticle(article.selectFirst("span[class=icon_new_txt]") != null)
+                                .setTitle(article.selectFirst("strong[class=tit]").text())
+                                .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
+                                .setTime(article.selectFirst("span[class=time]").text())
+                                .setView(article.selectFirst("span[class=no]").text())
+                                .setComment(article.selectFirst("em[class=num]").text());
+
+                        // thumbnail
+                        if (article.selectFirst("div[class=thumb]") != null) {
+                            article1.setThumbnailUrl(article.selectFirst("div[class=thumb]").selectFirst("img").attr("src"));
+                        }
+
+                        // check already read
+                        Cursor cursor = dbHandler.select();
+                        Article oldArticle = DBHandler.getArticle(dbHandler.select(), article1.getHref());
+                        if (oldArticle != null) {
+                            article1.setReadArticle(oldArticle.isReadArticle())
+                                    .setNewComment(!oldArticle.getComment().equals(article1.getComment()));
+                        }
+                        cursor.close();
+
+                        // timestamp for likeit articles
+                        if (mid == CategoryManager.CATEGORY_PROFILE_LIKEIT) { // 좋아요한 글
+                            article1.setTimestamp(article.attr("data-timestamp"));
+                        }
                     }
 
+                    // add
+                    arrayList.add(article1);
+                    //Log.e("Web", "제목: " + article1.getTitle());
                 }
-                Log.i("Web", "Article " + page + " page loaded. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
-
-            } catch (IOException e) {
-                Log.w("Web.err", "Connection error. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
-                e.printStackTrace();
-
-                arrayList.add(0, new Article().setErrorcode(RETURNCODE_ERROR_CONNECTION));
-
-            } catch (NullPointerException e) {
-                Log.w("Web.err", "Error occurred. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
-                e.printStackTrace();
-
-                arrayList.add(0, new Article().setErrorcode(RETURNCODE_FAILED));
 
             }
+            dbHandler.close();
+            Log.i("Web", "Article " + page + " page loaded. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
 
-            return arrayList;
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
+            e.printStackTrace();
+
+            arrayList.add(0, new Article().setErrorcode(RETURNCODE_ERROR_CONNECTION));
+
+        } catch (NullPointerException e) {
+            Log.w("Web.err", "Error occurred. (mid=" + mid + "&page=" + page + ")" + " on Web.getArticleList");
+            e.printStackTrace();
+
+            arrayList.add(0, new Article().setErrorcode(RETURNCODE_FAILED));
+
+        }
+
+        return arrayList;
     }
 
 
@@ -449,9 +470,9 @@ public class Web extends Thread {
      * @return 글목록
      * @throws IOException          통신에 문제가 있는 경우
      * @throws NullPointerException 게시판에 게시글이 없는 경우
-     * @see Web#getArticleList(ArticleList, int, int, String, boolean)
+     * @see Web#getArticleList(Context, int, int, String)
      */
-    public Elements getArticleElements(int mid, int page, String userId) throws IOException, NullPointerException {
+    public Elements getArticleElements(int mid, int page, @Nullable String userId) throws IOException, NullPointerException {
         Elements articles = null;
 
         // connect
@@ -465,8 +486,11 @@ public class Web extends Thread {
             url = MessageFormat.format(profileCommentListUrl, cafeId, userId, page, 30);
         else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT_ARTICLE) // 프로필 댓글단 글
             url = MessageFormat.format(profileCommentArticleListUrl, cafeId, userId, page, 30);
+        else if (mid == CategoryManager.CATEGORY_PROFILE_LIKEIT) // 프로필 좋아요한 글
+            url = MessageFormat.format(profileLikeItArticleListUrl, cafeId, userId, "" + ((long)page * (long)1000), 30);
         else
             url = MessageFormat.format(articleListUrl, cafeId, mid != 0 ? mid : "", page);
+        Log.e("asdf", url);
 
         document = WebRequestBuilder.create()
                 .url(url)
@@ -489,7 +513,8 @@ public class Web extends Thread {
             articles = articleTable.selectFirst("ul[id=listArea]").getElementsByClass("popularItem"); // 게시글 추출
         } else if (mid == CategoryManager.CATEGORY_PROFILE_ARTICLE
                 || mid == CategoryManager.CATEGORY_PROFILE_COMMENT
-                || mid == CategoryManager.CATEGORY_PROFILE_COMMENT_ARTICLE) { // 프로필 작성글, 작성댓글, 댓글단 글
+                || mid == CategoryManager.CATEGORY_PROFILE_COMMENT_ARTICLE
+                || mid == CategoryManager.CATEGORY_PROFILE_LIKEIT) { // 프로필 작성글, 작성댓글, 댓글단 글, 좋아요한 글
             articles = document.select("li"); // 게시글 추출
         } else { // 전체글보기, 일반게시판
             Element articleTable = document.getElementsByClass("list_area").first();
@@ -715,14 +740,15 @@ public class Web extends Thread {
     }
 
     /**
-     * 좋아요를 누릅니다.
+     * 좋아요/좋아요 취소를 누릅니다.
      *
+     * @param type      좋아요/좋아요 취소 구분
      * @param articleId 좋아요 할 게시글 id
      * @see ArticleViewerActivity
      */
-    public int likeIt(final String articleId, String guestToken, long timestamp) {
+    public int likeIt(final String type, final String articleId, String guestToken, long timestamp) {
 
-        String url = MessageFormat.format(likeItUrl, cafeId, articleId, guestToken, "" + timestamp);
+        String url = MessageFormat.format(likeItUrl, type, cafeId, articleId, guestToken, "" + timestamp);
         Log.e("Web.deeeebug", url);
 
         // get html
@@ -748,6 +774,8 @@ public class Web extends Thread {
             response = JsonUtil.getMapFromJsonObject(jsonObj);
             if (response.containsKey("message") && response.get("message").equals("좋아요가 되었습니다.")) // 좋아요 성공
                 return RETURNCODE_SUCCESS;
+            if (response.containsKey("message") && response.get("message").equals("좋아요를 취소했습니다.")) // 좋아요 취소 성공
+                return RETURNCODE_SUCCESS;
             else if (response.containsKey("errorCode")) {
                 switch ((int) response.get("errorCode")) {
                     case 4012: // 토큰 만료
@@ -756,6 +784,8 @@ public class Web extends Thread {
                         return RETURNCODE_FAILED;
                     case 4091: // 이미 좋아요한 게시글
                         return RETURNCODE_ERROR_ALREADY_LIKED;
+                    case 4092: // 좋아요하지 않은 게시글
+                        return RETURNCODE_ERROR_NOT_LIKED;
                 }
             }
             return RETURNCODE_FAILED; // 알 수 없는 오류

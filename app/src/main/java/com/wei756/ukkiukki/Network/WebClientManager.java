@@ -68,7 +68,7 @@ public class WebClientManager {
             String key = "" + header.getKey();
             String value = "" + header.getValue();
 
-            Log.d("Web", key + ": " + value);
+            //Log.d("Web", key + ": " + value); // for debug
             cookieString += key + "=" + value + ";";
         }
         connection.addHeader("Cookie", cookieString);
@@ -79,7 +79,7 @@ public class WebClientManager {
             String key = "" + header.getKey();
             String value = "" + header.getValue();
 
-            Log.d("Web", key + ": " + value);
+            //Log.d("Web", key + ": " + value); // for debug
             connection.addHeader(key, value);
         }
     }

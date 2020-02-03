@@ -62,7 +62,7 @@ public class ArticleList {
         this.page = page;
         this.userId = userId;
         new Thread(() -> {
-            ArrayList<Article> articleList = web.getArticleList(this, mid, page, userId, refresh); // update article list
+            ArrayList<Article> articleList = web.getArticleList(act, mid, page, userId); // update article list
 
             // callback
             setMidTheme(mid, refresh);
@@ -153,6 +153,10 @@ public class ArticleList {
                     scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager) {
                         @Override
                         public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                            if (mid == CategoryManager.CATEGORY_PROFILE_LIKEIT) { // 좋아요한 글
+                                loadArticleList(mid, (int) (Long.parseLong(((Article) mAdapter.getArrayList().get(mAdapter.getArrayList().size() - 1)).getTimestamp()) / 1000), userId, false);
+                            }
+                            else
                             loadArticleList(mid, page, userId,false);
                         }
                     };

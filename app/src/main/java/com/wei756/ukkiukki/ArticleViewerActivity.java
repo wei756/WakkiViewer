@@ -69,7 +69,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
     TextView tvAuthor;
     TextView tvTime, tvView;
 
-    WebView webBody;
+    ArticleView webBody;
 
 
     TextView tvCommentCount;
@@ -126,6 +126,8 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
 
         // read_body
         webBody = findViewById(R.id.web_article_viewer_body);
+        webBody.setVisibility(View.GONE);
+        webBody.setLayout(findViewById(R.id.layout_article_viewer_body));
 
         tvTitle.setText(articleTitle);
         layoutArticle.setVisibility(View.GONE);
@@ -175,7 +177,6 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
      * @see Article
      */
     @Override
-    @SuppressLint("SetJavaScriptEnabled")
     public void onLoadArticle(final Article article) {
         if (article != null) {
             // Load article
@@ -207,10 +208,9 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                 Glide.with(getApplicationContext()).load(imgAuthorProfile).into(ivProfile); // load image
                 ivProfile.setClipToOutline(true);
                 tvAuthor.setText(article.getAuthor()); // 글작성자 닉네임
-                ivProfile.setOnClickListener(view ->
-                        ProfileActivity.startProfileActivity(ArticleViewerActivity.this, article.getAuthorId()));
-                tvAuthor.setOnClickListener(view ->
-                        ProfileActivity.startProfileActivity(ArticleViewerActivity.this, article.getAuthorId()));
+                View.OnClickListener profileEvent = view -> ProfileActivity.startProfileActivity(ArticleViewerActivity.this, article.getAuthorId());
+                ivProfile.setOnClickListener(profileEvent);
+                tvAuthor.setOnClickListener(profileEvent);
 
                 Long timestamp = Long.parseLong(article.getTime());
                 tvTime.setText(new SimpleDateFormat("yyyy.MM.dd. HH:mm:ss", Locale.KOREA).format(new Date(timestamp))); // 게시글 시간
@@ -274,7 +274,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                         "<html lang=\"ko\">\n" +
                         "<head>\n" +
                         cssTheme +
-                        "</head><body><div id=\"postContent\" class=\"post_cont font_zoom1\">" +
+                        "</head><body><div id=\"ct\" class style><div id=\"postContent\" class=\"post_cont font_zoom1\">" +
                         body +
                         /*
                         "<script type=\"text/javascript\">" +
@@ -311,10 +311,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                         "<script type=\"text/javascript\" src=\"file:///android_asset/js/MyCafeCommonScript.js\" charset=\"UTF-8\"></script>" +
                         "<script type=\"text/javascript\" src=\"file:///android_asset/js/ugcvideoplayer.js\" charset=\"UTF-8\"></script>" +
                         */
-                        "</div></body></html>";
-                webBody.getSettings().setJavaScriptEnabled(true);
-                webBody.getSettings().setDomStorageEnabled(true);
-                webBody.getSettings().setUserAgentString(WebClientManager.userAgentMobile);
+                        "</div></div></body></html>";
                 webBody.loadDataWithBaseURL(MessageFormat.format(web.articleReadUrl, web.cafeId, articleHref), articleBody, "text/html", "UTF-8", "");
 
 
@@ -347,10 +344,6 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
 
                     // 댓글 내용
                     contentText = (comment1.getParentAuthor() != null ? comment1.getParentAuthor() : "") + " " + mapComment.get("content");
-                    if (Build.VERSION.SDK_INT < 24)
-                        contentText = Html.fromHtml(contentText).toString();
-                    else
-                        contentText = Html.fromHtml(contentText, Html.FROM_HTML_MODE_COMPACT).toString();
 
                     // 댓글 이미지/스티커
                     Map mapSticker = (Map) mapComment.get("sticker"),
@@ -476,8 +469,8 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                 guestToken = (String) map.get("guestToken");
             if (map.containsKey("timestamp"))
                 timestamp = (long) map.get("timestamp");
-            Log.e("DEBUG", "guestToken: " + guestToken + "\n" +
-                    "timestamp: " + timestamp);
+            //Log.e("DEBUG", "guestToken: " + guestToken + "\n" +
+            //        "timestamp: " + timestamp);
 
             // ifLikeIt
             ArrayList data = (ArrayList) map.get("contents");
@@ -507,7 +500,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
             if (guestToken == null)
                 getGuestToken();
             else {
-                final int returnCode = web.likeIt(articleHref, guestToken, timestamp);
+                final int returnCode = web.likeIt(Web.LIKE, articleHref, guestToken, timestamp);
                 runOnUiThread(() -> {
                     switch (returnCode) {
                         case Web.RETURNCODE_SUCCESS:
@@ -540,11 +533,10 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
             if (guestToken == null)
                 getGuestToken();
             else {
-                final int returnCode = Web.RETURNCODE_ERROR_ALREADY_LIKED;//web.likeIt(articleHref, guestToken, timestamp);//TODO: 좋아요 취소 구현
+                final int returnCode = web.likeIt(Web.UNLIKE, articleHref, guestToken, timestamp);
                 runOnUiThread(() -> {
                     switch (returnCode) {
                         case Web.RETURNCODE_SUCCESS:
-                            //Toast.makeText(ArticleViewerActivity.this, "좋아요를 성공했습니다.", Toast.LENGTH_SHORT).show();
                             updateLikeItStatus(true);
                             break;
                         case Web.RETURNCODE_ERROR_LIKEIT_TOKEN_EXPIRED: // 토큰 만료
@@ -553,8 +545,8 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                         case Web.RETURNCODE_FAILED: // 요청 실패
                             Toast.makeText(ArticleViewerActivity.this, "좋아요 요청이 실패했습니다.\n새로고침하여 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
                             break;
-                        case Web.RETURNCODE_ERROR_ALREADY_LIKED: // 이미 좋아요한 게시글
-                            Toast.makeText(ArticleViewerActivity.this, "이미 좋아요한 컨텐츠입니다.", Toast.LENGTH_SHORT).show();
+                        case Web.RETURNCODE_ERROR_NOT_LIKED: // 좋아요하지 않은 게시글
+                            Toast.makeText(ArticleViewerActivity.this, "좋아요하지 않은 컨텐츠입니다.", Toast.LENGTH_SHORT).show();
                             break;
                         default:
                             Toast.makeText(ArticleViewerActivity.this, "알 수 없는 에러가 발생하였습니다.\n새로고침하여 다시 시도해주세요.(에러코드: " + returnCode + ")", Toast.LENGTH_SHORT).show();
@@ -619,17 +611,14 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
 
         // Open comment EditText
         if (openCommentEdit)
-            fragmentCommentList.etContent.post(new Runnable() {
-                @Override
-                public void run() {
-                    fragmentCommentList.etContent.setFocusableInTouchMode(true);
-                    fragmentCommentList.etContent.requestFocus();
+            fragmentCommentList.etContent.post(() -> {
+                fragmentCommentList.etContent.setFocusableInTouchMode(true);
+                fragmentCommentList.etContent.requestFocus();
 
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-                    imm.showSoftInput(fragmentCommentList.etContent, 0);
+                imm.showSoftInput(fragmentCommentList.etContent, 0);
 
-                }
             });
 
         // Change scrollflag
@@ -658,6 +647,14 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
         appBarLayoutParams.setBehavior(new AppBarLayout.Behavior());
         appbar.setLayoutParams(appBarLayoutParams);
 
+    }
+
+    public static void startArticleViewerActivity(Context context, String title, String href, boolean commentpage) {
+        Intent intent = new Intent(context, ArticleViewerActivity.class);
+        intent.putExtra("article_title", title);
+        intent.putExtra("article_href", href);
+        intent.putExtra("commentpage", commentpage);
+        context.startActivity(intent);
     }
 }
 
