@@ -7,7 +7,6 @@ import androidx.core.content.ContextCompat;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,6 +25,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
 import com.wei756.ukkiukki.Network.Web;
 import com.wei756.ukkiukki.Network.WebClientManager;
 import com.wei756.ukkiukki.Preference.DarkModeManager;
@@ -37,7 +37,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.Menu;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -66,14 +65,20 @@ public class MainActivity extends AppCompatActivity
     public NavigationView navigationView;
 
     /**
-     * NacDrawer 토글 버튼
+     * NavDrawer 토글 버튼
      */
     private ActionBarDrawerToggle toggle;
 
     /**
-     * Mainpage 에 표시중인 게시판 id
+     * Mainpage 에 실제 표시중인 게시판 id
      */
     private int mid = CategoryManager.CATEGORY_MAINPAGE;
+
+    /**
+     * Mainpage 에 표시중이던 게시판 id(Tab 전환시 고정)
+     */
+    private int midTab = CategoryManager.CATEGORY_MAINPAGE;
+
 
     // Section Header
     /**
@@ -117,6 +122,11 @@ public class MainActivity extends AppCompatActivity
     private ConstraintLayout popularBackground;
     //private ImageView popularBackground, popularIcon;
     //private LinearLayout popularInfo;
+
+    /**
+     * 상단 탭 레이아웃
+     */
+    private TabLayout headerTabLayout;
 
     // article page
     private View articlepageLayout;
@@ -241,13 +251,31 @@ public class MainActivity extends AppCompatActivity
         popularView = (RecyclerView) findViewById(R.id.rv_popular_article_title);
         popularList = new ArticleList(this, popularView, null, ArticleListAdapter.THEME_HEADER_POPULAR);
 
-        popularMore.setOnClickListener((view -> setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true)));
+        popularMore.setOnClickListener((view -> setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true, true)));
 
         appBarLayout = findViewById(R.id.layout_article_list_appbar);
         appBarLayout.addOnOffsetChangedListener((appBarLayout, i) -> {
             float percentage = 1 - ((float) Math.abs(i) / appBarLayout.getTotalScrollRange());
             popularMore.setAlpha(percentage);
             popularView.setAlpha(percentage);
+        });
+
+        // tab layout
+        headerTabLayout = findViewById(R.id.tab_layout_category);
+        headerTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                int pos = tab.getPosition();
+                changeTab(pos);
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
         });
 
 
@@ -276,16 +304,13 @@ public class MainActivity extends AppCompatActivity
 
         // Swipe refresh
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.layout_article_list_swipe);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                setCategory(mid, false); // reset and update article list
-                Web.getInstance().loadMyInfomation();
-            }
+        mSwipeRefreshLayout.setOnRefreshListener(() -> {
+            setCategory(mid, false, false); // reset and update article list
+            Web.getInstance().loadMyInfomation();
         });
 
         // 초기화면 로드
-        setCategory(mid, true);
+        setCategory(mid, true, true);
 
     }
 
@@ -302,12 +327,7 @@ public class MainActivity extends AppCompatActivity
             doubleBackToExitPressedOnce = true;
             Toast.makeText(this, R.string.toast_text_press_back_again_to_exit, Toast.LENGTH_SHORT).show();
 
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    doubleBackToExitPressedOnce = false;
-                }
-            }, 2000);
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     }
 
@@ -360,9 +380,9 @@ public class MainActivity extends AppCompatActivity
             mid = CategoryManager.getInstance().findIdByName(id);
 
             if (mid == CategoryManager.CATEGORY_MAINPAGE) {
-                setCategory(CategoryManager.CATEGORY_MAINPAGE, true);
+                setCategory(CategoryManager.CATEGORY_MAINPAGE, true, true);
             } else {
-                setCategory(mid, true);
+                setCategory(mid, true, true);
             }
         } catch (InvalidCategoryException e) {
             e.printStackTrace();
@@ -373,18 +393,120 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void setCategory(int mid, boolean refresh) {
+    /**
+     * headerTabLayout에 선택된 탭에 따라 카테고리를 전환합니다.
+     *
+     * @param index
+     */
+    private void changeTab(int index) {
+        int midPrev = this.mid;
+        int mid = midPrev;
+        if (midTab == CategoryManager.CATEGORY_ALLLIST) // 전체글보기
+            switch (index) {
+                case 0:
+                    mid = CategoryManager.CATEGORY_ALLLIST;
+                    break;
+                case 1:
+                    mid = CategoryManager.CATEGORY_POPULAR_ARTICLE;
+                    break;
+                case 2:
+                    mid = CategoryManager.CATEGORY_NOTICE;
+                    break;
+            }
+        else if (midTab > 0) // 일반 게시판
+            switch (index) {
+                case 0:
+                    mid = midTab;
+                    break;
+                case 1:
+                    mid = CategoryManager.CATEGORY_NOTICE;
+                    break;
+            }
+        else if (midTab == CategoryManager.CATEGORY_POPULAR_ARTICLE) // 인기글
+            switch (index) {
+                case 0:
+                    mid = CategoryManager.CATEGORY_POPULAR_ARTICLE; // 인기글
+                    break;
+                case 1:
+                    //mid = CategoryManager.CATEGORY_NOTICE; // 댓글 TOP
+                    break;
+                case 2:
+                    //mid = CategoryManager.CATEGORY_NOTICE; // 좋아요 TOP
+                    break;
+            }
+        if (midPrev != mid)
+            setCategory(mid, false, true);
+    }
+
+    /**
+     * 게시판에 따른 headerTabLayout을 설정합니다.
+     *
+     * @param mid
+     */
+    private void changeTabLayout(int mid) {
+        this.midTab = mid;
+
+        // Set visibility
+        if (midTab == CategoryManager.CATEGORY_MAINPAGE)  // 메인페이지
+            headerTabLayout.setVisibility(View.GONE);
+        else // 그 외에
+            headerTabLayout.setVisibility(View.VISIBLE);
+
+        // Tab Title
+        headerTabLayout.removeAllTabs(); // reset tab
+        if (midTab == CategoryManager.CATEGORY_ALLLIST) { // 전체글보기
+            headerTabLayout.addTab(
+                    headerTabLayout.newTab().setText(R.string.tab_main_all_article));
+            headerTabLayout.addTab(
+                    headerTabLayout.newTab().setText(R.string.tab_main_popular_article));
+            headerTabLayout.addTab(
+                    headerTabLayout.newTab().setText(R.string.tab_main_all_notice));
+
+        } else if (midTab > 0) { // 일반 게시판
+            try {
+                headerTabLayout.addTab(
+                        headerTabLayout.newTab().setText(
+                                (String)CategoryManager.getInstance().getParam(midTab, CategoryManager.NAME)
+                        ));
+            } catch (InvalidCategoryException e) {
+                e.printStackTrace();
+            }
+            headerTabLayout.addTab(
+                    headerTabLayout.newTab().setText(R.string.tab_main_notice));
+
+        } else if (midTab == CategoryManager.CATEGORY_POPULAR_ARTICLE) { // 인기글
+            headerTabLayout.addTab(
+                    headerTabLayout.newTab().setText(R.string.tab_main_popular_article));
+            headerTabLayout.addTab(
+                    headerTabLayout.newTab().setText(R.string.tab_main_popular_top_comment));
+            headerTabLayout.addTab(
+                    headerTabLayout.newTab().setText(R.string.tab_main_popular_top_likeit));
+
+        }
+    }
+
+    /**
+     * MainActivity에 표시될 게시판을 설정합니다.
+     *
+     * @param mid       게시판 id
+     * @param changeTab 탭 전환 여부
+     * @param refresh   게시판 테마 초기화 여부
+     */
+    public void setCategory(int mid, boolean changeTab, boolean refresh) {
         this.mid = mid;
+        if (changeTab)
+            changeTabLayout(mid);
+
         if (refresh) {
             // set actionbar theme
             actBarManager.setActionBar(MainActivity.this, toolbar, mid, toggle);
             Web.getInstance().loadMyInfomation();
             if (mid != CategoryManager.CATEGORY_POPULAR_ARTICLE &&
                     mid != CategoryManager.CATEGORY_LOGIN &&
-                    mid == 0) {
+                    mid != CategoryManager.CATEGORY_NOTICE) {
                 setPopularList(true);
 
-                popularList.loadArticleList(0, 1, true);
+                popularList.loadArticleList(CategoryManager.CATEGORY_POPULAR_ARTICLE, 1, true);
             } else {
                 setPopularList(false);
             }
@@ -404,7 +526,7 @@ public class MainActivity extends AppCompatActivity
         } else if (mid == CategoryManager.CATEGORY_LOGIN) { // 로그인페이지
             Intent intent = new Intent(this, NaverLoginActivity.class);
             this.startActivity(intent);
-            setCategory(CategoryManager.CATEGORY_MAINPAGE, true);
+            setCategory(CategoryManager.CATEGORY_MAINPAGE, true, true);
         } else { // 게시판 페이지
             mainpageLayout.setVisibility(View.GONE);
             articlepageLayout.setVisibility(View.VISIBLE);

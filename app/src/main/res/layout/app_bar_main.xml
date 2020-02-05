@@ -65,7 +65,7 @@
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="false"
                     android:text="멤버수 151,151"
-                    android:textColor="@color/colorTextSecondary" />
+                    android:textColor="@color/colorTitle" />
 
                 <TextView
                     android:id="@+id/tv_article_list_header_cafe_info"
@@ -78,7 +78,7 @@
                     android:focusable="true"
                     android:padding="2dp"
                     android:text="카페정보"
-                    android:textColor="@color/colorTextSecondary" />
+                    android:textColor="@color/colorTitle" />
             </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -155,7 +155,7 @@
 
 
         <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tab_layout_profile"
+            android:id="@+id/tab_layout_category"
             android:layout_width="match_parent"
             android:layout_height="44dp"
             android:layout_gravity="bottom"

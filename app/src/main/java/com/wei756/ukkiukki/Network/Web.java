@@ -17,6 +17,7 @@ import com.wei756.ukkiukki.ArticleViewerActivity;
 import com.wei756.ukkiukki.ArticleViewerCommentListFragment;
 import com.wei756.ukkiukki.CategoryManager;
 import com.wei756.ukkiukki.Comment;
+import com.wei756.ukkiukki.Item;
 import com.wei756.ukkiukki.JsonUtil;
 import com.wei756.ukkiukki.MainActivity;
 import com.wei756.ukkiukki.Preference.DBHandler;
@@ -57,9 +58,9 @@ public class Web extends Thread {
     public static final int RETURNCODE_ERROR_ALREADY_LIKED = -4091; // 이미 좋아요 한 게시글
     public static final int RETURNCODE_ERROR_NOT_LIKED = -4091; // 좋아요하지 않은= 게시글
 
-    public final String photoSessionKeyUrl = "https://m.cafe.naver.com/PhotoInfraSessionKey.nhn";
+    public final static String photoSessionKeyUrl = "https://m.cafe.naver.com/PhotoInfraSessionKey.nhn";
 
-    public final String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
+    public final static String hostUrl = "https://m.cafe.naver.com/steamindiegame?",
             articleListUrl = "https://m.cafe.naver.com/ArticleListAjax.nhn?search.clubid={0}&search.menuid={1}&search.page={2}",
             popularArticleListUrl = "https://apis.naver.com/cafe-web/cafe2/WeeklyPopularArticleList.json?cafeId={0}",
             menuListUrl = "https://m.cafe.naver.com/MenuListAjax.nhn?search.clubid={0}&search.perPage=9999",
@@ -74,14 +75,16 @@ public class Web extends Thread {
             profileCommentArticleListUrl = "https://m.cafe.naver.com/CafeMemberReplyList.nhn?search.clubid={0}&search.query={1}&search.page={2}&search.perPage={3}",
             profileLikeItArticleListUrl = "https://m.cafe.naver.com/CafeMemberLikeItList.nhn?search.cafeId={0}&search.memberId={1}&search.likeItTimestamp={2}&search.count={3}";
 
-    public final String postCommentUrl = "https://m.cafe.naver.com/CommentPost.nhn?m=write",
+
+
+    public final static String postCommentUrl = "https://m.cafe.naver.com/CommentPost.nhn?m=write",
             postCommentData = "clubid={0}&articleid={1}&content={2}&stickerId={3}&imagePath={4}&imageFileName={5}&imageWidth={6}&imageHeight={7}&showCafeHome=false",
             postCommentPhotoUrl = "https://cafe.upphoto.naver.com/{0}/simpleUpload/0?userId={1}&extractExif=false&extractAnimatedCnt=false&autorotate=true",
             likeItUrl = "https://cafe.like.naver.com/v1/services/CAFE/contents/{1}_steamindiegame_{2}?suppress_response_codes=true&_method={0}&displayId=CAFE&reactionType=like&categoryId={1}&guestToken={3}&timestamp={4}&_ch=mbw&isDuplication=true&lang=ko";
     public final static String LIKE = "POST",
             UNLIKE = "DELETE";
-    public final String cafeId = "27842958";
-    public final int timeout = 15000;
+    public final static String cafeId = "27842958";
+    public final static int timeout = 15000;
 
     private final WebClientManager webClientManager = WebClientManager.getInstance();
 
@@ -111,7 +114,7 @@ public class Web extends Thread {
                     String date, grade;
                     int visit, article, comment;
 
-                    id = getStringValue(document.selectFirst("li[class=info2]").selectFirst("a[class=gm-tcol-c]").attr("href"), "memberid");
+                    id = ParseUtils.getStringValue(document.selectFirst("li[class=info2]").selectFirst("a[class=gm-tcol-c]").attr("href"), "memberid");
                     nickname = document.selectFirst("div[class=prfl_info]").text();
                     profile = document.selectFirst("img").attr("src");
 
@@ -291,7 +294,7 @@ public class Web extends Thread {
                             categoryBuilder.setMenuId(CategoryManager.CATEGORY_TAG);
                         } else {
                             try {
-                                categoryBuilder.setMenuId(getIntegerValue(menuId, "search.menuid"));
+                                categoryBuilder.setMenuId(ParseUtils.getIntegerValue(menuId, "search.menuid"));
                             } catch (NullPointerException e) {
                                 e.printStackTrace();
                             }
@@ -347,6 +350,7 @@ public class Web extends Thread {
      * @see ArticleList
      * @see com.wei756.ukkiukki.ProfileActivity
      */
+    @Deprecated
     public ArrayList<Article> getArticleList(Context context, int mid, int page, @Nullable String userId) {
         ArrayList<Article> arrayList = null;
         Elements articles = null;
@@ -367,7 +371,7 @@ public class Web extends Thread {
 
                         article1.setAuthor(author)
                                 .setTitle(article.selectFirst("strong[class=tit ellip]").text())
-                                .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
+                                .setHref("" + ParseUtils.getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
                                 .setLikeIt(article.selectFirst("em[class=u_cnt _count]").text())
                                 .setComment(article.selectFirst("span[class=coment_btn]").text());
 
@@ -400,7 +404,7 @@ public class Web extends Thread {
                                 .setTime(time)
                                 .setArticleTitle(articleTitle)
                                 .setComment(comment)
-                                .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"));
+                                .setHref("" + ParseUtils.getIntegerValue(article.selectFirst("a").attr("href"), "articleid"));
 
                     } else { // 전체글보기, 일반게시판
                         // author
@@ -409,7 +413,7 @@ public class Web extends Thread {
                         article1.setAuthor(author)
                                 .setNewArticle(article.selectFirst("span[class=icon_new_txt]") != null)
                                 .setTitle(article.selectFirst("strong[class=tit]").text())
-                                .setHref("" + getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
+                                .setHref("" + ParseUtils.getIntegerValue(article.selectFirst("a").attr("href"), "articleid"))
                                 .setTime(article.selectFirst("span[class=time]").text())
                                 .setView(article.selectFirst("span[class=no]").text())
                                 .setComment(article.selectFirst("em[class=num]").text());
@@ -472,6 +476,7 @@ public class Web extends Thread {
      * @throws NullPointerException 게시판에 게시글이 없는 경우
      * @see Web#getArticleList(Context, int, int, String)
      */
+    @Deprecated
     public Elements getArticleElements(int mid, int page, @Nullable String userId) throws IOException, NullPointerException {
         Elements articles = null;
 
@@ -487,7 +492,7 @@ public class Web extends Thread {
         else if (mid == CategoryManager.CATEGORY_PROFILE_COMMENT_ARTICLE) // 프로필 댓글단 글
             url = MessageFormat.format(profileCommentArticleListUrl, cafeId, userId, page, 30);
         else if (mid == CategoryManager.CATEGORY_PROFILE_LIKEIT) // 프로필 좋아요한 글
-            url = MessageFormat.format(profileLikeItArticleListUrl, cafeId, userId, "" + ((long)page * (long)1000), 30);
+            url = MessageFormat.format(profileLikeItArticleListUrl, cafeId, userId, "" + ((long) page * (long) 1000), 30);
         else
             url = MessageFormat.format(articleListUrl, cafeId, mid != 0 ? mid : "", page);
         Log.e("asdf", url);
@@ -1172,30 +1177,6 @@ public class Web extends Thread {
             e.printStackTrace();
             return RETURNCODE_ERROR_CONNECTION;
         }
-    }
-
-    /**
-     * url 끝에 포함된 paramter값을 추출합니다
-     */
-    private static Integer getIntegerValue(String str, String valName) throws NullPointerException {
-        Pattern p = Pattern.compile(valName + "=([0-9]*)");
-        Matcher m = p.matcher(str);
-        while (m.find()) {
-            return Integer.parseInt(m.group(1));
-        }
-        return null;
-    }
-
-    /**
-     * url 끝에 포함된 paramter값을 추출합니다
-     */
-    private static String getStringValue(String str, String valName) throws NullPointerException {
-        Pattern p = Pattern.compile(valName + "=([\\w-]*)");
-        Matcher m = p.matcher(str);
-        while (m.find()) {
-            return m.group(1);
-        }
-        return null;
     }
 
     /**

@@ -3,8 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:clickable="true"
+    android:focusable="true"
     android:layout_height="wrap_content"
-    android:background="@color/colorArticleListItemBackground">
+    android:id="@+id/btn_layout_article"
+    android:background="?android:attr/selectableItemBackground">
 
     <View
         android:layout_width="match_parent"
@@ -27,12 +30,9 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/btn_layout_article"
         android:layout_width="0dp"
+        android:id="@+id/layout_layout_article"
         android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
         android:minHeight="84dp"
         android:paddingStart="16dp"
         android:paddingTop="12dp"
@@ -133,17 +133,17 @@
         android:layout_width="50dp"
         android:layout_marginEnd="8dp"
         android:layout_height="0dp"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_marginBottom="3dp"
         android:background="@drawable/shape_bg_comment"
         android:backgroundTint="@color/colorArticleListBtnCommentBackground"
-        android:clickable="true"
-        android:focusable="true"
         android:gravity="center"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintStart_toEndOf="@id/btn_layout_article"
+        app:layout_constraintStart_toEndOf="@id/layout_layout_article"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView

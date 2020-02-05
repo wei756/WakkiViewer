@@ -3,7 +3,6 @@ package com.wei756.ukkiukki;
 import android.app.Activity;
 import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -351,10 +350,10 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
         if (TYPE_THEME != THEME_HEADER_POPULAR)
             headerViewHolder.category.setText(category);
         if (TYPE_THEME == THEME_MAINPAGE) {
-            headerViewHolder.more.setOnClickListener(view -> ((MainActivity) context).setCategory(mid, true));
+            headerViewHolder.more.setOnClickListener(view -> ((MainActivity) context).setCategory(mid, true,true));
         }
         if (TYPE_THEME == THEME_HEADER_POPULAR) {
-            headerViewHolder.article.setOnClickListener(view -> ((MainActivity) context).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true));
+            headerViewHolder.article.setOnClickListener(view -> ((MainActivity) context).setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true,true));
         }
     }
 
@@ -368,8 +367,11 @@ public class ArticleListAdapter extends RecyclerViewCustomAdapter {
 
         // title
         if (!(TYPE_THEME == THEME_PROFILE
-                && TYPE_SUBTHEME == SUBTHEME_PROFILE_COMMENT))
-            itemViewHolder.title.setText(article.getTitle());
+                && TYPE_SUBTHEME == SUBTHEME_PROFILE_COMMENT)) {
+            String head = article.getHead();
+            String title = (head != null ? "[" + head + "] " : "") + article.getTitle();
+            itemViewHolder.title.setText(title);
+        }
         if (TYPE_THEME == THEME_BOARD || TYPE_THEME == THEME_PROFILE) {
             if (TYPE_SUBTHEME == SUBTHEME_ARTICLE) {
                 if (article.isReadArticle())

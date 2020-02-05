@@ -14,7 +14,10 @@
 
     <string name="tab_main_all_article">전체글</string>
     <string name="tab_main_popular_article">인기글</string>
+    <string name="tab_main_popular_top_comment">댓글TOP</string>
+    <string name="tab_main_popular_top_likeit">좋아요TOP</string>
     <string name="tab_main_all_notice">전체 공지</string>
+    <string name="tab_main_notice">공지</string>
 
     <!-- Navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
