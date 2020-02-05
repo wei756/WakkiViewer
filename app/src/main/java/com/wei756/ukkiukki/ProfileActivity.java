@@ -177,7 +177,7 @@ public class ProfileActivity extends AppCompatActivity
                 // update view
                 runOnUiThread(() -> {
                     collapsingToolbarLayout.setTitle(nickname);
-                    tvUserId.setText(userId);
+                    tvUserId.setText(userId.substring(0, Math.min(userId.length(), 4)) + "****");
                     tvGrade.setText(grade);
                     tvVisit.setText("" + visit);
                     Glide.with(getApplicationContext()).load(profile).into(ivProfile); // profile image

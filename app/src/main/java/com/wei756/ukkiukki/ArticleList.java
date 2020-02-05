@@ -1,11 +1,13 @@
 package com.wei756.ukkiukki;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -52,6 +54,17 @@ public class ArticleList {
         setVisibility(View.GONE);
     }
 
+    /**
+     * 리사이클러뷰의 아이템을 섞습니다.
+     * @param context
+     */
+    public void shuffle(Context context) {
+        ArrayList mList = mAdapter.getArrayList();
+        if (mList.size() > 0)
+            Collections.shuffle(mList);
+        ((AppCompatActivity) context).runOnUiThread(() -> mAdapter.notifyDataSetChanged());
+    }
+
     public void loadArticleList(int mid, int page, boolean refresh) {
         loadArticleList(mid, page, null, refresh);
     }
@@ -66,7 +79,8 @@ public class ArticleList {
             CafeApiRequestBuilder requestBuilder = new CafeApiRequestBuilder();
 
             requestBuilder.setContext(act) // context
-                    .setMid(mid); // 메뉴 id
+                    .setMid(mid) // 메뉴 id
+                    .setPage(page); // 페이지
 
             Article lastArticle;
             String lastArticleId = null, lastArticleTimestamp = null;
@@ -76,7 +90,7 @@ public class ArticleList {
                 lastArticleTimestamp = lastArticle.getTimestamp();
                 if (lastArticleId != null)
                     requestBuilder.setLastArticleId(lastArticleId); // lastArticleId
-                if (lastArticleTimestamp != null)
+                if (lastArticleTimestamp != null && !"".equals(lastArticleTimestamp))
                     requestBuilder.setLastTimestamp(Long.parseLong(lastArticleTimestamp)); // lastArticle Timestamp
             }
 

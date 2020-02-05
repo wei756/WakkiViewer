@@ -205,7 +205,7 @@ public class ParseUtils {
      * @param JSONString
      * @return
      */
-    public Map convertJsonToMap(String JSONString) {
+    public static Map convertJsonToMap(String JSONString) {
         try {
             // String to JSON
             JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);

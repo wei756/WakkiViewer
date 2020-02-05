@@ -600,10 +600,7 @@ public class Web extends Thread {
                 Map mapArticle;
 
                 // String to JSON
-                JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
-                JSONObject jsonObj = (JSONObject) parser.parse(document);
-
-                mapArticle = JsonUtil.getMapFromJsonObject(jsonObj);
+                mapArticle = ParseUtils.convertJsonToMap(document);
 
                 // check error
                 String errorCode = String.valueOf(mapArticle.get("reason"));
@@ -677,7 +674,7 @@ public class Web extends Thread {
                     data = null; // null 처리
                 // callback
                 articleViewerActivity.onLoadArticle(data);
-            } catch (ParseException e) {
+            } catch (NullPointerException e) {
                 Log.w("Web.err", "JSON Parse error. (" + articleUrl + ")" + " on Web.getArticle");
                 e.printStackTrace();
 

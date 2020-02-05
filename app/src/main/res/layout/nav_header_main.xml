@@ -46,6 +46,7 @@
             android:clickable="true"
             android:contentDescription="@string/nav_header_settings"
             android:focusable="true"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:padding="6dp"
             android:src="@drawable/ic_settings_black_24dp"
             android:tint="@color/colorTextSecondary"
@@ -57,11 +58,11 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_nav_profile"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:clickable="true"
         android:background="?android:attr/selectableItemBackground"
+        android:clickable="true"
         android:focusable="true"
         android:paddingStart="4dp"
         android:paddingEnd="8dp">
@@ -86,10 +87,10 @@
             android:text="@string/nav_header_title"
             android:textColor="@color/colorTextPrimary"
             android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/tv_nav_grade"
             app:layout_constraintStart_toEndOf="@id/iv_nav_profile"
-            app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintTop_toTopOf="@id/iv_nav_profile"
-            app:layout_constraintBottom_toTopOf="@id/tv_nav_grade"/>
+            app:layout_constraintVertical_chainStyle="packed" />
 
         <TextView
             android:id="@+id/tv_nav_grade"
@@ -97,9 +98,9 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="ffff"
-            android:visibility="gone"
             android:textColor="@color/colorTextSecondary"
             android:textSize="13sp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/iv_nav_profile"
             app:layout_constraintTop_toBottomOf="@id/tv_nav_nickname" />

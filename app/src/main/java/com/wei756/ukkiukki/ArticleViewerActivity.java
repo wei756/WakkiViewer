@@ -218,100 +218,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
                 tvView.setText(article.getView()); // 게시글 조회수
 
                 // body 출력용 html 문서 생성
-                String cssTheme;
-                if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) // 다크모드
-                    cssTheme = "<link rel=\"stylesheet\" href=\"file:///android_asset/css/app-dark.css\" type=\"text/css\">\n"; // dark theme
-                else
-                    cssTheme = "<link rel=\"stylesheet\" href=\"file:///android_asset/css/app.css\" type=\"text/css\">\n"; // light theme
-
-                // 본문 html 작성
-                String body = (String) article.getArticle().get("content");
-                ArrayList<Map> listElements = (ArrayList) article.getArticle().get("contentElements"); // CONTENT-ELEMENT 처리
-                if (listElements != null)
-                    for (int i = 0; i < listElements.size(); i++) {
-                        Map mapElement = listElements.get(i);
-                        String tag;
-                        String stickerId, marketUrl, url;
-                        int width, height;
-                        String type = String.valueOf(mapElement.get("type"));
-                        Map json = (Map) mapElement.get("json");
-                        switch (type) {
-                            case "STICKER": // 스티커
-                                stickerId = (String) json.get("stickerId");
-                                marketUrl = (String) json.get("marketUrl");
-                                url = (String) json.get("url");
-                                width = (int) json.get("width");
-                                height = (int) json.get("height");
-
-                                tag = "<a href=\"" + marketUrl + "\" target=\"_blank\">" +
-                                        "<img src=\"" + url +
-                                        "\" alt=\"" + stickerId +
-                                        "\" width=\"" + width +
-                                        "\" height=\"" + height +
-                                        "\" nhn_extra_image=\"true\" data-type=\"sticker\"></a>";
-                                break;
-                            case "IMAGE": // 사진
-                                Map mapImage = (Map) json.get("image");
-                                url = "" + mapImage.get("url");
-                                url += (url.contains("?") ? "&" : "?");
-                                url += "type=" + mapImage.get("type");
-                                //width = (int) json.get("width");
-                                //height = (int) json.get("height");
-                                Log.e("url", url);
-
-                                tag = "<div style=\"margin:0 -15px;line-height:0;\"><img class=\"fx\" src=\"" + url +
-                                        "\" alt=\"본문 이미지\"></div>";
-                                break;
-                            default:
-                                tag = "[[[현재 버전에서 지원되지 않는 태그입니다.]]]"; // 에러 처리
-                                break;
-                        }
-
-                        body = body.replaceFirst("\\[\\[\\[CONTENT-ELEMENT-" + i + "]]]", tag);
-
-                    }
-                String articleBody = "<!DOCTYPE html>\n" +
-                        "<html lang=\"ko\">\n" +
-                        "<head>\n" +
-                        cssTheme +
-                        "</head><body><div id=\"ct\" class style><div id=\"postContent\" class=\"post_cont font_zoom1\">" +
-                        body +
-                        /*
-                        "<script type=\"text/javascript\">" +
-                        "\n" +
-                        "var g_sUserId = '" + (ProfileManager.getInstance().isLogined() ? ProfileManager.getInstance().getId() : "") + "';\n" +
-                        "var g_sCafeId = '" + web.cafeId + "';\n" +
-                        "var g_sCafeUrl = 'steamindiegame';\n" +
-                        "\n" +
-                        "var g_sCafeMainUrl = 'https://cafe.naver.com';\n" +
-                        "var g_sCafeMobileWebUrl = 'https://m.cafe.naver.com';\n" +
-                        "var g_sNoteSendUrl = 'https://m.note.naver.com/mobile/mobileSendNoteForm.nhn?reply=1&targetUserId=';\n" +
-                        "var g_sUploadDomain = window.location.protocol === 'https:' ? 'https://up.cafe.naver.com' : 'http://up.cafe.naver.com';\n" +
-                        "var g_sCafeFilesDomain = 'http://cafefiles.naver.net';\n" +
-                        "var g_sCafeFilesHttpsDomain = 'https://cafefiles.pstatic.net';\n" +
-                        "var g_sCafeThumbDomain = 'https://cafethumb.pstatic.net';\n" +
-                        "var g_sMCafeThumbDomain = 'https://mcafethumb-phinf.pstatic.net';\n" +
-                        "var g_sGfmarketDomain = 'http://m.gfmarket.naver.com';\n" +
-                        "var g_sGfmarketThumbnailDomain = 'https://storep-phinf.pstatic.net';\n" +
-                        "var g_sPhotoInfraUploadDomain = 'cafe.upphoto.naver.com';\n" +
-                        "var g_sBlogUrl = 'https://m.blog.naver.com';\n" +
-                        "var g_sDThumbUrl = 'https://dthumb-phinf.pstatic.net/?src=';\n" +
-                        "var g_sLikeDomain = 'https://cafe.like.naver.com';\n" +
-                        "var g_sNpayPurchaseDetailUrl = 'https://m.pay.naver.com/o/orderStatus/';\n" +
-                        "var g_sNpaySaleDetaiUrl = 'https://m.pay.naver.com/o/saleStatus/';\n" +
-                        "var g_sBAStatDomain = 'https://scv.band.us';\n" +
-                        "var g_sCafeTalk = 'https://talk.cafe.naver.com';\n" +
-                        "\n" +
-                        "var g_sLoginUrl = 'https://nid.naver.com/nidlogin.login?svctype=262144&url=';\n" +
-                        "var g_sLogoutUrl = 'https://nid.naver.com/nidlogin.logout?svctype=262144&url=';\n" +
-                        "var g_sAutoComplateDomain = 'https://mac.search.naver.com/mobile/ac';\n" +
-                        "var g_sNaverStatMobileUiUrl = 'https://cafe.stat.naver.com/m/cafe';\n" +
-                        "\n" +
-                        "var g_sEncodedRequestUrl = 'http%3A%2F%2Fm.cafe.naver.com%2FArticleRead.nhn%3Fclubid%3D" + web.cafeId + "%26articleid%3D" + articleHref + "';</script>" +
-                        "<script type=\"text/javascript\" src=\"file:///android_asset/js/MyCafeCommonScript.js\" charset=\"UTF-8\"></script>" +
-                        "<script type=\"text/javascript\" src=\"file:///android_asset/js/ugcvideoplayer.js\" charset=\"UTF-8\"></script>" +
-                        */
-                        "</div></div></body></html>";
+                String articleBody = generateArticleHtmi(article);
                 webBody.loadDataWithBaseURL(MessageFormat.format(web.articleReadUrl, web.cafeId, articleHref), articleBody, "text/html", "UTF-8", "");
 
 
@@ -402,6 +309,119 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
             //TODO: Article 로드 실패 시 오류창 레이아웃 표시
         }
 
+    }
+
+    private String generateArticleHtmi(Article article) {
+        String cssTheme;
+        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) // 다크모드
+            cssTheme = "<link rel=\"stylesheet\" href=\"file:///android_asset/css/app-dark.css\" type=\"text/css\">\n"; // dark theme
+        else
+            cssTheme = "<link rel=\"stylesheet\" href=\"file:///android_asset/css/app.css\" type=\"text/css\">\n"; // light theme
+
+        // 본문 html 작성
+        String body = generateBodyHtml(article.getArticle());
+        String articleBody = "<!DOCTYPE html>\n" +
+                "<html lang=\"ko\">\n" +
+                "<head>\n" +
+                cssTheme +
+                "</head><body><div id=\"ct\" class style><div id=\"postContent\" class=\"post_cont font_zoom1\">" +
+                body +
+                        /*
+                        "<script type=\"text/javascript\">" +
+                        "\n" +
+                        "var g_sUserId = '" + (ProfileManager.getInstance().isLogined() ? ProfileManager.getInstance().getId() : "") + "';\n" +
+                        "var g_sCafeId = '" + web.cafeId + "';\n" +
+                        "var g_sCafeUrl = 'steamindiegame';\n" +
+                        "\n" +
+                        "var g_sCafeMainUrl = 'https://cafe.naver.com';\n" +
+                        "var g_sCafeMobileWebUrl = 'https://m.cafe.naver.com';\n" +
+                        "var g_sNoteSendUrl = 'https://m.note.naver.com/mobile/mobileSendNoteForm.nhn?reply=1&targetUserId=';\n" +
+                        "var g_sUploadDomain = window.location.protocol === 'https:' ? 'https://up.cafe.naver.com' : 'http://up.cafe.naver.com';\n" +
+                        "var g_sCafeFilesDomain = 'http://cafefiles.naver.net';\n" +
+                        "var g_sCafeFilesHttpsDomain = 'https://cafefiles.pstatic.net';\n" +
+                        "var g_sCafeThumbDomain = 'https://cafethumb.pstatic.net';\n" +
+                        "var g_sMCafeThumbDomain = 'https://mcafethumb-phinf.pstatic.net';\n" +
+                        "var g_sGfmarketDomain = 'http://m.gfmarket.naver.com';\n" +
+                        "var g_sGfmarketThumbnailDomain = 'https://storep-phinf.pstatic.net';\n" +
+                        "var g_sPhotoInfraUploadDomain = 'cafe.upphoto.naver.com';\n" +
+                        "var g_sBlogUrl = 'https://m.blog.naver.com';\n" +
+                        "var g_sDThumbUrl = 'https://dthumb-phinf.pstatic.net/?src=';\n" +
+                        "var g_sLikeDomain = 'https://cafe.like.naver.com';\n" +
+                        "var g_sNpayPurchaseDetailUrl = 'https://m.pay.naver.com/o/orderStatus/';\n" +
+                        "var g_sNpaySaleDetaiUrl = 'https://m.pay.naver.com/o/saleStatus/';\n" +
+                        "var g_sBAStatDomain = 'https://scv.band.us';\n" +
+                        "var g_sCafeTalk = 'https://talk.cafe.naver.com';\n" +
+                        "\n" +
+                        "var g_sLoginUrl = 'https://nid.naver.com/nidlogin.login?svctype=262144&url=';\n" +
+                        "var g_sLogoutUrl = 'https://nid.naver.com/nidlogin.logout?svctype=262144&url=';\n" +
+                        "var g_sAutoComplateDomain = 'https://mac.search.naver.com/mobile/ac';\n" +
+                        "var g_sNaverStatMobileUiUrl = 'https://cafe.stat.naver.com/m/cafe';\n" +
+                        "\n" +
+                        "var g_sEncodedRequestUrl = 'http%3A%2F%2Fm.cafe.naver.com%2FArticleRead.nhn%3Fclubid%3D" + web.cafeId + "%26articleid%3D" + articleHref + "';</script>" +
+                        "<script type=\"text/javascript\" src=\"file:///android_asset/js/MyCafeCommonScript.js\" charset=\"UTF-8\"></script>" +
+                        "<script type=\"text/javascript\" src=\"file:///android_asset/js/ugcvideoplayer.js\" charset=\"UTF-8\"></script>" +
+                        */
+                "</div></div></body></html>";
+        return articleBody;
+    }
+
+    private String generateBodyHtml(Map mapArticle) {
+        String body = (String) mapArticle.get("content");
+        ArrayList<Map> listElements = (ArrayList<Map>) mapArticle.get("contentElements");
+        if (listElements != null)
+            for (int i = 0; i < listElements.size(); i++) { // CONTENT-ELEMENT 처리
+                Map mapElement = listElements.get(i);
+                String tag;
+                String stickerId, marketUrl, url;
+                int width, height;
+                String type = String.valueOf(mapElement.get("type"));
+                Map json = (Map) mapElement.get("json");
+                switch (type) {
+                    case "STICKER": // 스티커
+                        stickerId = (String) json.get("stickerId");
+                        marketUrl = (String) json.get("marketUrl");
+                        url = (String) json.get("url");
+                        width = (int) json.get("width");
+                        height = (int) json.get("height");
+
+                        tag = "<a href=\"" + marketUrl + "\" target=\"_blank\">" +
+                                "<img src=\"" + url +
+                                "\" alt=\"" + stickerId +
+                                "\" width=\"" + width +
+                                "\" height=\"" + height +
+                                "\" nhn_extra_image=\"true\" data-type=\"sticker\"></a>";
+                        break;
+                    case "IMAGE": // 사진
+                        Map mapImage = (Map) json.get("image");
+                        url = "" + mapImage.get("url");
+                        url += (url.contains("?") ? "&" : "?") + "type=" + mapImage.get("type");
+                        //width = (int) json.get("width");
+                        //height = (int) json.get("height");
+                        Log.e("url", url);
+
+                        tag = "<div style=\"margin:0 -15px;line-height:0;\"><img class=\"fx\" src=\"" + url +
+                                "\" alt=\"본문 이미지\"></div>";
+                        break;
+                    default:
+                        tag = "[[[현재 버전에서 지원되지 않는 태그입니다.]]]"; // 에러 처리
+                        break;
+                }
+
+                body = body.replaceFirst("\\[\\[\\[CONTENT-ELEMENT-" + i + "]]]", tag);
+
+            }
+        if (mapArticle.containsKey("scrap")) { // 스크랩 게시글일 때
+            Map mapScrap = (Map) mapArticle.get("scrap");
+            String scrap = generateBodyHtml(mapScrap);
+            body += "<div>" + scrap + "</div>";
+
+            String titleHtml = (String) mapScrap.get("titleHtml"),
+                    linkHtml = (String) mapScrap.get("linkHtml");
+            body = "<div class=\"post_scrap\"><p><strong>출처</strong><em>" + titleHtml +
+                    "</em></p><p><strong>원문</strong><em>" + linkHtml + "</em></p></div>"
+                    + body;
+        }
+        return body;
     }
 
     private int parseNumber(String str) throws NumberFormatException {

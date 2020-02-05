@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 
@@ -42,6 +43,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, RefreshListner {
@@ -122,6 +127,9 @@ public class MainActivity extends AppCompatActivity
     private ConstraintLayout popularBackground;
     //private ImageView popularBackground, popularIcon;
     //private LinearLayout popularInfo;
+
+    private ScheduledExecutorService servicePopularShuffle;
+    private Thread taskPopularShuffle;
 
     /**
      * 상단 탭 레이아웃
@@ -253,6 +261,23 @@ public class MainActivity extends AppCompatActivity
 
         popularMore.setOnClickListener((view -> setCategory(CategoryManager.CATEGORY_POPULAR_ARTICLE, true, true)));
 
+        // 인기글 자동전환
+        taskPopularShuffle = new Thread(() -> {
+            try {
+                while (!Thread.interrupted()) {
+                    popularList.shuffle(MainActivity.this);
+                    Thread.sleep(20 * 1000);
+
+                }
+            } catch (InterruptedException e) {
+
+            }
+        });
+        taskPopularShuffle.start();
+        //servicePopularShuffle = Executors.newSingleThreadScheduledExecutor();
+
+        //servicePopularShuffle.scheduleAtFixedRate(taskPopularShuffle, 10 * 1000, 3 * 1000, TimeUnit.MILLISECONDS);
+
         appBarLayout = findViewById(R.id.layout_article_list_appbar);
         appBarLayout.addOnOffsetChangedListener((appBarLayout, i) -> {
             float percentage = 1 - ((float) Math.abs(i) / appBarLayout.getTotalScrollRange());
@@ -312,6 +337,32 @@ public class MainActivity extends AppCompatActivity
         // 초기화면 로드
         setCategory(mid, true, true);
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (taskPopularShuffle.isAlive())
+            taskPopularShuffle.interrupt();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (!taskPopularShuffle.isAlive()) {
+            taskPopularShuffle = new Thread(() -> {
+                try {
+                    while (!Thread.interrupted()) {
+                        popularList.shuffle(MainActivity.this);
+                        Thread.sleep(20 * 1000);
+
+                    }
+                } catch (InterruptedException e) {
+
+                }
+            });
+            taskPopularShuffle.start();
+        }
     }
 
     @Override
@@ -466,7 +517,7 @@ public class MainActivity extends AppCompatActivity
             try {
                 headerTabLayout.addTab(
                         headerTabLayout.newTab().setText(
-                                (String)CategoryManager.getInstance().getParam(midTab, CategoryManager.NAME)
+                                (String) CategoryManager.getInstance().getParam(midTab, CategoryManager.NAME)
                         ));
             } catch (InvalidCategoryException e) {
                 e.printStackTrace();
