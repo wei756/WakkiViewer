@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.wei756.ukkiukki.Network.CafeApiRequestBuilder;
 import com.wei756.ukkiukki.Network.Web;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -62,11 +62,36 @@ public class ArticleList {
         this.page = page;
         this.userId = userId;
         new Thread(() -> {
-            ArrayList<Article> articleList = web.getArticleList(act, mid, page, userId); // update article list
+            //ArrayList<Article> articleList = web.getArticleList(act, mid, page, userId); // update article list
+            CafeApiRequestBuilder requestBuilder = new CafeApiRequestBuilder();
+
+            requestBuilder.setContext(act) // context
+                    .setMid(mid); // 메뉴 id
+
+            Article lastArticle;
+            String lastArticleId = null, lastArticleTimestamp = null;
+            if (page != 1 && mAdapter.getArrayList().size() > 0) {
+                lastArticle = ((Article) mAdapter.getArrayList().get(mAdapter.getArrayList().size() - 1));
+                lastArticleId = lastArticle.getHref();
+                lastArticleTimestamp = lastArticle.getTimestamp();
+                if (lastArticleId != null)
+                    requestBuilder.setLastArticleId(lastArticleId); // lastArticleId
+                if (lastArticleTimestamp != null)
+                    requestBuilder.setLastTimestamp(Long.parseLong(lastArticleTimestamp)); // lastArticle Timestamp
+            }
+
+            if (mid < 0) // 일반 게시판이 아니면
+                requestBuilder.setRequestType(mid); // requestType
+            else // 일반 게시판
+                requestBuilder.setRequestType(CafeApiRequestBuilder.REQUEST_ARTICLELIST_BOARD);
+
+            requestBuilder.setUserId(userId); // userId
+
+            ArrayList<Item> articleList = requestBuilder.build(); // get article list
 
             // callback
             setMidTheme(mid, refresh);
-            if (articleList.size() > 0 && articleList.get(0).getErrorcode() == Web.RETURNCODE_SUCCESS) { // 로딩 성공이고 표시할 내용이 있을 경우
+            if (articleList.size() > 0 && ((Article) articleList.get(0)).getErrorcode() == Web.RETURNCODE_SUCCESS) { // 로딩 성공이고 표시할 내용이 있을 경우
                 setVisibility(View.VISIBLE); // 로딩 완료 후 표시
 
                 if (theme == ArticleListAdapter.THEME_HEADER_POPULAR) // 앱바헤더 인기글 리스트 셔플
@@ -155,9 +180,8 @@ public class ArticleList {
                         public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                             if (mid == CategoryManager.CATEGORY_PROFILE_LIKEIT) { // 좋아요한 글
                                 loadArticleList(mid, (int) (Long.parseLong(((Article) mAdapter.getArrayList().get(mAdapter.getArrayList().size() - 1)).getTimestamp()) / 1000), userId, false);
-                            }
-                            else
-                            loadArticleList(mid, page, userId,false);
+                            } else
+                                loadArticleList(mid, page, userId, false);
                         }
                     };
                     mRecyclerView.addOnScrollListener(scrollListener);

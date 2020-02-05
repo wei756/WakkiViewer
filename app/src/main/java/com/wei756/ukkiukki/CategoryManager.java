@@ -58,6 +58,7 @@ public class CategoryManager {
     public static final int CATEGORY_POPULAR_MEMBER = -2; // 인기멤버
     public static final int CATEGORY_TAG = -3; // 카페태그
     public static final int CATEGORY_BOARD = -4; // 일반 게시판
+    public static final int CATEGORY_NOTICE = -5; // 전체 공지
 
     public static final int CATEGORY_PROFILE_ARTICLE = -10; // 프로필 작성글
     public static final int CATEGORY_PROFILE_COMMENT = -11; // 프로필 작성댓글
@@ -169,28 +170,25 @@ public class CategoryManager {
 
 
     public void updateCategoryMenu(MainActivity act, final Menu menu) {
-        act.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                menu.clear();
-                boolean grouped = false;
-                SubMenu subMenu = null;
-                for (Map cat : category) {
-                    int type = (int) cat.get(CategoryManager.TYPE);
-                    String name = (String) cat.get(CategoryManager.NAME);
+        act.runOnUiThread(() -> {
+            menu.clear();
+            boolean grouped = false;
+            SubMenu subMenu = null;
+            for (Map cat : category) {
+                int type = (int) cat.get(CategoryManager.TYPE);
+                String name = (String) cat.get(CategoryManager.NAME);
 
-                    if (type == CategoryManager.TYPE_GROUP) {
-                        if (!grouped)
-                            grouped = true;
-                        subMenu = menu.addSubMenu(name);
-                    } else if (type == CategoryManager.TYPE_CONTOUR) {
-                        subMenu = menu.addSubMenu("");
-                    } else if (type != CategoryManager.TYPE_PROFILE) {
-                        if (grouped)
-                            subMenu.add(name);
-                        else
-                            menu.add(name);
-                    }
+                if (type == CategoryManager.TYPE_GROUP) {
+                    if (!grouped)
+                        grouped = true;
+                    subMenu = menu.addSubMenu(name);
+                } else if (type == CategoryManager.TYPE_CONTOUR) {
+                    subMenu = menu.addSubMenu("");
+                } else if (type != CategoryManager.TYPE_PROFILE) {
+                    if (grouped)
+                        subMenu.add(name);
+                    else
+                        menu.add(name);
                 }
             }
         });

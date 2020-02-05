@@ -61,6 +61,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:clickable="true"
+        android:background="?android:attr/selectableItemBackground"
         android:focusable="true"
         android:paddingStart="4dp"
         android:paddingEnd="8dp">
