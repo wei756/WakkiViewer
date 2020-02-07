@@ -101,21 +101,18 @@ public abstract class RecyclerViewCustomAdapter extends RecyclerView.Adapter<Rec
      *
      * @param mList 추가할 ArrayList
      */
-    public void setListWith(final ArrayList mList, Activity act) {
+    public void setListWith(final ArrayList mList, final Activity act) {
 
         // 리사이클러뷰 버그 때문에 리스트 초기화 후 리스트 업데이트용 변수입니다.
         final RecyclerViewCustomAdapter adapter = this;
-        act.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                adapter.mList.clear();
-                notifyDataSetChanged();
-                adapter.mList = mList;
-                notifyDataSetChanged();
-                if (scrollable)
-                    mListener.resetState();
-                Log.v("RecyclerViewAdapter", mList.size() + "개 Items 추가됨, " + getItemCount() + " on RecyclerViewCustomAdapter.setListWith");
-            }
+        act.runOnUiThread(() -> {
+            adapter.mList.clear();
+            notifyDataSetChanged();
+            adapter.mList = mList;
+            notifyDataSetChanged();
+            if (scrollable)
+                mListener.resetState();
+            Log.v("RecyclerViewAdapter", mList.size() + "개 Items 추가됨, " + getItemCount() + " on RecyclerViewCustomAdapter.setListWith");
         });
     }
 
@@ -135,11 +132,13 @@ public abstract class RecyclerViewCustomAdapter extends RecyclerView.Adapter<Rec
      * 뷰홀더 리스트를 초기화합니다.
      */
     public void clearList(Activity act) {
-
+        mList.clear();
         // 리사이클러뷰 버그 때문에 리스트 초기화 후 리스트 업데이트용 변수입니다.
-        final RecyclerViewCustomAdapter adapter = this;
+        update(act);
+    }
+
+    public void update(Activity act) {
         act.runOnUiThread(() -> {
-            adapter.mList.clear();
             notifyDataSetChanged();
             if (scrollable)
                 mListener.resetState();

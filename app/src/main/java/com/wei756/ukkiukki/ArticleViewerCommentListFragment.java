@@ -2,6 +2,7 @@ package com.wei756.ukkiukki;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -37,6 +38,8 @@ public class ArticleViewerCommentListFragment extends Fragment {
     public final static int GALLERY_REQUEST_CODE = 0;
     public final static int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 100;
 
+    private Context mContext;
+
     ArticleViewerActivity act;
     SwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -50,6 +53,10 @@ public class ArticleViewerCommentListFragment extends Fragment {
     EditText etContent;
     TextView btnSubmitComment;
     ImageView btnEmoticon, btnPhoto;
+
+    StickerList stickerList;
+    RecyclerView stickerView, stickerpackView;
+    StickerPackListAdapter stickerpackAdapter;
 
     private String articleId;
     private int page = 1;
@@ -95,53 +102,46 @@ public class ArticleViewerCommentListFragment extends Fragment {
 
         // Swipe refresh
         mSwipeRefreshLayout = view.findViewById(R.id.layout_commentpage_swipe);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                initCommentPage(articleId, likeItMap);
-            }
-        });
+        mSwipeRefreshLayout.setOnRefreshListener(() -> initCommentPage(articleId, likeItMap));
 
         // Bottom bar
         etContent = (EditText) view.findViewById(R.id.et_commentpage_content);
         btnSubmitComment = (TextView) view.findViewById(R.id.btn_commentpage_submit);
-        btnSubmitComment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                postComment();
-            }
-        });
+        btnSubmitComment.setOnClickListener(view1 -> postComment());
         btnEmoticon = (ImageView) view.findViewById(R.id.btn_commentpage_emoticon);
         btnPhoto = (ImageView) view.findViewById(R.id.btn_commentpage_photo);
-        btnPhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // 권한 체크
-                if (ContextCompat.checkSelfPermission(act,
-                        Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
+        btnPhoto.setOnClickListener(view12 -> {
+            // 권한 체크
+            if (ContextCompat.checkSelfPermission(mContext,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
 
-                    // Permission is not granted
-                    // Should we show an explanation?
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(act,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                        // Show an explanation to the user *asynchronously* -- don't block
-                        // this thread waiting for the user's response! After the user
-                        // sees the explanation, try again to request the permission.
-                    } else {
-                        // No explanation needed; request the permission
-                        ActivityCompat.requestPermissions(act,
-                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+                // Permission is not granted
+                // Should we show an explanation?
+                if (ActivityCompat.shouldShowRequestPermissionRationale(act,
+                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    // Show an explanation to the user *asynchronously* -- don't block
+                    // this thread waiting for the user's response! After the user
+                    // sees the explanation, try again to request the permission.
+                } else {
+                    // No explanation needed; request the permission
+                    ActivityCompat.requestPermissions(act,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
 
-                    }
-                } else { // 권한 있을 시
-                    postCommentPhoto();
                 }
-
-
+            } else { // 권한 있을 시
+                postCommentPhoto();
             }
+
+
         });
+
+        // Sticker
+        stickerView = (RecyclerView) view.findViewById(R.id.rv_sticker_list);
+        stickerpackView = (RecyclerView) view.findViewById(R.id.rv_stickerpack_list);
+
+        stickerList = new StickerList(getActivity(), stickerpackView, stickerView);
 
         return view;
     }
@@ -171,17 +171,14 @@ public class ArticleViewerCommentListFragment extends Fragment {
                     //data.getData returns the content URI for the selected Image
                     final Uri selectedImage = data.getData();
                     Log.e("ArticleViewerCommentLis", "Raw uri: " + selectedImage.toString());
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Map<String, String> map = web.postCommentPhoto(act, selectedImage);
-                            String returncode = map.get("returncode");
-                            if (returncode.equals("" + Web.RETURNCODE_SUCCESS)) { // success
-                                commentPhotoMap = map;
+                    new Thread(() -> {
+                        Map<String, String> map = web.postCommentPhoto(act, selectedImage);
+                        String returncode = map.get("returncode");
+                        if (returncode.equals("" + Web.RETURNCODE_SUCCESS)) { // success
+                            commentPhotoMap = map;
 
-                            } else {
-                                //TODO: 에러코드 처리
-                            }
+                        } else {
+                            //TODO: 에러코드 처리
                         }
                     }).start();
                     break;
@@ -194,27 +191,22 @@ public class ArticleViewerCommentListFragment extends Fragment {
      * 댓글을 업로드합니다.
      */
     private void postComment() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final int returncode = web.postComment(articleId, "", etContent.getText().toString(), commentPhotoMap);
-                act.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (returncode == Web.RETURNCODE_SUCCESS) {
-                            Toast.makeText(act, "댓글을 작성하였습니다.", Toast.LENGTH_SHORT).show();
-                            Log.e("dddddddddd", etContent.getText().toString());
+        new Thread(() -> {
+            final int returncode = web.postComment(articleId, "", etContent.getText().toString(), stickerList.getStickerCode(), commentPhotoMap);
+            act.runOnUiThread(() -> {
+                if (returncode == Web.RETURNCODE_SUCCESS) {
+                    Toast.makeText(act, "댓글을 작성하였습니다.", Toast.LENGTH_SHORT).show();
+                    Log.e("dddddddddd", etContent.getText().toString());
 
-                            etContent.setText("");
-                            commentPhotoMap = null;
-                        } else if (returncode == Web.RETURNCODE_ERROR_COMMENT_SPAM) {
-                            Toast.makeText(act, "스팸으로 감지된 댓글입니다.", Toast.LENGTH_SHORT).show();
-                        } else if (returncode == Web.RETURNCODE_ERROR_COMMENT_BLANK) {
-                            Toast.makeText(act, "내용이 없는 댓글 작성 시도입니다.", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-            }
+                    etContent.setText(""); // 댓글내용 삭제
+                    stickerList.setStickerCode(null); // 댓글스티커 삭제
+                    commentPhotoMap = null; // 댓글사진 삭제
+                } else if (returncode == Web.RETURNCODE_ERROR_COMMENT_SPAM) {
+                    Toast.makeText(act, "스팸으로 감지된 댓글입니다.", Toast.LENGTH_SHORT).show();
+                } else if (returncode == Web.RETURNCODE_ERROR_COMMENT_BLANK) {
+                    Toast.makeText(act, "내용이 없는 댓글 작성 시도입니다.", Toast.LENGTH_SHORT).show();
+                }
+            });
         }).start();
     }
 
@@ -285,26 +277,18 @@ public class ArticleViewerCommentListFragment extends Fragment {
     }
 
     public void setVisibility(final int visibility) {
-        act.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mRecyclerView.setVisibility(visibility);
-                if (mProgressBar != null) {
-                    if (visibility == View.GONE)
-                        mProgressBar.setVisibility(View.VISIBLE);
-                    else
-                        mProgressBar.setVisibility(View.GONE);
-                }
+        act.runOnUiThread(() -> {
+            mRecyclerView.setVisibility(visibility);
+            if (mProgressBar != null) {
+                if (visibility == View.GONE)
+                    mProgressBar.setVisibility(View.VISIBLE);
+                else
+                    mProgressBar.setVisibility(View.GONE);
             }
         });
     }
 
     public void setRefreshing(final boolean refreshing) {
-        act.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mSwipeRefreshLayout.setRefreshing(refreshing);
-            }
-        });
+        act.runOnUiThread(() -> mSwipeRefreshLayout.setRefreshing(refreshing));
     }
 }

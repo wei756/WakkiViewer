@@ -8,10 +8,10 @@ import android.text.Html;
 import android.util.Log;
 
 import com.wei756.ukkiukki.Article;
-import com.wei756.ukkiukki.CategoryManager;
 import com.wei756.ukkiukki.Item;
 import com.wei756.ukkiukki.JsonUtil;
 import com.wei756.ukkiukki.Preference.DBHandler;
+import com.wei756.ukkiukki.Sticker;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -113,6 +113,64 @@ public class ParseUtils {
             }
         }
         dbHandler.close();
+
+        return arrayList;
+    }
+
+    /**
+     * 스티커팩에 사용
+     *
+     * @param context
+     * @param JSONString
+     * @return
+     * @throws NullPointerException
+     */
+    public ArrayList<Sticker> parseStickerPackListJson(Context context, String JSONString) throws NullPointerException {
+        ArrayList<Sticker> arrayList = new ArrayList<>();
+        Map map = convertJsonToMap(JSONString);
+
+        if (map != null) {
+            ArrayList<Map> listStickerPackList = (ArrayList) map.get("list");
+
+            for (Map mapStickerPack : listStickerPackList) {
+                Sticker stickerPack = new Sticker(); // 게시글 객체 생성
+
+                stickerPack.setPackCode("" + mapStickerPack.get("packCode")) // 팩 코드
+                        .setStickerCount((int) mapStickerPack.get("stickerCount")); // 스티커 갯수
+
+                arrayList.add(stickerPack);
+            }
+        }
+
+        return arrayList;
+    }
+
+    /**
+     * 스티커에 사용
+     *
+     * @param context
+     * @param JSONString
+     * @return
+     * @throws NullPointerException
+     */
+    public ArrayList<Sticker> parseStickerListJson(Context context, String JSONString) throws NullPointerException {
+        ArrayList<Sticker> arrayList = new ArrayList<>();
+        Map map = convertJsonToMap(JSONString);
+
+        if (map != null) {
+            ArrayList<Map> listStickerList = (ArrayList) map.get("list");
+
+            for (Map mapSticker : listStickerList) {
+                Sticker sticker = new Sticker(); // 게시글 객체 생성
+
+                sticker.setStickerCode("" + mapSticker.get("stickerCode")) // 스티커 코드
+                        .setOriginalUrl(mapSticker.get("originalUrl") + "?" + mapSticker.get("type")) // 스티커 이미지 url
+                        .setImageWidth((int)mapSticker.get("imageWidth")) // 스티커 가로 길이
+                        .setImageHeight((int)mapSticker.get("imageHeight")); // 스티커 세로 길이
+
+                arrayList.add(sticker);
+            }
+        }
 
         return arrayList;
     }

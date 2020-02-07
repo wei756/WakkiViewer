@@ -26,7 +26,7 @@
             app:expandedTitleMarginTop="56dp"
             app:expandedTitleTextAppearance="@style/ProfileCollapsingToolbarTitleTheme"
             app:layout_scrollFlags="scroll|enterAlwaysCollapsed|enterAlways"
-            app:title="백수맛팬치">
+            tools:title="백수맛팬치">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -56,7 +56,7 @@
                         android:id="@+id/tv_profile_id"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="kjho****"
+                        tools:text="kjho****"
                         android:textColor="@color/colorTextSecondary"
                         android:textSize="14sp" />
 
@@ -70,20 +70,20 @@
                             android:id="@+id/tv_profile_grade"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="노비"
+                            tools:text="노비"
                             android:textColor="@color/colorTextPrimary"
                             android:textSize="14sp" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="˙방문 "
+                            tools:text="˙방문 "
                             android:textColor="@color/colorTextPrimary"
                             android:textSize="14sp" />
                         <TextView
                             android:id="@+id/tv_profile_visit"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="3,924"
+                            tools:text="3,924"
                             android:textColor="@color/colorTextPrimary"
                             android:textSize="14sp" />
                     </LinearLayout>

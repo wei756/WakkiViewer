@@ -38,6 +38,7 @@
     <!-- Comment list -->
     <color name="colorCommentListMineBackground">#f3fdf7</color>
     <color name="colorCommentListBorder">#ccc</color>
+    <color name="colorCommentListStickerSelectorBackground">#e8e9ed</color>
 
     <!-- Article viewer -->
     <color name="colorArticleTitleText">#444</color>

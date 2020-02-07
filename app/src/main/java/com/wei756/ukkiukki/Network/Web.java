@@ -12,16 +12,14 @@ import androidx.annotation.Nullable;
 
 import com.wei756.ukkiukki.Article;
 import com.wei756.ukkiukki.ArticleList;
-import com.wei756.ukkiukki.ArticleListAdapter;
 import com.wei756.ukkiukki.ArticleViewerActivity;
 import com.wei756.ukkiukki.ArticleViewerCommentListFragment;
 import com.wei756.ukkiukki.CategoryManager;
 import com.wei756.ukkiukki.Comment;
-import com.wei756.ukkiukki.Item;
 import com.wei756.ukkiukki.JsonUtil;
-import com.wei756.ukkiukki.MainActivity;
 import com.wei756.ukkiukki.Preference.DBHandler;
 import com.wei756.ukkiukki.ProfileManager;
+import com.wei756.ukkiukki.Sticker;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -38,8 +36,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class Web extends Thread {
@@ -75,6 +71,8 @@ public class Web extends Thread {
             profileCommentArticleListUrl = "https://m.cafe.naver.com/CafeMemberReplyList.nhn?search.clubid={0}&search.query={1}&search.page={2}&search.perPage={3}",
             profileLikeItArticleListUrl = "https://m.cafe.naver.com/CafeMemberLikeItList.nhn?search.cafeId={0}&search.memberId={1}&search.likeItTimestamp={2}&search.count={3}";
 
+    public final static String stickerPackListUrl = "https://m.cafe.naver.com/gfmarket_sticker/StickerPackListAsync.nhn",
+            stickerListUrl = "https://m.cafe.naver.com/gfmarket_sticker/StickerListAsync.nhn?packCode=";
 
 
     public final static String postCommentUrl = "https://m.cafe.naver.com/CommentPost.nhn?m=write",
@@ -336,6 +334,79 @@ public class Web extends Thread {
         }
         if (arrayList != null)
             Log.i("Web", "" + arrayList.size() + " category(s) found. (" + url + ")" + " on Web.getCategoryList");
+        return arrayList;
+    }
+
+
+    public ArrayList<Sticker> getStickerPackList(Context context) {
+        ParseUtils parseUtils = ParseUtils.getInstance();
+        ArrayList<Sticker> arrayList = null;
+        try {
+
+            // Get document
+            String url = stickerPackListUrl, response;
+
+            response = WebRequestBuilder.create()
+                    .url(url)
+                    .method(WebRequestBuilder.METHOD_GET)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(true)
+                    .buildWithoutElement();
+
+            arrayList = parseUtils.parseStickerPackListJson(context, response); // throws NullPointerException
+
+            Log.i("Web", "StickerPack " + arrayList.size() + " loaded. on Web.getStickerPack");
+
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error. on Web.getStickerPack");
+            e.printStackTrace();
+
+            arrayList.add(0, new Sticker().setErrorcode(Web.RETURNCODE_ERROR_CONNECTION));
+
+        } catch (NullPointerException e) {
+            Log.w("Web.err", "Error occurred. on Web.getStickerPack");
+            e.printStackTrace();
+
+            arrayList.add(0, new Sticker().setErrorcode(Web.RETURNCODE_FAILED));
+
+        }
+
+        return arrayList;
+    }
+
+    public ArrayList<Sticker> getStickerList(Context context, String stickerPackCode) {
+        ParseUtils parseUtils = ParseUtils.getInstance();
+        ArrayList<Sticker> arrayList = null;
+        try {
+
+            // Get document
+            String url = stickerListUrl + stickerPackCode, response;
+
+            response = WebRequestBuilder.create()
+                    .url(url)
+                    .method(WebRequestBuilder.METHOD_GET)
+                    .userAgent(WebRequestBuilder.USER_AGENT_MOBILE)
+                    .useCookie(true)
+                    .buildWithoutElement();
+
+            arrayList = parseUtils.parseStickerListJson(context, response); // throws NullPointerException
+
+            Log.i("Web", "Sticker " + arrayList.size() + " loaded. on Web.getSticker");
+
+        } catch (IOException e) {
+            Log.w("Web.err", "Connection error. on Web.getStickerPack");
+            e.printStackTrace();
+
+            arrayList.add(0, new Sticker().setErrorcode(Web.RETURNCODE_ERROR_CONNECTION));
+
+        } catch (NullPointerException e) {
+            Log.w("Web.err", "Error occurred. on Web.getStickerPack");
+            e.printStackTrace();
+
+            arrayList.add(0, new Sticker().setErrorcode(Web.RETURNCODE_FAILED));
+
+        }
+
         return arrayList;
     }
 
@@ -975,7 +1046,7 @@ public class Web extends Thread {
      * @param content   댓글 내용
      * @see ArticleViewerActivity
      */
-    public int postComment(final String articleId, final String commentId, final String content, @Nullable Map<String, String> photo) {
+    public int postComment(final String articleId, final String commentId, final String content, @Nullable String stickerCode, @Nullable Map<String, String> photo) {
         String commentData = "";
         try {
             String strContent = URLEncoder.encode(content, "UTF-8");
@@ -987,7 +1058,7 @@ public class Web extends Thread {
                 imageWidth = photo.get("width");
                 imageHeight = photo.get("height");
             }
-            commentData = MessageFormat.format(postCommentData, cafeId, articleId, strContent, "", imagePath, imageFileName, imageWidth, imageHeight);
+            commentData = MessageFormat.format(postCommentData, cafeId, articleId, strContent, stickerCode != null ? stickerCode : "", imagePath, imageFileName, imageWidth, imageHeight);
             Log.e("Web.eeeeeeeeeeee", commentData);
 
             // get html
