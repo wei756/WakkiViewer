@@ -26,9 +26,9 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_comment_list"
-                    tools:listitem="@layout/comment_list_commentpage_theme"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    tools:listitem="@layout/comment_list_commentpage_theme" />
 
                 <RelativeLayout
                     android:id="@+id/commentList_loadingPanel"
@@ -139,47 +139,60 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@drawable/articlelist_divider" />
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_sticker_list"
-                android:layout_width="match_parent"
-                android:orientation="vertical"
-                android:layout_height="200dp"
-                android:padding="8dp"
-                app:spanCount="5"
-                android:background="@color/colorCommentListStickerSelectorBackground"
-                tools:listitem="@layout/sticker_list"
-                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager" />
-        </RelativeLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@drawable/articlelist_divider" />
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:id="@+id/layout_commentpage_sticker_selector"
+            android:orientation="vertical">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_stickerpack_list"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                tools:listitem="@layout/stickerpack_list"
-                android:layout_weight="1"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@drawable/articlelist_divider" />
 
-            <ImageView
-                android:layout_width="56dp"
-                android:layout_height="44dp"
-                android:background="@color/colorTextPrimary" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_sticker_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@color/colorCommentListStickerSelectorBackground"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                    app:spanCount="5"
+                    tools:listitem="@layout/sticker_list" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@drawable/articlelist_divider" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_stickerpack_list"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/stickerpack_list" />
+
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="44dp"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_store_black_24dp"
+                    android:tint="@color/colorTextSecondary" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

@@ -68,7 +68,11 @@ public class StickerList {
     }
 
     public void setStickerCode(Sticker sticker) {
-        this.stickerCode = sticker.getStickerCode() + "-" + sticker.getImageWidth() + "-" + sticker.getImageHeight();
+        setStickerCode(sticker.getStickerCode() + "-" + sticker.getImageWidth() + "-" + sticker.getImageHeight());
+    }
+
+    public void setStickerCode(String stickerCode) {
+        this.stickerCode = stickerCode;
     }
 
     public String getStickerCode() {

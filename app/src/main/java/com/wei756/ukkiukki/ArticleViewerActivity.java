@@ -14,7 +14,6 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.wei756.ukkiukki.Network.Web;
-import com.wei756.ukkiukki.Network.WebClientManager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,9 +22,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,15 +30,12 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintJob;
 import android.print.PrintManager;
-import android.text.Html;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -471,7 +465,10 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
     @Override
     public void onBackPressed() {
         if (isOpenedCommentPage) {
-            hideCommentPage();
+            if (fragmentCommentList.getVisibilityOfStickerSelector())
+                fragmentCommentList.setVisibilityOfStickerSelector(false);
+            else
+                hideCommentPage();
         } else {
             super.onBackPressed();
         }
@@ -634,6 +631,7 @@ public class ArticleViewerActivity extends AppCompatActivity implements LoadArti
             fragmentCommentList.etContent.post(() -> {
                 fragmentCommentList.etContent.setFocusableInTouchMode(true);
                 fragmentCommentList.etContent.requestFocus();
+                fragmentCommentList.setVisibilityOfStickerSelector(false);
 
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 

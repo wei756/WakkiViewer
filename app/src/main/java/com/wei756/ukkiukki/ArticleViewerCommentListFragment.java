@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,8 +39,6 @@ public class ArticleViewerCommentListFragment extends Fragment {
     public final static int GALLERY_REQUEST_CODE = 0;
     public final static int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 100;
 
-    private Context mContext;
-
     ArticleViewerActivity act;
     SwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -54,6 +53,7 @@ public class ArticleViewerCommentListFragment extends Fragment {
     TextView btnSubmitComment;
     ImageView btnEmoticon, btnPhoto;
 
+    LinearLayout stickerLayout;
     StickerList stickerList;
     RecyclerView stickerView, stickerpackView;
     StickerPackListAdapter stickerpackAdapter;
@@ -109,27 +109,26 @@ public class ArticleViewerCommentListFragment extends Fragment {
         btnSubmitComment = (TextView) view.findViewById(R.id.btn_commentpage_submit);
         btnSubmitComment.setOnClickListener(view1 -> postComment());
         btnEmoticon = (ImageView) view.findViewById(R.id.btn_commentpage_emoticon);
+        btnEmoticon.setOnClickListener(view1 ->
+                setVisibilityOfStickerSelector(!getVisibilityOfStickerSelector())
+        );
         btnPhoto = (ImageView) view.findViewById(R.id.btn_commentpage_photo);
-        btnPhoto.setOnClickListener(view12 -> {
+        btnPhoto.setOnClickListener(view1 -> {
             // 권한 체크
-            if (ContextCompat.checkSelfPermission(mContext,
+            if (ContextCompat.checkSelfPermission(getActivity(),
                     Manifest.permission.READ_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
+                // 권한 요청
 
-                // Permission is not granted
-                // Should we show an explanation?
                 if (ActivityCompat.shouldShowRequestPermissionRationale(act,
                         Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    // Show an explanation to the user *asynchronously* -- don't block
-                    // this thread waiting for the user's response! After the user
-                    // sees the explanation, try again to request the permission.
+                    // 권한 요청 이유 표시
                 } else {
-                    // No explanation needed; request the permission
-                    ActivityCompat.requestPermissions(act,
-                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                            MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
-
                 }
+                ActivityCompat.requestPermissions(act,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE); // 권한 요청
+
             } else { // 권한 있을 시
                 postCommentPhoto();
             }
@@ -138,6 +137,9 @@ public class ArticleViewerCommentListFragment extends Fragment {
         });
 
         // Sticker
+        stickerLayout = (LinearLayout) view.findViewById(R.id.layout_commentpage_sticker_selector);
+        stickerLayout.setVisibility(View.GONE);
+
         stickerView = (RecyclerView) view.findViewById(R.id.rv_sticker_list);
         stickerpackView = (RecyclerView) view.findViewById(R.id.rv_stickerpack_list);
 
@@ -199,7 +201,7 @@ public class ArticleViewerCommentListFragment extends Fragment {
                     Log.e("dddddddddd", etContent.getText().toString());
 
                     etContent.setText(""); // 댓글내용 삭제
-                    stickerList.setStickerCode(null); // 댓글스티커 삭제
+                    stickerList.setStickerCode(""); // 댓글스티커 삭제
                     commentPhotoMap = null; // 댓글사진 삭제
                 } else if (returncode == Web.RETURNCODE_ERROR_COMMENT_SPAM) {
                     Toast.makeText(act, "스팸으로 감지된 댓글입니다.", Toast.LENGTH_SHORT).show();
@@ -286,6 +288,18 @@ public class ArticleViewerCommentListFragment extends Fragment {
                     mProgressBar.setVisibility(View.GONE);
             }
         });
+    }
+
+    public void setVisibilityOfStickerSelector(boolean visible) {
+        if (visible) {
+            stickerLayout.setVisibility(View.VISIBLE);
+        } else {
+            stickerLayout.setVisibility(View.GONE);
+        }
+    }
+
+    public boolean getVisibilityOfStickerSelector() {
+        return (stickerLayout.getVisibility() == View.VISIBLE);
     }
 
     public void setRefreshing(final boolean refreshing) {
